@@ -1,0 +1,6 @@
+{
+  "name": "Nexus - Unified Emergency & Incident Management System",
+  "description": "Multi-agency incident response and dispatch system connecting PNP, BFP, MDRRMO, and residents with real-time mapping, inter-agency coordination, and bilingual reporting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
