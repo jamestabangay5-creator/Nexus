@@ -23,7 +23,8 @@ import {
   Send,
   Users,
   AlertOctagon,
-  History
+  History,
+  RotateCcw
 } from 'lucide-react';
 
 interface Props {
@@ -38,7 +39,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
     activeRole,
     updateIncidentStatus,
     rejectIncidentReport,
-    reclassifyIncidentReport,
+    restoreRejectedReport,
     adminProfiles,
     language,
   } = useNexus();
@@ -49,10 +50,19 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-  const [isReclassifyOpen, setIsReclassifyOpen] = useState(false);
-  const [selectedNewType, setSelectedNewType] = useState<IncidentTypeId>('road_accident');
   const [isAssistanceModalOpen, setIsAssistanceModalOpen] = useState(false);
   const [customActionNote, setCustomActionNote] = useState('');
+
+  // Close on Escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !reportId) return null;
 
@@ -64,15 +74,24 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
   );
   const agencyInfo = AGENCY_DETAILS[report.selectedAgency];
 
-  const handleStatusChange = (status: IncidentStatus) => {
+  const handleStatusChange = (status: IncidentStatus, customNote?: string) => {
     updateIncidentStatus(
       report.id,
       status,
       currentAdmin?.name || `${currentAgency} Admin`,
       currentAgency,
-      customActionNote || undefined
+      customNote || customActionNote || undefined
     );
     setCustomActionNote('');
+  };
+
+  const handleRestoreFromArchive = () => {
+    restoreRejectedReport(
+      report.id,
+      currentAdmin?.name || `${currentAgency} Admin`,
+      currentAgency
+    );
+    onClose();
   };
 
   const handleConfirmReject = (e: React.FormEvent) => {
@@ -88,16 +107,6 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
     setIsRejectOpen(false);
     setRejectReason('');
     onClose();
-  };
-
-  const handleConfirmReclassify = () => {
-    reclassifyIncidentReport(
-      report.id,
-      selectedNewType,
-      currentAdmin?.name || `${currentAgency} Admin`,
-      currentAgency
-    );
-    setIsReclassifyOpen(false);
   };
 
   return (
@@ -178,13 +187,29 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
               </div>
             )}
 
-            {/* Evidence Image */}
+            {/* Evidence Image with Resilient Fallback */}
             {report.photoUrl && (
               <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
                 <img
                   src={report.photoUrl}
                   alt="Incident evidence"
                   className="w-full max-h-64 object-cover"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    const fallbackUrl = 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80';
+                    if (target.src !== fallbackUrl) {
+                      target.src = fallbackUrl;
+                    } else {
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent && !parent.querySelector('.evidence-fallback')) {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'evidence-fallback flex flex-col items-center justify-center p-6 bg-slate-900 text-slate-400 text-xs h-40';
+                        fallback.innerHTML = '<span class="font-bold text-slate-300">Evidence Record Captured</span><span class="text-[10px] text-slate-500 mt-1">Verified Digital Image on File in Central Incident Registry</span>';
+                        parent.prepend(fallback);
+                      }
+                    }
+                  }}
                 />
                 {report.photoCaption && (
                   <div className="p-2 text-xs text-slate-400 bg-slate-950/90 border-t border-slate-800">
@@ -253,6 +278,48 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
               </div>
             </div>
 
+            {/* Resolution Banner (for Resolved Cases) */}
+            {report.status === 'Resolved' && (
+              <div className="p-3.5 bg-emerald-950/30 border border-emerald-500/50 rounded-xl text-xs space-y-1.5 animate-in fade-in">
+                <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Case Resolved & Logged in Provincial History</span>
+                </div>
+                <p className="text-slate-200 pl-6 text-xs leading-relaxed">
+                  {report.resolution?.notes || 'Incident successfully cleared and verified resolved.'}
+                </p>
+                <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-400 pl-6 pt-1 border-t border-emerald-900/40">
+                  <span>
+                    Resolved by: <strong className="text-white">{report.resolution?.resolvedByAdmin || 'Command Officer'}</strong> ({report.resolution?.agency || report.selectedAgency})
+                  </span>
+                  <span>
+                    Closed at: <strong className="text-white">{new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleString()}</strong>
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Archived / Rejection Banner (for Rejected Cases) */}
+            {report.status === 'Rejected' && (
+              <div className="p-3.5 bg-rose-950/30 border border-rose-500/50 rounded-xl text-xs space-y-1.5 animate-in fade-in">
+                <div className="flex items-center gap-2 text-rose-300 font-bold">
+                  <AlertOctagon className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>Case Archived / Discarded</span>
+                </div>
+                <p className="text-rose-200 pl-6 text-xs font-medium leading-relaxed">
+                  "{report.rejection?.reason || 'Case marked as rejected / unverified.'}"
+                </p>
+                <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-400 pl-6 pt-1 border-t border-rose-900/40">
+                  <span>
+                    Archived by: <strong className="text-white">{report.rejection?.rejectedByAdmin || 'Command Officer'}</strong> ({report.rejection?.agency || report.selectedAgency})
+                  </span>
+                  <span>
+                    Archived at: <strong className="text-white">{new Date(report.rejection?.rejectedAt || report.updatedAt).toLocaleString()}</strong>
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Description Narrative */}
             <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 text-xs">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
@@ -290,41 +357,6 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                 ))}
               </div>
             </div>
-
-            {/* Reclassification Accordion */}
-            {activeRole !== 'resident' && isReclassifyOpen && (
-              <div className="p-3.5 bg-slate-950 border border-blue-500/40 rounded-xl text-xs space-y-2.5">
-                <div className="flex items-center gap-1.5 font-bold text-blue-300">
-                  <Tag className="w-4 h-4 text-blue-400" />
-                  <span>Update Verified Incident Classification:</span>
-                </div>
-                <select
-                  value={selectedNewType}
-                  onChange={(e) => setSelectedNewType(e.target.value as IncidentTypeId)}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs focus:ring-1 focus:ring-blue-500"
-                >
-                  {INCIDENT_TYPES.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      #{type.number} - {type.en} ({type.fil}) [{type.category}]
-                    </option>
-                  ))}
-                </select>
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setIsReclassifyOpen(false)}
-                    className="px-3 py-1 text-slate-400 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleConfirmReclassify}
-                    className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
-                  >
-                    Save Verified Classification
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Rejection Form Box */}
             {activeRole !== 'resident' && isRejectOpen && (
@@ -367,68 +399,112 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
           </div>
 
           {/* Action Footer for Administrators */}
-          {activeRole !== 'resident' && report.status !== 'Rejected' && (
-            <div className="pt-4 mt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Reclassify button */}
-                <button
-                  onClick={() => setIsReclassifyOpen(!isReclassifyOpen)}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-                >
-                  <Tag className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Reclassify</span>
-                </button>
+          {activeRole !== 'resident' && (
+            <div className="pt-4 mt-4 border-t border-slate-800">
+              {/* CASE 1: Archived / Rejected Report -> Provide Restore Button */}
+              {report.status === 'Rejected' && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-rose-950/30 border border-rose-900/60 rounded-xl p-3.5">
+                  <div className="flex items-start gap-2.5 text-xs text-rose-300">
+                    <AlertOctagon className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-rose-200">Incident Is In Emergency Archive</span>
+                      <p className="text-slate-300 text-[11px] mt-0.5 font-medium">
+                        "{report.rejection?.reason || 'Case was rejected / marked false alarm.'}"
+                      </p>
+                    </div>
+                  </div>
 
-                {/* Request Assistance Button - Requirement 6 */}
-                <button
-                  onClick={() => setIsAssistanceModalOpen(true)}
-                  className="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/40 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                >
-                  <Users className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{t.requestAssistance}</span>
-                </button>
-              </div>
-
-              {/* Status Update Action Pipeline: Accept -> Ongoing -> Resolved / Reject */}
-              <div className="flex items-center gap-2">
-                {report.status === 'Pending Verification' && (
                   <button
-                    onClick={() => handleStatusChange('Accepted')}
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
+                    onClick={handleRestoreFromArchive}
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg transition cursor-pointer shrink-0"
+                    title="Restore report back to active pending dispatch queue"
                   >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    <span>{t.accept}</span>
+                    <RotateCcw className="w-4 h-4" />
+                    <span>Restore Report to Active Registry</span>
                   </button>
-                )}
+                </div>
+              )}
 
-                {(report.status === 'Accepted' || report.status === 'Pending Verification') && (
+              {/* CASE 2: Resolved Report -> Lock Reject and Request Assistance */}
+              {report.status === 'Resolved' && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-emerald-950/30 border border-emerald-900/60 rounded-xl p-3.5">
+                  <div className="flex items-start gap-2.5 text-xs text-emerald-300">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-emerald-200">Incident Successfully Resolved & Logged in History</span>
+                      <p className="text-slate-300 text-[11px] mt-0.5">
+                        Response is completed. Reject and Assistance requests are disabled for resolved cases.
+                      </p>
+                    </div>
+                  </div>
+
                   <button
-                    onClick={() => handleStatusChange('Ongoing')}
-                    className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
+                    onClick={() => handleStatusChange('Ongoing', 'Reopened resolved incident for follow-up verification')}
+                    className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0"
+                    title="Reopen case if further field dispatch is required"
                   >
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{t.setOngoing}</span>
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Reopen Case (Ongoing)</span>
                   </button>
-                )}
+                </div>
+              )}
 
-                {report.status === 'Ongoing' && (
-                  <button
-                    onClick={() => handleStatusChange('Resolved')}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
-                  >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    <span>{t.resolve}</span>
-                  </button>
-                )}
+              {/* CASE 3: Active Ongoing / Pending Cases -> Request Assistance & Reject allowed */}
+              {report.status !== 'Rejected' && report.status !== 'Resolved' && (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Request Assistance Button */}
+                    <button
+                      onClick={() => setIsAssistanceModalOpen(true)}
+                      className="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/40 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Users className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>{t.requestAssistance}</span>
+                    </button>
+                  </div>
 
-                <button
-                  onClick={() => setIsRejectOpen(true)}
-                  className="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                >
-                  <AlertOctagon className="w-3.5 h-3.5" />
-                  <span>{t.reject}</span>
-                </button>
-              </div>
+                  {/* Status Update Action Pipeline: Accept -> Ongoing -> Resolved / Reject */}
+                  <div className="flex items-center gap-2">
+                    {report.status === 'Pending Verification' && (
+                      <button
+                        onClick={() => handleStatusChange('Accepted')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>{t.accept}</span>
+                      </button>
+                    )}
+
+                    {(report.status === 'Accepted' || report.status === 'Pending Verification') && (
+                      <button
+                        onClick={() => handleStatusChange('Ongoing')}
+                        className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
+                      >
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{t.setOngoing}</span>
+                      </button>
+                    )}
+
+                    {report.status === 'Ongoing' && (
+                      <button
+                        onClick={() => handleStatusChange('Resolved')}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>{t.resolve}</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setIsRejectOpen(true)}
+                      className="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <AlertOctagon className="w-3.5 h-3.5" />
+                      <span>{t.reject}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

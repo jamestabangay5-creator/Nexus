@@ -1,4 +1,29 @@
 export type Agency = 'PNP' | 'BFP' | 'MDRRMO';
+export type AgencyScope = 'CENTRAL' | Agency;
+export type PortalMode = 'landing' | 'resident' | 'agency';
+
+export interface AgencyUser {
+  uid?: string;
+  email: string;
+  name: string;
+  title: string;
+  badgeNumber: string;
+  agency: AgencyScope;
+  role: 'admin' | 'dispatcher';
+  isSystemAdmin: boolean;
+}
+
+export interface AgencyProfileSettings {
+  agency: AgencyScope;
+  name: string;
+  title: string;
+  badgeNumber: string;
+  email: string;
+  hotline: string;
+  descriptionEn: string;
+  descriptionFil: string;
+  stationAddress?: string;
+}
 
 export type IncidentCategoryColor = 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN' | 'BLUE' | 'WHITE';
 
@@ -55,7 +80,7 @@ export interface AuditLogEntry {
   id: string;
   timestamp: string;
   adminName: string;
-  agency: Agency | 'Resident' | 'System';
+  agency: AgencyScope | 'Resident' | 'System';
   action: string;
   details: string;
   previousStatus?: IncidentStatus;
@@ -92,6 +117,8 @@ export interface IncidentReport {
   category: IncidentCategoryColor;
   status: IncidentStatus;
   dateTime: string;
+  province?: string;
+  municipality?: string;
   barangay: string;
   locationDetails: string;
   coordinates: {
@@ -107,6 +134,12 @@ export interface IncidentReport {
     rejectedByAdmin: string;
     agency: Agency;
   };
+  resolution?: {
+    resolvedAt: string;
+    resolvedByAdmin: string;
+    agency: AgencyScope;
+    notes?: string;
+  };
   history: AuditLogEntry[];
   assistanceRequests: AssistanceRequest[];
   isUnreadForAgencies: Record<Agency, boolean>;
@@ -116,17 +149,23 @@ export interface IncidentReport {
 
 export interface UserProfile {
   id: string;
+  uid?: string;
   name: string;
   role: 'resident' | 'admin';
   agency?: Agency;
   badgeTitle?: string;
   email: string;
   phone: string;
+  province?: string;
+  municipality?: string;
   barangay: string;
   address: string;
   avatarUrl: string;
   termsAccepted: boolean;
   termsAcceptedAt?: string;
+  isVerifiedIdentity?: boolean;
+  authProvider?: 'google' | 'password' | 'demo';
+  createdAt?: string;
 }
 
 export type TimeFilterPeriod = 'all' | 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -142,3 +181,63 @@ export interface FilterOptions {
 }
 
 export type Language = 'en' | 'fil';
+
+// Specialized Agency Operational Resource Types
+export interface PatrolUnit {
+  id: string;
+  callSign: string;
+  division: string;
+  sector: string;
+  status: 'On Patrol' | 'Dispatched' | 'Standby' | 'Maintenance';
+  officerInCharge: string;
+  driverName?: string;
+  crewMembers?: string;
+  contactNumber?: string;
+  shift?: string;
+  scheduledDispatch?: string;
+  vehiclePlate?: string;
+}
+
+export interface FireApparatus {
+  id: string;
+  callSign: string;
+  type: 'Pumper Engine' | 'Ladder Truck' | 'Water Tanker' | 'Rescue Truck';
+  station: string;
+  status: 'In Station' | 'En Route' | 'On Scene' | 'Maintenance' | 'Standby';
+  waterLevelPercent: number;
+  officerInCharge?: string;
+  driverName?: string;
+  crewMembers?: string;
+  contactNumber?: string;
+  shift?: string;
+  scheduledDispatch?: string;
+  vehiclePlate?: string;
+}
+
+export type FireAlarmLevel = '1st Alarm' | '2nd Alarm' | '3rd Alarm' | '4th Alarm' | '5th Alarm' | 'Task Force Alpha' | 'General Alarm';
+
+export interface MedicalUnit {
+  id: string;
+  callSign: string;
+  type: 'Type-1 Ambulance' | 'Rescue Boat' | 'SAR Quick Response';
+  base: string;
+  status: 'Available' | 'Dispatched' | 'Patient Transit' | 'Hospital Turnover' | 'Maintenance';
+  paramedicLead: string;
+  driverName?: string;
+  crewMembers?: string;
+  contactNumber?: string;
+  shift?: string;
+  scheduledDispatch?: string;
+  vehiclePlate?: string;
+}
+
+export interface EvacuationCenter {
+  id: string;
+  name: string;
+  municipality: string;
+  capacity: number;
+  currentOccupants: number;
+  status: 'Active' | 'Standby' | 'Full';
+  reliefStockStatus: 'Adequate' | 'Replenishment Needed' | 'Critical';
+}
+

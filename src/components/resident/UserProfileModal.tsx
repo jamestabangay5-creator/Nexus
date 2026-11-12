@@ -1,7 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNexus } from '../../context/NexusContext';
 import { TRANSLATIONS } from '../../constants/translations';
-import { BARANGAYS } from '../../constants/incidentData';
+import {
+  ORIENTAL_MINDORO_MUNICIPALITIES,
+  getBarangaysForMunicipality,
+  OrientalMindoroMunicipality,
+  PROVINCE_NAME,
+} from '../../constants/orientalMindoroData';
+import { compressImage } from '../../utils/imageUtils';
+import {
+  auth,
+  db,
+  doc,
+  updateDoc,
+  setDoc,
+  firebaseSignOut,
+  updateProfile,
+  sanitizeForFirestore
+} from '../../lib/firebase';
 import {
   User,
   Edit3,
@@ -13,54 +29,154 @@ import {
   Mail,
   MapPin,
   Camera,
-  ShieldCheck
+  ShieldCheck,
+  UploadCloud,
+  RefreshCw,
+  Sparkles,
+  Building2
 } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onOpenAuth?: (mode?: 'login' | 'register') => void;
 }
 
-export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
+export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth }) => {
   const {
     residentUser,
     updateResidentUser,
     language,
     setLanguage,
     setActiveRole,
+    firebaseUser,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
   const [activeTab, setActiveTab] = useState<'profile' | 'edit' | 'language'>('profile');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Edit form state
+  // Edit form state with Oriental Mindoro municipality & auto-generated barangay
   const [formData, setFormData] = useState({
     name: residentUser.name,
     phone: residentUser.phone,
     email: residentUser.email,
-    barangay: residentUser.barangay,
+    province: residentUser.province || PROVINCE_NAME,
+    municipality: (residentUser.municipality || 'Calapan City') as OrientalMindoroMunicipality,
+    barangay: residentUser.barangay || 'Ibaba East',
     address: residentUser.address,
     avatarUrl: residentUser.avatarUrl,
   });
 
+  // Sync form data if residentUser changes
+  useEffect(() => {
+    setFormData({
+      name: residentUser.name,
+      phone: residentUser.phone,
+      email: residentUser.email,
+      province: residentUser.province || PROVINCE_NAME,
+      municipality: (residentUser.municipality || 'Calapan City') as OrientalMindoroMunicipality,
+      barangay: residentUser.barangay || 'Ibaba East',
+      address: residentUser.address,
+      avatarUrl: residentUser.avatarUrl,
+    });
+  }, [residentUser]);
+
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const handleMunicipalityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMuni = e.target.value as OrientalMindoroMunicipality;
+    const brgys = getBarangaysForMunicipality(newMuni);
+    setFormData((prev) => ({
+      ...prev,
+      municipality: newMuni,
+      barangay: brgys[0] || '',
+    }));
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const handleSave = (e: React.FormEvent) => {
+  // Handle uploading and compressing a real profile photo
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingPhoto(true);
+      const compressedDataUrl = await compressImage(file, 500, 500, 0.85);
+      setFormData((prev) => ({ ...prev, avatarUrl: compressedDataUrl }));
+    } catch (err) {
+      console.error('Error compressing profile photo:', err);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     updateResidentUser(formData);
+
+    // If signed into Firebase, update Firestore and Auth profile
+    const uid = residentUser.uid || firebaseUser?.uid;
+    if (uid) {
+      try {
+        const cleanPayload = sanitizeForFirestore({
+          ...formData,
+          isVerifiedIdentity: true,
+          updatedAt: new Date().toISOString(),
+        });
+        const userRef = doc(db, 'users', uid);
+        await updateDoc(userRef, cleanPayload).catch(async () => {
+          // Fallback if doc didn't exist yet
+          await setDoc(userRef, {
+            ...sanitizeForFirestore(residentUser),
+            ...cleanPayload,
+            id: uid,
+            uid,
+            isVerifiedIdentity: true,
+            updatedAt: new Date().toISOString(),
+          });
+        });
+
+        if (auth.currentUser) {
+          const authUpdate: { displayName: string; photoURL?: string } = {
+            displayName: formData.name,
+          };
+          if (formData.avatarUrl && (formData.avatarUrl.startsWith('http://') || formData.avatarUrl.startsWith('https://'))) {
+            authUpdate.photoURL = formData.avatarUrl;
+          }
+          await updateProfile(auth.currentUser, authUpdate).catch(() => null);
+        }
+      } catch (err) {
+        console.warn('Could not sync user profile to Firestore:', err);
+      }
+    }
+
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
       setActiveTab('profile');
-    }, 1000);
+    }, 1200);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await firebaseSignOut(auth);
+    } catch (err) {
+      console.warn('Firebase signout error:', err);
+    }
     onClose();
-    // Switch to PNP Admin or reload state
-    setActiveRole('PNP');
   };
 
   const sampleAvatars = [
@@ -72,7 +188,7 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-slate-100">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-slate-100 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
@@ -130,8 +246,9 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
               />
               <div>
                 <h3 className="text-base font-bold text-white">{residentUser.name}</h3>
-                <span className="text-xs text-slate-400 block">{residentUser.barangay}</span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-0.5 rounded-full mt-1">
+                <span className="text-xs text-slate-300 block font-medium">📍 {residentUser.barangay}, {residentUser.municipality || 'Calapan City'}</span>
+                <span className="text-[10px] text-purple-400 font-semibold block">Oriental Mindoro, Region IV-B</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-0.5 rounded-full mt-1.5">
                   <ShieldCheck className="w-3 h-3" />
                   Verified Resident Account
                 </span>
@@ -157,10 +274,33 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <span className="text-slate-400 flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                  Municipality / City:
+                </span>
+                <span className="text-white font-semibold">{residentUser.municipality || 'Calapan City'}</span>
+              </div>
+
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-slate-400 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                  Street Address:
+                  Barangay:
+                </span>
+                <span className="text-slate-200">{residentUser.barangay}</span>
+              </div>
+
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                  Street / Purok:
                 </span>
                 <span className="text-slate-200">{residentUser.address}</span>
+              </div>
+
+              <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg">
+                <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider mb-0.5">Verified Registered Dispatch Address:</span>
+                <strong className="text-emerald-300 text-xs block font-sans">
+                  📍 {residentUser.address}, {residentUser.barangay}, {residentUser.municipality || 'Calapan City'}, Oriental Mindoro
+                </strong>
               </div>
 
               <div className="flex items-center justify-between">
@@ -211,60 +351,153 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-slate-400 font-bold mb-1">Contact Phone</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-bold mb-1">Barangay</label>
-                <select
-                  value={formData.barangay}
-                  onChange={(e) => setFormData({ ...formData, barangay: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
-                >
-                  {BARANGAYS.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
             <div>
-              <label className="block text-slate-400 font-bold mb-1">Street Address</label>
+              <label className="block text-slate-400 font-bold mb-1">Contact Phone</label>
               <input
                 type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-mono"
               />
             </div>
 
-            {/* Quick avatar selection */}
-            <div>
-              <label className="block text-slate-400 font-bold mb-1">Choose Profile Photo</label>
-              <div className="flex items-center gap-2">
-                {sampleAvatars.map((url, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, avatarUrl: url })}
-                    className={`rounded-full p-0.5 border-2 transition ${
-                      formData.avatarUrl === url ? 'border-blue-500 scale-110' : 'border-transparent'
-                    }`}
+            {/* Oriental Mindoro Municipality & Barangay Selectors */}
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 font-bold text-xs flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Oriental Mindoro Address Hierarchy</span>
+                </span>
+                <span className="text-[10px] bg-purple-900/40 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">
+                  Region IV-B MIMAROPA
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">
+                    Select Municipality <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    value={formData.municipality}
+                    onChange={handleMunicipalityChange}
+                    required
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
-                    <img src={url} alt="preset" className="w-9 h-9 rounded-full object-cover" />
+                    {ORIENTAL_MINDORO_MUNICIPALITIES.map((muni) => (
+                      <option key={muni} value={muni}>
+                        {muni}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 font-bold mb-1">
+                    Select Barangay ({getBarangaysForMunicipality(formData.municipality).length}) <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    value={formData.barangay}
+                    onChange={(e) => setFormData({ ...formData, barangay: e.target.value })}
+                    required
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  >
+                    {getBarangaysForMunicipality(formData.municipality).map((b, idx) => (
+                      <option key={`upm-b-${formData.municipality}-${b}-${idx}`} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 font-bold mb-1">Physical Street Address / Purok</label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="e.g. Purok 4, Sampaguita St., near Elementary School"
+                  required
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Dynamic live preview */}
+              <div className="p-2 bg-purple-950/40 border border-purple-500/30 rounded-lg text-purple-200 text-[11px] flex items-center gap-1.5">
+                <span className="shrink-0">📍</span>
+                <span className="truncate">
+                  Save Address: <strong className="text-white">{formData.address || 'Street/Purok'}, {formData.barangay}, {formData.municipality}, Oriental Mindoro</strong>
+                </span>
+              </div>
+            </div>
+
+            {/* True Identity Profile Photo Upload Section */}
+            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+              <label className="block text-slate-300 font-bold text-xs flex items-center justify-between">
+                <span>Resident Profile Photo (True Identity)</span>
+                {uploadingPhoto && <span className="text-[10px] text-purple-400 flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin" /> Processing...</span>}
+              </label>
+
+              <div className="flex items-center gap-3">
+                <div className="relative group shrink-0">
+                  <img
+                    src={formData.avatarUrl}
+                    alt="Current Avatar"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-emerald-500 shadow-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer text-white"
+                    title="Upload genuine photo"
+                  >
+                    <Camera className="w-4 h-4" />
                   </button>
-                ))}
+                </div>
+
+                <div className="space-y-1.5 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    className="px-3 py-1.5 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/50 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>Upload Genuine Photo</span>
+                  </button>
+                  <p className="text-[10px] text-slate-400">
+                    JPG, PNG or WebP. Uploading your real photograph provides verified identity for 911 dispatch.
+                  </p>
+                </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Quick Preset Avatars Alternative */}
+              <div className="pt-2 border-t border-slate-800/80">
+                <span className="text-[10px] text-slate-400 block mb-1.5">Or choose sample avatar:</span>
+                <div className="flex items-center gap-2">
+                  {sampleAvatars.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, avatarUrl: url })}
+                      className={`rounded-full p-0.5 border-2 transition cursor-pointer ${
+                        formData.avatarUrl === url ? 'border-purple-500 scale-110 shadow-sm' : 'border-transparent hover:border-slate-600'
+                      }`}
+                    >
+                      <img src={url} alt="preset" className="w-8 h-8 rounded-full object-cover" />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 

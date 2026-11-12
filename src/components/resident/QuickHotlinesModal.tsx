@@ -1,0 +1,183 @@
+import React, { useEffect } from 'react';
+import { useNexus } from '../../context/NexusContext';
+import { TRANSLATIONS } from '../../constants/translations';
+import {
+  Phone,
+  PhoneCall,
+  ShieldAlert,
+  Flame,
+  Activity,
+  HeartPulse,
+  Radio,
+  X,
+  Shield,
+  LifeBuoy
+} from 'lucide-react';
+
+export const QuickHotlinesModal: React.FC = () => {
+  const { isHotlinesModalOpen, closeHotlinesModal, language, agencyDetails } = useNexus();
+  const t = TRANSLATIONS[language];
+
+  // Handle ESC key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isHotlinesModalOpen) closeHotlinesModal();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isHotlinesModalOpen, closeHotlinesModal]);
+
+  if (!isHotlinesModalOpen) return null;
+
+  const hotlines = [
+    {
+      agency: 'NATIONAL 911',
+      name: 'National Emergency Hotline',
+      number: '911',
+      tel: 'tel:911',
+      desc: 'All Emergencies · Centralized Voice Dispatch',
+      color: 'bg-red-500/20 text-red-400 border-red-500/40',
+      btnColor: 'bg-red-600 hover:bg-red-500 text-white',
+      icon: Radio,
+      pulse: true,
+    },
+    {
+      agency: 'PNP POLICE',
+      name: 'Philippine National Police',
+      number: agencyDetails?.PNP?.hotline || '911 / (02) 8722-0650',
+      tel: 'tel:0287220650',
+      desc: 'Law Enforcement · Crime & Armed Threat',
+      color: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
+      btnColor: 'bg-blue-600 hover:bg-blue-500 text-white',
+      icon: ShieldAlert,
+      pulse: false,
+    },
+    {
+      agency: 'BFP FIRE',
+      name: 'Bureau of Fire Protection',
+      number: agencyDetails?.BFP?.hotline || '160 / (02) 8426-0219',
+      tel: 'tel:0284260219',
+      desc: 'Fire Suppression · Hazmat · Extrication',
+      color: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
+      btnColor: 'bg-orange-600 hover:bg-orange-500 text-white',
+      icon: Flame,
+      pulse: false,
+    },
+    {
+      agency: 'MDRRMO / RESCUE',
+      name: 'Disaster Risk & Emergency Medical',
+      number: agencyDetails?.MDRRMO?.hotline || '122 / (02) 8928-1111',
+      tel: 'tel:0289281111',
+      desc: 'Typhoon, Flood, Landslide & Paramedic Ambulance',
+      color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+      btnColor: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+      icon: Activity,
+      pulse: false,
+    },
+    {
+      agency: 'RED CROSS',
+      name: 'Philippine Red Cross (Oriental Mindoro)',
+      number: '143 / (043) 288-2144',
+      tel: 'tel:0432882144',
+      desc: 'Blood Bank, First Aid & Disaster Relief',
+      color: 'bg-rose-500/20 text-rose-400 border-rose-500/40',
+      btnColor: 'bg-rose-600 hover:bg-rose-500 text-white',
+      icon: HeartPulse,
+      pulse: false,
+    },
+    {
+      agency: 'COAST GUARD',
+      name: 'Philippine Coast Guard Calapan Station',
+      number: '(02) 8527-8481',
+      tel: 'tel:0285278481',
+      desc: 'Maritime Search & Rescue, Sea Emergencies',
+      color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40',
+      btnColor: 'bg-cyan-600 hover:bg-cyan-500 text-white',
+      icon: LifeBuoy,
+      pulse: false,
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
+      <div className="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative text-slate-100 max-h-[85vh] overflow-y-auto">
+        {/* Mobile Pull Indicator */}
+        <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-red-600/20 border border-red-500/40 rounded-2xl text-red-400">
+              <PhoneCall className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-white">
+                Oriental Mindoro Emergency Hotlines
+              </h3>
+              <p className="text-xs text-slate-400">
+                1-tap direct voice dispatch. 24/7 active emergency lines.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={closeHotlinesModal}
+            className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Hotlines List */}
+        <div className="space-y-3 pt-4">
+          {hotlines.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={idx}
+                className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/80 flex items-center justify-between gap-3 transition hover:border-slate-700"
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className={`p-2.5 rounded-xl border ${item.color} shrink-0`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                        {item.agency}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-white truncate">{item.name}</h4>
+                    <p className="text-[11px] text-slate-400 truncate">{item.desc}</p>
+                    <span className="text-xs font-mono font-bold text-red-400 block mt-0.5">
+                      {item.number}
+                    </span>
+                  </div>
+                </div>
+
+                <a
+                  href={item.tel}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 shadow transition cursor-pointer active:scale-95 ${item.btnColor}`}
+                  title={`Call ${item.name}`}
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call</span>
+                </a>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-slate-800 text-center">
+          <button
+            onClick={closeHotlinesModal}
+            className="w-full py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
+          >
+            Close Hotline Directory
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+

@@ -1,14 +1,49 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   Agency,
+  AgencyScope,
+  AgencyUser,
+  PortalMode,
   IncidentReport,
   IncidentStatus,
   IncidentTypeId,
   UserProfile,
   Language,
+  PatrolUnit,
+  FireApparatus,
+  FireAlarmLevel,
+  MedicalUnit,
+  EvacuationCenter,
+  AgencyProfileSettings,
 } from '../types';
-import { INITIAL_INCIDENT_REPORTS, INCIDENT_TYPES } from '../constants/incidentData';
-import { playEmergencyAlertSound, playSuccessChime } from '../services/soundService';
+import {
+  INITIAL_INCIDENT_REPORTS,
+  INCIDENT_TYPES,
+  INITIAL_PATROL_UNITS,
+  INITIAL_FIRE_APPARATUS,
+  INITIAL_MEDICAL_UNITS,
+  INITIAL_EVACUATION_CENTERS,
+  OFFICIAL_AGENCY_ACCOUNTS,
+  AGENCY_DETAILS,
+} from '../constants/incidentData';
+import { playEmergencyAlertSound, playSuccessChime, updateContinuousAlarmMute } from '../services/soundService';
+import {
+  auth,
+  db,
+  onAuthStateChanged,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  serverTimestamp,
+  sanitizeForFirestore,
+  type FirebaseUser
+} from '../lib/firebase';
 
 interface IncomingAlertData {
   report: IncidentReport;
@@ -17,63 +52,562 @@ interface IncomingAlertData {
 
 interface NexusContextType {
   reports: IncidentReport[];
-  activeRole: 'resident' | Agency;
-  setActiveRole: (role: 'resident' | Agency) => void;
+  activeRole: 'resident' | AgencyScope;
+  setActiveRole: (role: 'resident' | AgencyScope) => void;
+  portalMode: PortalMode;
+  setPortalMode: (mode: PortalMode) => void;
   language: Language;
   setLanguage: (lang: Language) => void;
   soundMuted: boolean;
   setSoundMuted: (muted: boolean) => void;
+  
+  // Resident Profile & Firebase Auth
+  firebaseUser: FirebaseUser | null;
   residentUser: UserProfile;
+  setResidentUser: React.Dispatch<React.SetStateAction<UserProfile>>;
   updateResidentUser: (updates: Partial<UserProfile>) => void;
   acceptTerms: () => void;
-  adminProfiles: Record<Agency, { name: string; title: string; badgeNumber: string }>;
+  adminProfiles: Record<AgencyScope, { name: string; title: string; badgeNumber: string; email?: string; hotline?: string; description?: string }>;
+  agencyDetails: typeof AGENCY_DETAILS;
+
+  // Single Unified Auth Modal State (Citizen Register + Unified Sign In)
+  isAuthModalOpen: boolean;
+  authModalInitialMode: 'login' | 'register';
+  openAuthModal: (mode?: 'login' | 'register') => void;
+  closeAuthModal: () => void;
+
+  // Agency Session & Settings Modal State
+  agencyUser: AgencyUser | null;
+  isAgencyAuthenticated: boolean;
+  isAgencyAuthModalOpen: boolean;
+  openAgencyAuthModal: () => void;
+  closeAgencyAuthModal: () => void;
+  isAgencyProfileModalOpen: boolean;
+  openAgencyProfileModal: () => void;
+  closeAgencyProfileModal: () => void;
+  updateAgencyProfile: (agency: AgencyScope, updates: Partial<{
+    name: string;
+    title: string;
+    badgeNumber: string;
+    email: string;
+    hotline: string;
+    descriptionEn: string;
+    descriptionFil: string;
+    stationAddress?: string;
+  }>) => Promise<void>;
+  agencyLogin: (user: AgencyUser) => void;
+  agencyLogout: () => void;
+
+  // Mobile Navigation & View State Synchronization
+  residentActiveTab: 'report' | 'tracking' | 'map';
+  setResidentActiveTab: (tab: 'report' | 'tracking' | 'map') => void;
+  agencyActiveTab: 'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive';
+  setAgencyActiveTab: (tab: 'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive') => void;
+  reportFormScrollTrigger: number;
+  triggerScrollToReportForm: () => void;
+  isHotlinesModalOpen: boolean;
+  openHotlinesModal: () => void;
+  closeHotlinesModal: () => void;
   
   // Real-time notification & flashing indicator
   incomingAlert: IncomingAlertData | null;
   clearIncomingAlert: () => void;
   triggerEmergencySound: () => void;
 
+  // Agency-specific Operational State & Dispatch Resources (Customizable & Editable)
+  patrolUnits: PatrolUnit[];
+  updatePatrolStatus: (unitId: string, status: PatrolUnit['status']) => void;
+  savePatrolUnit: (unit: PatrolUnit) => void;
+  deletePatrolUnit: (unitId: string) => void;
+  fireApparatus: FireApparatus[];
+  updateApparatusStatus: (apparatusId: string, status: FireApparatus['status'], waterLevelPercent?: number) => void;
+  saveFireApparatus: (apparatus: FireApparatus) => void;
+  deleteFireApparatus: (apparatusId: string) => void;
+  fireAlarmLevel: FireAlarmLevel;
+  setFireAlarmLevel: (level: FireAlarmLevel) => void;
+  medicalUnits: MedicalUnit[];
+  updateMedicalStatus: (unitId: string, status: MedicalUnit['status']) => void;
+  saveMedicalUnit: (unit: MedicalUnit) => void;
+  deleteMedicalUnit: (unitId: string) => void;
+  evacuationCenters: EvacuationCenter[];
+  updateEvacuationOccupancy: (centerId: string, occupants: number, status?: EvacuationCenter['status']) => void;
+
   // Actions
   submitIncidentReport: (newReport: Omit<IncidentReport, 'id' | 'trackingCode' | 'status' | 'history' | 'assistanceRequests' | 'isUnreadForAgencies' | 'createdAt' | 'updatedAt'>) => IncidentReport;
-  updateIncidentStatus: (reportId: string, status: IncidentStatus, adminName: string, agency: Agency, details?: string) => void;
-  rejectIncidentReport: (reportId: string, reason: string, adminName: string, agency: Agency) => void;
-  reclassifyIncidentReport: (reportId: string, newTypeId: IncidentTypeId, adminName: string, agency: Agency) => void;
+  updateIncidentStatus: (reportId: string, status: IncidentStatus, adminName: string, agency: AgencyScope, details?: string) => void;
+  rejectIncidentReport: (reportId: string, reason: string, adminName: string, agency: AgencyScope) => void;
+  reclassifyIncidentReport: (reportId: string, newTypeId: IncidentTypeId, adminName: string, agency: AgencyScope) => void;
   sendAssistanceRequest: (reportId: string, fromAgency: Agency, targetAgencies: Agency[], urgency: 'Routine' | 'Urgent' | 'Critical', note: string, requestedBy: string) => void;
   acknowledgeAssistanceRequest: (reportId: string, requestId: string, agency: Agency, acknowledgedBy: string, actionNote?: string) => void;
-  markAgencyReportsAsRead: (agency: Agency) => void;
+  markAgencyReportsAsRead: (agency: AgencyScope) => void;
   simulateIncomingIncident: () => void;
-  restoreRejectedReport: (reportId: string, adminName: string, agency: Agency) => void;
+  restoreRejectedReport: (reportId: string, adminName: string, agency: AgencyScope) => void;
 }
 
 const NexusContext = createContext<NexusContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'nexus_emergency_reports_v2';
+const STORAGE_KEY = 'nexus_emergency_reports_v3';
 const RESIDENT_STORAGE_KEY = 'nexus_resident_user_v2';
+const AGENCY_STORAGE_KEY = 'nexus_agency_user_v2';
+
+const MOCK_SEED_IDS = new Set(['rep-001', 'rep-002', 'rep-003', 'rep-004', 'rep-005', 'rep-006', 'rep-007', 'rep-008']);
 
 export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load reports from LocalStorage or initialize with seed data
+  // Load reports from LocalStorage - clean 0-report slate for production deployment
   const [reports, setReports] = useState<IncidentReport[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('nexus_emergency_reports_v2');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed: IncidentReport[] = JSON.parse(saved);
+        // Purge any lingering mockup incidents
+        const realReports = parsed.filter(
+          (r) => !MOCK_SEED_IDS.has(r.id) && !r.id.startsWith('rep-00')
+        );
+        realReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(realReports)); } catch {}
+        return realReports;
       }
     } catch {
       // Fallback
     }
-    return INITIAL_INCIDENT_REPORTS;
+    return [];
   });
 
-  const [activeRole, setActiveRole] = useState<'resident' | Agency>('PNP');
+  // Helper to verify if an email represents an official department dispatcher
+  const isEmailOfficialAgency = (emailStr?: string): boolean => {
+    if (!emailStr) return false;
+    const clean = emailStr.toLowerCase().trim();
+    return (
+      clean === OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.email.toLowerCase() ||
+      clean === OFFICIAL_AGENCY_ACCOUNTS.PNP.email.toLowerCase() ||
+      clean === OFFICIAL_AGENCY_ACCOUNTS.BFP.email.toLowerCase() ||
+      clean === OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.email.toLowerCase() ||
+      clean.startsWith('pnp.') ||
+      clean.startsWith('pnp_') ||
+      clean.startsWith('police.') ||
+      clean.endsWith('@pnp.gov.ph') ||
+      clean.startsWith('bfp.') ||
+      clean.startsWith('bfp_') ||
+      clean.startsWith('fire.') ||
+      clean.endsWith('@bfp.gov.ph') ||
+      clean.startsWith('mdrrmo.') ||
+      clean.startsWith('mdrrmo_') ||
+      clean.startsWith('pdrrmo.') ||
+      clean.startsWith('rescue.') ||
+      clean.endsWith('@mdrrmo.gov.ph') ||
+      clean.startsWith('central.admin@') ||
+      clean.startsWith('sysadmin@') ||
+      clean.startsWith('systemadmin@')
+    );
+  };
+
+  // Agency Session & Auth State (Strictly for Official Responders)
+  const [agencyUser, setAgencyUser] = useState<AgencyUser | null>(() => {
+    try {
+      const saved = localStorage.getItem(AGENCY_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.agency && isEmailOfficialAgency(parsed?.email)) {
+          return parsed;
+        }
+        localStorage.removeItem(AGENCY_STORAGE_KEY);
+      }
+    } catch {}
+    return null;
+  });
+
+  const [isAgencyAuthenticated, setIsAgencyAuthenticated] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(AGENCY_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.agency && isEmailOfficialAgency(parsed?.email)) {
+          return true;
+        }
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  });
+
+  const [isAgencyAuthModalOpen, setIsAgencyAuthModalOpen] = useState(false);
+
+  // Role & Portal separation
+  const [activeRole, setActiveRole] = useState<'resident' | AgencyScope>(() => {
+    try {
+      const savedAgency = localStorage.getItem(AGENCY_STORAGE_KEY);
+      if (savedAgency) {
+        const parsed = JSON.parse(savedAgency);
+        if (parsed?.agency && isEmailOfficialAgency(parsed?.email)) {
+          return parsed.agency;
+        }
+      }
+    } catch {}
+    return 'resident';
+  });
+
+  const [portalMode, setPortalMode] = useState<PortalMode>(() => {
+    try {
+      const savedAgency = localStorage.getItem(AGENCY_STORAGE_KEY);
+      if (savedAgency) {
+        const parsed = JSON.parse(savedAgency);
+        if (parsed?.agency && isEmailOfficialAgency(parsed?.email)) {
+          return 'agency';
+        }
+      }
+    } catch {}
+    return 'landing';
+  });
+
   const [language, setLanguage] = useState<Language>('en');
   const [soundMuted, setSoundMuted] = useState<boolean>(false);
   const [incomingAlert, setIncomingAlert] = useState<IncomingAlertData | null>(null);
 
-  const [adminProfiles] = useState<Record<Agency, { name: string; title: string; badgeNumber: string }>>({
-    PNP: { name: 'Col. M. Santos', title: 'Chief of Police', badgeNumber: 'PNP-8849-NCR' },
-    BFP: { name: 'Capt. E. Ramos', title: 'City Fire Marshal', badgeNumber: 'BFP-3312-DIV4' },
-    MDRRMO: { name: 'Dir. A. Reyes', title: 'MDRRMO Operations Head', badgeNumber: 'DRRM-9901-LGU' },
+  const handleSetSoundMuted = (muted: boolean) => {
+    setSoundMuted(muted);
+    updateContinuousAlarmMute(muted);
+  };
+
+  const [isAgencyProfileModalOpen, setIsAgencyProfileModalOpen] = useState(false);
+  const openAgencyProfileModal = () => setIsAgencyProfileModalOpen(true);
+  const closeAgencyProfileModal = () => setIsAgencyProfileModalOpen(false);
+
+  // Mobile Tab & Scroll Synchronization
+  const [residentActiveTab, setResidentActiveTab] = useState<'report' | 'tracking' | 'map'>('report');
+  const [agencyActiveTab, setAgencyActiveTab] = useState<'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive'>('command');
+  const [reportFormScrollTrigger, setReportFormScrollTrigger] = useState<number>(0);
+  const triggerScrollToReportForm = () => {
+    setResidentActiveTab('report');
+    setReportFormScrollTrigger((prev) => prev + 1);
+  };
+  const [isHotlinesModalOpen, setIsHotlinesModalOpen] = useState(false);
+  const openHotlinesModal = () => setIsHotlinesModalOpen(true);
+  const closeHotlinesModal = () => setIsHotlinesModalOpen(false);
+
+  // Single unified login modal trigger
+  const openAgencyAuthModal = () => {
+    openAuthModal('login');
+  };
+
+  const closeAgencyAuthModal = () => {
+    setIsAgencyAuthModalOpen(false);
+    setIsAuthModalOpen(false);
+  };
+
+  const [agencyDetails, setAgencyDetails] = useState<typeof AGENCY_DETAILS>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_agency_details_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return AGENCY_DETAILS;
   });
+
+  const [adminProfiles, setAdminProfiles] = useState<Record<AgencyScope, { name: string; title: string; badgeNumber: string; email?: string; hotline?: string; description?: string }>>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_admin_profiles_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      CENTRAL: {
+        name: OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.name,
+        title: OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.title,
+        badgeNumber: OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.badgeNumber,
+        email: OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.email,
+        hotline: AGENCY_DETAILS.CENTRAL.hotline,
+        description: AGENCY_DETAILS.CENTRAL.descriptionEn,
+      },
+      PNP: {
+        name: OFFICIAL_AGENCY_ACCOUNTS.PNP.name,
+        title: OFFICIAL_AGENCY_ACCOUNTS.PNP.title,
+        badgeNumber: OFFICIAL_AGENCY_ACCOUNTS.PNP.badgeNumber,
+        email: OFFICIAL_AGENCY_ACCOUNTS.PNP.email,
+        hotline: AGENCY_DETAILS.PNP.hotline,
+        description: AGENCY_DETAILS.PNP.descriptionEn,
+      },
+      BFP: {
+        name: OFFICIAL_AGENCY_ACCOUNTS.BFP.name,
+        title: OFFICIAL_AGENCY_ACCOUNTS.BFP.title,
+        badgeNumber: OFFICIAL_AGENCY_ACCOUNTS.BFP.badgeNumber,
+        email: OFFICIAL_AGENCY_ACCOUNTS.BFP.email,
+        hotline: AGENCY_DETAILS.BFP.hotline,
+        description: AGENCY_DETAILS.BFP.descriptionEn,
+      },
+      MDRRMO: {
+        name: OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.name,
+        title: OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.title,
+        badgeNumber: OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.badgeNumber,
+        email: OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.email,
+        hotline: AGENCY_DETAILS.MDRRMO.hotline,
+        description: AGENCY_DETAILS.MDRRMO.descriptionEn,
+      },
+    };
+  });
+
+  const updateAgencyProfile = async (agency: AgencyScope, updates: Partial<{
+    name: string;
+    title: string;
+    badgeNumber: string;
+    email: string;
+    hotline: string;
+    descriptionEn: string;
+    descriptionFil: string;
+    stationAddress?: string;
+  }>) => {
+    setAdminProfiles((prev) => {
+      const updated = {
+        ...prev,
+        [agency]: {
+          ...prev[agency],
+          name: updates.name !== undefined ? updates.name : prev[agency].name,
+          title: updates.title !== undefined ? updates.title : prev[agency].title,
+          badgeNumber: updates.badgeNumber !== undefined ? updates.badgeNumber : prev[agency].badgeNumber,
+          email: updates.email !== undefined ? updates.email : prev[agency].email,
+          hotline: updates.hotline !== undefined ? updates.hotline : prev[agency].hotline,
+          description: updates.descriptionEn !== undefined ? updates.descriptionEn : prev[agency].description,
+        },
+      };
+      try { localStorage.setItem('nexus_admin_profiles_v1', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+
+    setAgencyDetails((prev) => {
+      const updated = {
+        ...prev,
+        [agency]: {
+          ...prev[agency],
+          hotline: updates.hotline || prev[agency].hotline,
+          descriptionEn: updates.descriptionEn || prev[agency].descriptionEn,
+          descriptionFil: updates.descriptionFil || prev[agency].descriptionFil,
+        },
+      };
+      try { localStorage.setItem('nexus_agency_details_v1', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+
+    if (agencyUser && (agencyUser.agency === agency || agencyUser.isSystemAdmin)) {
+      const updatedUser: AgencyUser = {
+        ...agencyUser,
+        name: updates.name || agencyUser.name,
+        title: updates.title || agencyUser.title,
+        badgeNumber: updates.badgeNumber || agencyUser.badgeNumber,
+        email: updates.email || agencyUser.email,
+      };
+      setAgencyUser(updatedUser);
+      try { localStorage.setItem(AGENCY_STORAGE_KEY, JSON.stringify(updatedUser)); } catch {}
+    }
+
+    try {
+      await setDoc(doc(db, 'agency_settings', agency), sanitizeForFirestore({
+        ...updates,
+        updatedAt: serverTimestamp(),
+      }), { merge: true }).catch(() => null);
+    } catch {}
+  };
+
+  // Real-time listener for Firestore agency settings sync across clients
+  useEffect(() => {
+    try {
+      const agencies: AgencyScope[] = ['CENTRAL', 'PNP', 'BFP', 'MDRRMO'];
+      const unsubs = agencies.map((ag) => {
+        return onSnapshot(doc(db, 'agency_settings', ag), (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            setAdminProfiles((prev) => ({
+              ...prev,
+              [ag]: {
+                ...prev[ag],
+                name: data.name || prev[ag].name,
+                title: data.title || prev[ag].title,
+                badgeNumber: data.badgeNumber || prev[ag].badgeNumber,
+                email: data.email || prev[ag].email,
+                hotline: data.hotline || prev[ag].hotline,
+                description: data.descriptionEn || prev[ag].description,
+              },
+            }));
+            setAgencyDetails((prev) => ({
+              ...prev,
+              [ag]: {
+                ...prev[ag],
+                hotline: data.hotline || prev[ag].hotline,
+                descriptionEn: data.descriptionEn || prev[ag].descriptionEn,
+                descriptionFil: data.descriptionFil || prev[ag].descriptionFil,
+              },
+            }));
+          }
+        }, () => {});
+      });
+      return () => { unsubs.forEach((u) => u()); };
+    } catch {}
+  }, []);
+
+  const agencyLogin = (user: AgencyUser) => {
+    setAgencyUser(user);
+    setIsAgencyAuthenticated(true);
+    setPortalMode('agency');
+    setActiveRole(user.agency || 'CENTRAL');
+    try {
+      localStorage.setItem(AGENCY_STORAGE_KEY, JSON.stringify(user));
+    } catch {}
+    setIsAgencyAuthModalOpen(false);
+    setIsAuthModalOpen(false);
+  };
+
+  const agencyLogout = () => {
+    try {
+      localStorage.removeItem(AGENCY_STORAGE_KEY);
+    } catch {}
+    setAgencyUser(null);
+    setIsAgencyAuthenticated(false);
+    setPortalMode('landing');
+    setActiveRole('resident');
+    auth.signOut().catch(() => null);
+  };
+
+  // Safe portal mode switcher
+  const handleSetPortalMode = (mode: PortalMode) => {
+    if (mode === 'resident' && !firebaseUser) {
+      openAuthModal('login');
+      return;
+    }
+    if (mode === 'agency' && !isAgencyAuthenticated && firebaseUser?.email?.toLowerCase() !== 'systemadmin@nexus.gov.ph') {
+      openAuthModal('login');
+      return;
+    }
+    setPortalMode(mode);
+  };
+
+  // Firebase Auth State & Single Unified Auth Modal
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalInitialMode, setAuthModalInitialMode] = useState<'login' | 'register'>('login');
+
+  const openAuthModal = (mode: 'login' | 'register' = 'login') => {
+    setAuthModalInitialMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+  };
+
+  // Agency-specific operational resources & fleet tracking
+  const [patrolUnits, setPatrolUnits] = useState<PatrolUnit[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_patrol_units_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_PATROL_UNITS;
+  });
+
+  const [fireApparatus, setFireApparatus] = useState<FireApparatus[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_fire_apparatus_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_FIRE_APPARATUS;
+  });
+
+  const [fireAlarmLevel, setFireAlarmLevel] = useState<FireAlarmLevel>('1st Alarm');
+
+  const [medicalUnits, setMedicalUnits] = useState<MedicalUnit[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_medical_units_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_MEDICAL_UNITS;
+  });
+
+  const [evacuationCenters, setEvacuationCenters] = useState<EvacuationCenter[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_evac_centers_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_EVACUATION_CENTERS;
+  });
+
+  const updatePatrolStatus = (unitId: string, status: PatrolUnit['status']) => {
+    setPatrolUnits((prev) => {
+      const next = prev.map((u) => (u.id === unitId ? { ...u, status } : u));
+      try { localStorage.setItem('nexus_patrol_units_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const savePatrolUnit = (unit: PatrolUnit) => {
+    setPatrolUnits((prev) => {
+      const exists = prev.some((u) => u.id === unit.id);
+      const next = exists ? prev.map((u) => (u.id === unit.id ? unit : u)) : [...prev, unit];
+      try { localStorage.setItem('nexus_patrol_units_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const deletePatrolUnit = (unitId: string) => {
+    setPatrolUnits((prev) => {
+      const next = prev.filter((u) => u.id !== unitId);
+      try { localStorage.setItem('nexus_patrol_units_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const updateApparatusStatus = (apparatusId: string, status: FireApparatus['status'], waterLevelPercent?: number) => {
+    setFireApparatus((prev) => {
+      const next = prev.map((a) => (a.id === apparatusId ? { ...a, status, waterLevelPercent: waterLevelPercent !== undefined ? waterLevelPercent : a.waterLevelPercent } : a));
+      try { localStorage.setItem('nexus_fire_apparatus_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const saveFireApparatus = (apparatus: FireApparatus) => {
+    setFireApparatus((prev) => {
+      const exists = prev.some((a) => a.id === apparatus.id);
+      const next = exists ? prev.map((a) => (a.id === apparatus.id ? apparatus : a)) : [...prev, apparatus];
+      try { localStorage.setItem('nexus_fire_apparatus_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const deleteFireApparatus = (apparatusId: string) => {
+    setFireApparatus((prev) => {
+      const next = prev.filter((a) => a.id !== apparatusId);
+      try { localStorage.setItem('nexus_fire_apparatus_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const updateMedicalStatus = (unitId: string, status: MedicalUnit['status']) => {
+    setMedicalUnits((prev) => {
+      const next = prev.map((m) => (m.id === unitId ? { ...m, status } : m));
+      try { localStorage.setItem('nexus_medical_units_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const saveMedicalUnit = (unit: MedicalUnit) => {
+    setMedicalUnits((prev) => {
+      const exists = prev.some((m) => m.id === unit.id);
+      const next = exists ? prev.map((m) => (m.id === unit.id ? unit : m)) : [...prev, unit];
+      try { localStorage.setItem('nexus_medical_units_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const deleteMedicalUnit = (unitId: string) => {
+    setMedicalUnits((prev) => {
+      const next = prev.filter((m) => m.id !== unitId);
+      try { localStorage.setItem('nexus_medical_units_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const updateEvacuationOccupancy = (centerId: string, occupants: number, status?: EvacuationCenter['status']) => {
+    setEvacuationCenters((prev) => {
+      const next = prev.map((c) => (c.id === centerId ? { ...c, currentOccupants: occupants, status: status || (occupants >= c.capacity ? 'Full' : occupants > 0 ? 'Active' : 'Standby') } : c));
+      try { localStorage.setItem('nexus_evac_centers_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   const [residentUser, setResidentUser] = useState<UserProfile>(() => {
     try {
@@ -90,13 +624,236 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       role: 'resident',
       email: 'juan.delacruz@citizen.gov.ph',
       phone: '0917-555-1204',
-      barangay: 'Barangay Poblacion (Center)',
-      address: 'Block 4 Lot 19, Sampaguita Street',
+      province: 'Oriental Mindoro',
+      municipality: 'Calapan City',
+      barangay: 'Ibaba East',
+      address: 'Purok 3, Rizal Street',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       termsAccepted: true,
       termsAcceptedAt: '2026-10-15T10:00:00',
+      isVerifiedIdentity: false,
     };
   });
+
+  // Listen to Firebase Auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setFirebaseUser(user);
+      if (user) {
+        const userEmail = user.email?.toLowerCase().trim() || '';
+
+        // Check Firestore user doc first to see if custom role is assigned
+        let docData: any = null;
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+            docData = docSnap.data();
+          }
+        } catch {}
+
+        const isExplicitResident = docData?.role === 'resident';
+
+        // Precise official agency account checks
+        const isOfficialPnp =
+          !isExplicitResident && (
+            userEmail === OFFICIAL_AGENCY_ACCOUNTS.PNP.email.toLowerCase() ||
+            userEmail.startsWith('pnp.') ||
+            userEmail.startsWith('pnp_') ||
+            userEmail.startsWith('police.') ||
+            userEmail.endsWith('@pnp.gov.ph')
+          );
+
+        const isOfficialBfp =
+          !isExplicitResident && (
+            userEmail === OFFICIAL_AGENCY_ACCOUNTS.BFP.email.toLowerCase() ||
+            userEmail.startsWith('bfp.') ||
+            userEmail.startsWith('bfp_') ||
+            userEmail.startsWith('fire.') ||
+            userEmail.endsWith('@bfp.gov.ph')
+          );
+
+        const isOfficialMdrrmo =
+          !isExplicitResident && (
+            userEmail === OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.email.toLowerCase() ||
+            userEmail.startsWith('mdrrmo.') ||
+            userEmail.startsWith('mdrrmo_') ||
+            userEmail.startsWith('pdrrmo.') ||
+            userEmail.startsWith('rescue.') ||
+            userEmail.endsWith('@mdrrmo.gov.ph')
+          );
+
+        const isOfficialCentral =
+          !isExplicitResident && (
+            userEmail === OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.email.toLowerCase() ||
+            userEmail === 'systemadmin@nexus.gov.ph' ||
+            userEmail.startsWith('central.admin@') ||
+            userEmail.startsWith('sysadmin@') ||
+            userEmail.startsWith('systemadmin@')
+          );
+
+        const isDocAdmin = !isExplicitResident && (docData?.role === 'admin' || docData?.role === 'agency');
+        const docAgency: AgencyScope | undefined = !isExplicitResident ? docData?.agency : undefined;
+
+        const isAgencyAccount = isDocAdmin || !!docAgency || isOfficialPnp || isOfficialBfp || isOfficialMdrrmo || isOfficialCentral;
+
+        // If authenticated as agency officer or administrator, activate corresponding department command
+        if (isAgencyAccount) {
+          let adminScope: AgencyScope = docAgency || 'CENTRAL';
+          if (!docAgency) {
+            if (isOfficialPnp) adminScope = 'PNP';
+            else if (isOfficialBfp) adminScope = 'BFP';
+            else if (isOfficialMdrrmo) adminScope = 'MDRRMO';
+            else if (isOfficialCentral) adminScope = 'CENTRAL';
+            else adminScope = 'CENTRAL';
+          }
+
+          const officialAccount = OFFICIAL_AGENCY_ACCOUNTS[adminScope];
+          const newAgencyUser: AgencyUser = {
+            uid: user.uid,
+            email: user.email!,
+            name: docData?.name || user.displayName || adminProfiles[adminScope]?.name || officialAccount.name,
+            title: docData?.title || adminProfiles[adminScope]?.title || officialAccount.title,
+            badgeNumber: docData?.badgeNumber || adminProfiles[adminScope]?.badgeNumber || officialAccount.badgeNumber,
+            agency: adminScope,
+            role: 'admin',
+            isSystemAdmin: adminScope === 'CENTRAL',
+          };
+          setAgencyUser(newAgencyUser);
+          setIsAgencyAuthenticated(true);
+          setPortalMode('agency');
+          setActiveRole(adminScope);
+          try {
+            localStorage.setItem(AGENCY_STORAGE_KEY, JSON.stringify(newAgencyUser));
+          } catch {}
+          return;
+        }
+
+        // Resident citizen authentication handling — Clean up any stale agency sessions
+        setAgencyUser(null);
+        setIsAgencyAuthenticated(false);
+        try {
+          localStorage.removeItem(AGENCY_STORAGE_KEY);
+        } catch {}
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data() as any;
+            setResidentUser((prev) => ({
+              ...prev,
+              id: user.uid,
+              uid: user.uid,
+              name: data.name || user.displayName || prev.name,
+              email: user.email || data.email || prev.email,
+              phone: data.phone || prev.phone,
+              province: data.province || 'Oriental Mindoro',
+              municipality: data.municipality || 'Calapan City',
+              barangay: data.barangay || prev.barangay,
+              address: data.address || prev.address,
+              avatarUrl: data.avatarUrl || user.photoURL || prev.avatarUrl,
+              role: 'resident',
+              termsAccepted: data.termsAccepted ?? true,
+              termsAcceptedAt: data.termsAcceptedAt || new Date().toISOString(),
+              isVerifiedIdentity: true,
+              authProvider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'password',
+            }));
+          } else {
+            const newProfile: UserProfile = {
+              id: user.uid,
+              uid: user.uid,
+              name: user.displayName || 'Resident Citizen',
+              email: user.email || '',
+              phone: user.phoneNumber || '0917-000-0000',
+              province: 'Oriental Mindoro',
+              municipality: 'Calapan City',
+              barangay: 'Ibaba East',
+              address: 'Poblacion',
+              avatarUrl: user.photoURL || residentUser.avatarUrl,
+              role: 'resident',
+              termsAccepted: true,
+              termsAcceptedAt: new Date().toISOString(),
+              isVerifiedIdentity: true,
+              authProvider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'password',
+            };
+            await setDoc(userDocRef, { ...sanitizeForFirestore(newProfile), createdAt: serverTimestamp() }).catch(() => null);
+            setResidentUser(newProfile);
+          }
+          setPortalMode('resident');
+          setActiveRole('resident');
+        } catch (err) {
+          console.warn('Firebase user profile retrieval warning:', err);
+        }
+      } else {
+        setFirebaseUser(null);
+        setPortalMode((prev) => (prev === 'resident' ? 'landing' : prev));
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to Firestore Realtime Reports
+  useEffect(() => {
+    try {
+      const reportsColRef = collection(db, 'reports');
+      const q = query(reportsColRef, orderBy('createdAt', 'desc'));
+
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const firestoreReports: IncidentReport[] = [];
+            snapshot.forEach((docSnap) => {
+              const data = docSnap.data() as IncidentReport;
+              // Cleanly purge any legacy mockup demo items from Firestore
+              if (MOCK_SEED_IDS.has(data.id) || data.id.startsWith('rep-00')) {
+                deleteDoc(docSnap.ref).catch(() => null);
+              } else {
+                firestoreReports.push(data);
+              }
+            });
+            // Safely merge Firestore reports with offline-first local reports so local state is never wiped
+            setReports((prevLocal) => {
+              const mergedMap = new Map<string, IncidentReport>();
+              // Keep all local real reports (excluding mockup data)
+              prevLocal
+                .filter((r) => !MOCK_SEED_IDS.has(r.id) && !r.id.startsWith('rep-00'))
+                .forEach((r) => mergedMap.set(r.id, r));
+              // Merge remote reports, updating if Firestore has newer information
+              firestoreReports.forEach((fr) => {
+                const local = mergedMap.get(fr.id);
+                if (!local) {
+                  mergedMap.set(fr.id, fr);
+                } else {
+                  const localTime = new Date(local.updatedAt || local.createdAt).getTime();
+                  const fireTime = new Date(fr.updatedAt || fr.createdAt).getTime();
+                  if (fireTime > localTime) {
+                    mergedMap.set(fr.id, fr);
+                  }
+                }
+              });
+              const mergedList = Array.from(mergedMap.values());
+              // Always sort descending: newest report displayed at the top
+              mergedList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedList));
+              } catch {}
+              return mergedList;
+            });
+          }
+        },
+        (error) => {
+          // If Firestore security rules restrict read access, Nexus seamlessly operates in local offline-first mode
+          console.info('Nexus Live Sync: Operating in resilient local storage mode (Firestore rules restrict unauthenticated snapshot):', error.message);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn('Firestore initialization notice:', e);
+    }
+  }, []);
 
   // Save to LocalStorage on changes
   useEffect(() => {
@@ -135,7 +892,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIncomingAlert(null);
   };
 
-  // Submit new incident report
+  // Submit new incident report (writes to state and Cloud Firestore)
   const submitIncidentReport = (
     newReportData: Omit<IncidentReport, 'id' | 'trackingCode' | 'status' | 'history' | 'assistanceRequests' | 'isUnreadForAgencies' | 'createdAt' | 'updatedAt'>
   ): IncidentReport => {
@@ -148,7 +905,6 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       id: newId,
       trackingCode,
       status: 'Pending Verification',
-      verifiedTypeId: undefined,
       history: [
         {
           id: `hist-${Date.now()}-1`,
@@ -160,7 +916,6 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         },
       ],
       assistanceRequests: [],
-      // Notify all three agencies in the centralized database!
       isUnreadForAgencies: {
         PNP: true,
         BFP: true,
@@ -169,10 +924,28 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       createdAt: timestamp,
       updatedAt: timestamp,
     };
+    if (newReportData.verifiedTypeId) {
+      report.verifiedTypeId = newReportData.verifiedTypeId;
+    }
 
-    setReports((prev) => [report, ...prev]);
+    setReports((prev) => {
+      const next = [report, ...prev.filter((r) => r.id !== report.id)];
+      next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
 
-    // Trigger visual flashing notification and siren alert across all 3 dashboards!
+    // Save to Cloud Firestore
+    try {
+      const cleanData = sanitizeForFirestore(report);
+      setDoc(doc(db, 'reports', report.id), cleanData).catch((err) => {
+        console.warn('Could not write report to Firestore:', err);
+      });
+    } catch (err) {
+      console.warn('Could not sanitize report for Firestore:', err);
+    }
+
+    // Trigger visual flashing notification and siren alert
     setIncomingAlert({
       report,
       timestamp,
@@ -187,13 +960,13 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     reportId: string,
     newStatus: IncidentStatus,
     adminName: string,
-    agency: Agency,
+    agency: AgencyScope,
     details?: string
   ) => {
     const now = new Date().toISOString();
 
-    setReports((prev) =>
-      prev.map((rep) => {
+    setReports((prev) => {
+      const next = prev.map((rep) => {
         if (rep.id !== reportId) return rep;
 
         const actionText =
@@ -216,29 +989,51 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           newStatus,
         };
 
-        return {
+        const updated = {
           ...rep,
           status: newStatus,
+          resolution:
+            newStatus === 'Resolved'
+              ? {
+                  resolvedAt: now,
+                  resolvedByAdmin: adminName,
+                  agency,
+                  notes: details || 'Incident successfully resolved and cleared.',
+                }
+              : undefined,
           updatedAt: now,
           history: [auditEntry, ...rep.history],
         };
-      })
-    );
+
+        // Write to Firestore
+        updateDoc(doc(db, 'reports', reportId), {
+          status: newStatus,
+          resolution: updated.resolution || null,
+          updatedAt: now,
+          history: updated.history,
+        }).catch((err) => console.warn('Could not update report in Firestore:', err));
+
+        return updated;
+      });
+      next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
 
     playSuccessChime(soundMuted);
   };
 
-  // Reject report: Move to Rejected Reports Archive and remove from active dashboard and map
+  // Reject report: Move to Rejected Reports Archive
   const rejectIncidentReport = (
     reportId: string,
     reason: string,
     adminName: string,
-    agency: Agency
+    agency: AgencyScope
   ) => {
     const now = new Date().toISOString();
 
-    setReports((prev) =>
-      prev.map((rep) => {
+    setReports((prev) => {
+      const next = prev.map((rep) => {
         if (rep.id !== reportId) return rep;
 
         const auditEntry = {
@@ -252,64 +1047,45 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           newStatus: 'Rejected' as IncidentStatus,
         };
 
-        return {
+        const updated = {
           ...rep,
-          status: 'Rejected',
+          status: 'Rejected' as IncidentStatus,
           rejection: {
             reason,
             rejectedAt: now,
             rejectedByAdmin: adminName,
-            agency,
+            agency: (agency === 'CENTRAL' ? rep.selectedAgency : agency) as Agency,
           },
           updatedAt: now,
           history: [auditEntry, ...rep.history],
         };
-      })
-    );
-  };
 
-  // Restore rejected report if needed
-  const restoreRejectedReport = (reportId: string, adminName: string, agency: Agency) => {
-    const now = new Date().toISOString();
-    setReports((prev) =>
-      prev.map((rep) => {
-        if (rep.id !== reportId) return rep;
-        return {
-          ...rep,
-          status: 'Pending Verification',
-          rejection: undefined,
+        // Write to Firestore
+        updateDoc(doc(db, 'reports', reportId), {
+          status: 'Rejected',
+          rejection: updated.rejection,
           updatedAt: now,
-          history: [
-            {
-              id: `hist-${Date.now()}`,
-              timestamp: now,
-              adminName,
-              agency,
-              action: 'Restored from Rejected Archive',
-              details: `Restored to active review pool by ${adminName} (${agency}).`,
-              previousStatus: 'Rejected',
-              newStatus: 'Pending Verification',
-            },
-            ...rep.history,
-          ],
-        };
-      })
-    );
+          history: updated.history,
+        }).catch((err) => console.warn('Could not update rejected report in Firestore:', err));
+
+        return updated;
+      });
+      next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
   };
 
-  // Reclassify incident classification after verification
-  const reclassifyIncidentReport = (
+  // Restore rejected report
+  const restoreRejectedReport = (
     reportId: string,
-    newTypeId: IncidentTypeId,
     adminName: string,
-    agency: Agency
+    agency: AgencyScope
   ) => {
     const now = new Date().toISOString();
-    const typeDef = INCIDENT_TYPES.find((t) => t.id === newTypeId);
-    if (!typeDef) return;
 
-    setReports((prev) =>
-      prev.map((rep) => {
+    setReports((prev) => {
+      const next = prev.map((rep) => {
         if (rep.id !== reportId) return rep;
 
         const auditEntry = {
@@ -317,22 +1093,84 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           timestamp: now,
           adminName,
           agency,
-          action: 'Incident Classification Updated',
-          details: `Reclassified to "${typeDef.en} (${typeDef.fil})" [Category: ${typeDef.category}] following official verification.`,
+          action: 'Report Restored from Archive',
+          details: `Report un-rejected and restored to Pending Verification by ${adminName} (${agency}).`,
+          previousStatus: 'Rejected' as IncidentStatus,
+          newStatus: 'Pending Verification' as IncidentStatus,
         };
 
-        return {
+        const updated = {
           ...rep,
-          verifiedTypeId: newTypeId,
-          category: typeDef.category,
+          status: 'Pending Verification' as IncidentStatus,
+          rejection: undefined,
           updatedAt: now,
           history: [auditEntry, ...rep.history],
         };
-      })
-    );
+
+        updateDoc(doc(db, 'reports', reportId), {
+          status: 'Pending Verification',
+          rejection: null,
+          updatedAt: now,
+          history: updated.history,
+        }).catch((err) => console.warn('Could not restore report in Firestore:', err));
+
+        return updated;
+      });
+      next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
   };
 
-  // Inter-Agency Coordination: Request Assistance
+  // Reclassify incident report
+  const reclassifyIncidentReport = (
+    reportId: string,
+    newTypeId: IncidentTypeId,
+    adminName: string,
+    agency: AgencyScope
+  ) => {
+    const now = new Date().toISOString();
+    const newTypeDef = INCIDENT_TYPES.find((t) => t.id === newTypeId);
+
+    setReports((prev) =>
+      prev.map((rep) => {
+        if (rep.id !== reportId) return rep;
+
+        const oldTypeId = rep.verifiedTypeId || rep.initialTypeId;
+        const oldTypeDef = INCIDENT_TYPES.find((t) => t.id === oldTypeId);
+
+        const auditEntry = {
+          id: `hist-${Date.now()}`,
+          timestamp: now,
+          adminName,
+          agency,
+          action: 'Classification Verified & Updated',
+          details: `Reclassified from ${oldTypeDef?.en || oldTypeId} to ${newTypeDef?.en || newTypeId} (${newTypeDef?.category}) by ${adminName} (${agency}).`,
+        };
+
+        const updated = {
+          ...rep,
+          verifiedTypeId: newTypeId,
+          category: newTypeDef?.category || rep.category,
+          updatedAt: now,
+          history: [auditEntry, ...rep.history],
+        };
+
+        updateDoc(doc(db, 'reports', reportId), {
+          verifiedTypeId: newTypeId,
+          category: newTypeDef?.category || rep.category,
+          updatedAt: now,
+          history: updated.history,
+        }).catch((err) => console.warn('Could not reclassify report in Firestore:', err));
+
+        return updated;
+      })
+    );
+
+    playSuccessChime(soundMuted);
+  };
+
+  // Send Inter-Agency Assistance Request
   const sendAssistanceRequest = (
     reportId: string,
     fromAgency: Agency,
@@ -344,46 +1182,55 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const now = new Date().toISOString();
     const requestId = `req-${Date.now()}`;
 
+    const newRequest = {
+      id: requestId,
+      reportId,
+      fromAgency,
+      targetAgencies,
+      requestedAt: now,
+      requestedBy,
+      urgency,
+      note,
+      status: 'Pending' as const,
+      acknowledgments: [],
+    };
+
     setReports((prev) =>
       prev.map((rep) => {
         if (rep.id !== reportId) return rep;
 
-        const newRequest = {
-          id: requestId,
-          reportId,
-          fromAgency,
-          targetAgencies,
-          requestedAt: now,
-          requestedBy,
-          urgency,
-          note,
-          status: 'Pending' as const,
-          acknowledgments: [],
-        };
-
-        const targetList = targetAgencies.join(' and ');
         const auditEntry = {
           id: `hist-${Date.now()}`,
           timestamp: now,
           adminName: requestedBy,
           agency: fromAgency,
-          action: 'Assistance Requested',
-          details: `Requested inter-agency backup from [${targetList}]. Urgency: ${urgency}. Note: "${note}"`,
+          action: `Assistance Requested (${urgency})`,
+          details: `${fromAgency} requested multi-agency response assistance from ${targetAgencies.join(
+            ', '
+          )}. Note: "${note}"`,
         };
 
-        // Mark unread for target agencies
-        const updatedUnread = { ...rep.isUnreadForAgencies };
-        targetAgencies.forEach((a) => {
-          updatedUnread[a] = true;
+        const unreadUpdates = { ...rep.isUnreadForAgencies };
+        targetAgencies.forEach((ag) => {
+          unreadUpdates[ag] = true;
         });
 
-        return {
+        const updated = {
           ...rep,
           assistanceRequests: [newRequest, ...rep.assistanceRequests],
-          isUnreadForAgencies: updatedUnread,
+          isUnreadForAgencies: unreadUpdates,
           updatedAt: now,
           history: [auditEntry, ...rep.history],
         };
+
+        updateDoc(doc(db, 'reports', reportId), {
+          assistanceRequests: updated.assistanceRequests,
+          isUnreadForAgencies: updated.isUnreadForAgencies,
+          updatedAt: now,
+          history: updated.history,
+        }).catch((err) => console.warn('Could not update assistance in Firestore:', err));
+
+        return updated;
       })
     );
 
@@ -408,17 +1255,17 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (req.id !== requestId) return req;
 
           const exists = req.acknowledgments.some((a) => a.agency === agency);
-          const newAcks = exists
-            ? req.acknowledgments
-            : [
-                ...req.acknowledgments,
-                {
-                  agency,
-                  acknowledgedBy,
-                  acknowledgedAt: now,
-                  actionNote: actionNote || 'Unit acknowledged and mobilizing support.',
-                },
-              ];
+          if (exists) return req;
+
+          const newAcks = [
+            ...req.acknowledgments,
+            {
+              agency,
+              acknowledgedBy,
+              acknowledgedAt: now,
+              actionNote,
+            },
+          ];
 
           const allAcknowledged = req.targetAgencies.every((target) =>
             newAcks.some((a) => a.agency === target)
@@ -426,8 +1273,8 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
           return {
             ...req,
+            status: allAcknowledged ? ('Acknowledged' as const) : ('Pending' as const),
             acknowledgments: newAcks,
-            status: (allAcknowledged ? 'Acknowledged' : 'Pending') as 'Pending' | 'Acknowledged',
           };
         });
 
@@ -436,45 +1283,68 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           timestamp: now,
           adminName: acknowledgedBy,
           agency,
-          action: 'Assistance Acknowledged',
-          details: `${agency} officer acknowledged assistance request for this incident. Note: ${actionNote || 'Acknowledged and coordinating response.'}`,
+          action: 'Assistance Request Acknowledged',
+          details: `${agency} response unit dispatched and coordinated with incident commander.${
+            actionNote ? ` Note: "${actionNote}"` : ''
+          }`,
         };
 
-        return {
+        const updated = {
           ...rep,
           assistanceRequests: updatedRequests,
           updatedAt: now,
           history: [auditEntry, ...rep.history],
         };
+
+        updateDoc(doc(db, 'reports', reportId), {
+          assistanceRequests: updatedRequests,
+          updatedAt: now,
+          history: updated.history,
+        }).catch((err) => console.warn('Could not update ack in Firestore:', err));
+
+        return updated;
       })
     );
 
     playSuccessChime(soundMuted);
   };
 
-  // Clear unread indicator for a specific agency
-  const markAgencyReportsAsRead = (agency: Agency) => {
+  const markAgencyReportsAsRead = (agency: AgencyScope) => {
     setReports((prev) =>
-      prev.map((rep) => ({
-        ...rep,
-        isUnreadForAgencies: {
-          ...rep.isUnreadForAgencies,
-          [agency]: false,
-        },
-      }))
+      prev.map((rep) => {
+        if (agency === 'CENTRAL') {
+          return {
+            ...rep,
+            isUnreadForAgencies: {
+              PNP: false,
+              BFP: false,
+              MDRRMO: false,
+            },
+          };
+        }
+        if (!rep.isUnreadForAgencies[agency as Agency]) return rep;
+        return {
+          ...rep,
+          isUnreadForAgencies: {
+            ...rep.isUnreadForAgencies,
+            [agency as Agency]: false,
+          },
+        };
+      })
     );
   };
 
-  // Quick simulation tool to test real-time sirens, alerts, and multi-agency view
+  // Simulated emergency report for testing and demonstration
   const simulateIncomingIncident = () => {
     const sampleTypes: IncidentTypeId[] = [
-      'medical_emergency',
       'fire_incident',
-      'armed_threat',
       'road_accident',
-      'suspected_killing',
+      'theft_robbery',
+      'medical_emergency',
+      'flooding_landslide',
+      'armed_threat',
     ];
-    const sampleAgencies: Agency[] = ['BFP', 'PNP', 'MDRRMO'];
+    const sampleAgencies: Agency[] = ['PNP', 'BFP', 'MDRRMO'];
     const sampleBarangays = [
       'Barangay Poblacion (Center)',
       'Barangay San Isidro',
@@ -515,14 +1385,43 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reports,
         activeRole,
         setActiveRole,
+        portalMode,
+        setPortalMode: handleSetPortalMode,
         language,
         setLanguage,
         soundMuted,
-        setSoundMuted,
+        setSoundMuted: handleSetSoundMuted,
+        firebaseUser,
         residentUser,
+        setResidentUser,
         updateResidentUser,
         acceptTerms,
         adminProfiles,
+        agencyDetails,
+        isAuthModalOpen,
+        authModalInitialMode,
+        openAuthModal,
+        closeAuthModal,
+        agencyUser,
+        isAgencyAuthenticated,
+        isAgencyAuthModalOpen,
+        openAgencyAuthModal,
+        closeAgencyAuthModal,
+        isAgencyProfileModalOpen,
+        openAgencyProfileModal,
+        closeAgencyProfileModal,
+        updateAgencyProfile,
+        agencyLogin,
+        agencyLogout,
+        residentActiveTab,
+        setResidentActiveTab,
+        agencyActiveTab,
+        setAgencyActiveTab,
+        reportFormScrollTrigger,
+        triggerScrollToReportForm,
+        isHotlinesModalOpen,
+        openHotlinesModal,
+        closeHotlinesModal,
         incomingAlert,
         clearIncomingAlert,
         triggerEmergencySound,
@@ -535,6 +1434,22 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         markAgencyReportsAsRead,
         simulateIncomingIncident,
         restoreRejectedReport,
+        patrolUnits,
+        updatePatrolStatus,
+        savePatrolUnit,
+        deletePatrolUnit,
+        fireApparatus,
+        updateApparatusStatus,
+        saveFireApparatus,
+        deleteFireApparatus,
+        fireAlarmLevel,
+        setFireAlarmLevel,
+        medicalUnits,
+        updateMedicalStatus,
+        saveMedicalUnit,
+        deleteMedicalUnit,
+        evacuationCenters,
+        updateEvacuationOccupancy,
       }}
     >
       {children}

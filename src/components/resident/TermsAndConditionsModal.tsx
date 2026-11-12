@@ -15,6 +15,16 @@ export const TermsAndConditionsModal: React.FC<Props> = ({ isOpen, onClose, onAc
 
   const [hasAgreed, setHasAgreed] = useState(residentUser.termsAccepted);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleConfirm = () => {

@@ -29,6 +29,81 @@
   background-color: #1e293b !important;
   color: #ffffff !important;
 }
-.leaflet-container {
-  background-color: #020617 !important;
+
+/* Leaflet Attribution styling */
+.leaflet-control-attribution {
+  background-color: rgba(2, 6, 23, 0.85) !important;
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+  backdrop-filter: blur(4px);
+  margin: 4px !important;
+}
+.leaflet-control-attribution a {
+  color: #60a5fa !important;
+  text-decoration: none;
+}
+.leaflet-control-attribution a:hover {
+  text-decoration: underline;
+}
+
+/* Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  padding: 2px !important;
+}
+.leaflet-popup-tip {
+  background: #0f172a !important;
+  border: 1px solid #334155 !important;
+}
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 6px !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Hide scrollbar for clean horizontal tab swipe */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+/* Touch responsiveness */
+@media (max-width: 640px) {
+  button, select, input, textarea {
+    touch-action: manipulation;
+  }
 }
