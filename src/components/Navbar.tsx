@@ -384,9 +384,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                           onClick={() => {
                             setNotificationsOpen(false);
                             if (portalMode === 'resident') {
+                              setActiveRole('resident');
                               setResidentActiveTab('tracking');
                             } else if (firebaseUser && portalMode !== 'agency') {
                               setPortalMode('resident');
+                              setActiveRole('resident');
                               setResidentActiveTab('tracking');
                             }
                             onSelectReport?.(rep.id);

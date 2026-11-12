@@ -475,6 +475,11 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
     setPortalMode(mode);
+    if (mode === 'resident' || mode === 'landing') {
+      setActiveRole('resident');
+    } else if (mode === 'agency' && agencyUser) {
+      setActiveRole(agencyUser.agency || 'CENTRAL');
+    }
   };
 
   // Firebase Auth State & Single Unified Auth Modal
