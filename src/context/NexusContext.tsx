@@ -1111,6 +1111,12 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const next = prev.map((rep) => {
         if (rep.id !== reportId) return rep;
 
+        // Authority enforcement: Only the assigned selected agency (or CENTRAL system admin) holds command authority
+        if (agency !== 'CENTRAL' && agency !== rep.selectedAgency) {
+          console.warn(`[Authority Restriction] Agency "${agency}" is not authorized to update status on report "${rep.trackingCode}" assigned to "${rep.selectedAgency}".`);
+          return rep;
+        }
+
         const actionText =
           newStatus === 'Accepted'
             ? 'Report Accepted for Dispatch'
@@ -1210,6 +1216,12 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const next = prev.map((rep) => {
         if (rep.id !== reportId) return rep;
 
+        // Authority enforcement: Only the assigned selected agency (or CENTRAL system admin) holds command authority
+        if (agency !== 'CENTRAL' && agency !== rep.selectedAgency) {
+          console.warn(`[Authority Restriction] Agency "${agency}" is not authorized to reject report "${rep.trackingCode}" assigned to "${rep.selectedAgency}".`);
+          return rep;
+        }
+
         const auditEntry = {
           id: `hist-${Date.now()}`,
           timestamp: now,
@@ -1293,6 +1305,12 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setReports((prev) => {
       const next = prev.map((rep) => {
         if (rep.id !== reportId) return rep;
+
+        // Authority enforcement: Only the assigned selected agency (or CENTRAL system admin) holds command authority
+        if (agency !== 'CENTRAL' && agency !== rep.selectedAgency) {
+          console.warn(`[Authority Restriction] Agency "${agency}" is not authorized to restore report "${rep.trackingCode}" assigned to "${rep.selectedAgency}".`);
+          return rep;
+        }
 
         const auditEntry = {
           id: `hist-${Date.now()}`,
@@ -1404,6 +1422,12 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setReports((prev) =>
       prev.map((rep) => {
         if (rep.id !== reportId) return rep;
+
+        // Authority enforcement: Only the assigned selected agency can request mutual aid for an incident
+        if (fromAgency !== rep.selectedAgency) {
+          console.warn(`[Authority Restriction] Agency "${fromAgency}" is not authorized to request assistance for report "${rep.trackingCode}" assigned to "${rep.selectedAgency}".`);
+          return rep;
+        }
 
         const auditEntry = {
           id: `hist-${Date.now()}`,

@@ -522,7 +522,13 @@ export const ResidentAuthModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in overflow-y-auto">
-      <div className="glass-card border border-white/95 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative text-slate-800 my-auto">
+      <div className="glass-card border border-white/95 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative text-slate-800 my-auto overflow-hidden">
+        {/* Relevant Ambient Emergency Glow & Secure Shield Emblem Watermark Background */}
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-gradient-to-tr from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-3 bottom-3 pointer-events-none opacity-[0.04] select-none">
+          <ShieldCheck className="w-56 h-56 text-blue-900" />
+        </div>
         {/* Dismiss Button */}
         <button
           onClick={onClose}

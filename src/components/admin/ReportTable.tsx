@@ -20,7 +20,8 @@ import {
   ChevronRight,
   RotateCcw,
   Copy,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 
 interface Props {
@@ -361,6 +362,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
             const isAccepted = report.status === 'Accepted';
             const isOngoing = report.status === 'Ongoing';
             const isResolved = report.status === 'Resolved';
+            const isCentral = currentScope === 'CENTRAL' || Boolean(agencyUser?.isSystemAdmin);
+            const canManage = isCentral || report.selectedAgency === currentScope;
 
             return (
               <div
@@ -443,55 +446,67 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center gap-1.5 flex-1">
-                    {/* Advance Status button */}
-                    {isPending && (
-                      <button
-                        onClick={(e) => handleQuickStatus(e, report.id, 'Accepted')}
-                        className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs"
-                      >
-                        Accept
-                      </button>
-                    )}
-                    {(isAccepted || isPending) && (
-                      <button
-                        onClick={(e) => handleQuickStatus(e, report.id, 'Ongoing')}
-                        className="px-2.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs"
-                      >
-                        Deploy
-                      </button>
-                    )}
-                    {isOngoing && (
-                      <button
-                        onClick={(e) => handleQuickStatus(e, report.id, 'Resolved')}
-                        className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs"
-                      >
-                        Resolve
-                      </button>
-                    )}
+                    {canManage ? (
+                      <>
+                        {/* Advance Status button */}
+                        {isPending && (
+                          <button
+                            onClick={(e) => handleQuickStatus(e, report.id, 'Accepted')}
+                            className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs cursor-pointer"
+                          >
+                            Accept
+                          </button>
+                        )}
+                        {(isAccepted || isPending) && (
+                          <button
+                            onClick={(e) => handleQuickStatus(e, report.id, 'Ongoing')}
+                            className="px-2.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs cursor-pointer"
+                          >
+                            Deploy
+                          </button>
+                        )}
+                        {isOngoing && (
+                          <button
+                            onClick={(e) => handleQuickStatus(e, report.id, 'Resolved')}
+                            className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs cursor-pointer"
+                          >
+                            Resolve
+                          </button>
+                        )}
 
-                    {/* Inter-Agency Request (only when not resolved) */}
-                    {!isResolved && (
-                      <button
-                        onClick={() => setAssistanceReport(report)}
-                        title="Request Assistance"
-                        className="p-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer shadow-2xs"
-                      >
-                        <Users className="w-4 h-4" />
-                      </button>
-                    )}
+                        {/* Inter-Agency Request (only when not resolved) */}
+                        {!isResolved && (
+                          <button
+                            onClick={() => setAssistanceReport(report)}
+                            title="Request Assistance"
+                            className="p-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer shadow-2xs"
+                          >
+                            <Users className="w-4 h-4" />
+                          </button>
+                        )}
 
-                    {/* Reject (only when not resolved) */}
-                    {!isResolved && (
-                      <button
-                        onClick={() => {
-                          setRejectingReport(report);
-                          setRejectReason('');
-                        }}
-                        title="Reject Report"
-                        className="p-2 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer shadow-2xs"
-                      >
-                        <AlertOctagon className="w-4 h-4" />
-                      </button>
+                        {/* Reject (only when not resolved) */}
+                        {!isResolved && (
+                          <button
+                            onClick={() => {
+                              setRejectingReport(report);
+                              setRejectReason('');
+                            }}
+                            title="Reject Report"
+                            className="p-2 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer shadow-2xs"
+                          >
+                            <AlertOctagon className="w-4 h-4" />
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      /* Read-Only Lead Agency Notice for non-lead agencies */
+                      !isResolved && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200/80 text-slate-500 text-[11px] font-semibold">
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{report.selectedAgency} Lead Agency</span>
+                        </div>
+                      )
                     )}
 
                     {/* Resolved status indicator for mobile */}
@@ -549,6 +564,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                   const isAccepted = report.status === 'Accepted';
                   const isOngoing = report.status === 'Ongoing';
                   const isResolved = report.status === 'Resolved';
+                  const isCentral = currentScope === 'CENTRAL' || Boolean(agencyUser?.isSystemAdmin);
+                  const canManage = isCentral || report.selectedAgency === currentScope;
 
                   return (
                     <tr
@@ -648,48 +665,77 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex items-center justify-end gap-1.5">
-                          {/* Quick Assistance (only when not resolved) */}
-                          {!isResolved && (
-                            <button
-                              onClick={() => setAssistanceReport(report)}
-                              title="Request Inter-Agency Assistance"
-                              className="p-1.5 text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition cursor-pointer shadow-2xs"
-                            >
-                              <Users className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          {canManage ? (
+                            <>
+                              {/* Quick Assistance (only when not resolved) */}
+                              {!isResolved && (
+                                <button
+                                  onClick={() => setAssistanceReport(report)}
+                                  title="Request Inter-Agency Assistance"
+                                  className="p-1.5 text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition cursor-pointer shadow-2xs"
+                                >
+                                  <Users className="w-3.5 h-3.5" />
+                                </button>
+                              )}
 
-                          {/* Quick Accept */}
-                          {isPending && (
-                            <button
-                              onClick={(e) => handleQuickStatus(e, report.id, 'Accepted')}
-                              title="Accept Report"
-                              className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
-                            >
-                              {t.accept}
-                            </button>
-                          )}
+                              {/* Quick Accept */}
+                              {isPending && (
+                                <button
+                                  onClick={(e) => handleQuickStatus(e, report.id, 'Accepted')}
+                                  title="Accept Report"
+                                  className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
+                                >
+                                  {t.accept}
+                                </button>
+                              )}
 
-                          {/* Quick Ongoing */}
-                          {(isAccepted || isPending) && (
-                            <button
-                              onClick={(e) => handleQuickStatus(e, report.id, 'Ongoing')}
-                              title="Deploy response (Ongoing)"
-                              className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
-                            >
-                              {t.setOngoing}
-                            </button>
-                          )}
+                              {/* Quick Ongoing */}
+                              {(isAccepted || isPending) && (
+                                <button
+                                  onClick={(e) => handleQuickStatus(e, report.id, 'Ongoing')}
+                                  title="Deploy response (Ongoing)"
+                                  className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
+                                >
+                                  {t.setOngoing}
+                                </button>
+                              )}
 
-                          {/* Quick Resolve */}
-                          {isOngoing && (
-                            <button
-                              onClick={(e) => handleQuickStatus(e, report.id, 'Resolved')}
-                              title="Mark as Resolved"
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
-                            >
-                              {t.resolve}
-                            </button>
+                              {/* Quick Resolve */}
+                              {isOngoing && (
+                                <button
+                                  onClick={(e) => handleQuickStatus(e, report.id, 'Resolved')}
+                                  title="Mark as Resolved"
+                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
+                                >
+                                  {t.resolve}
+                                </button>
+                              )}
+
+                              {/* Quick Reject (only when not resolved) */}
+                              {!isResolved && (
+                                <button
+                                  onClick={() => {
+                                    setRejectingReport(report);
+                                    setRejectReason('');
+                                  }}
+                                  title="Reject and Archive Report"
+                                  className="p-1.5 text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition cursor-pointer shadow-2xs"
+                                >
+                                  <AlertOctagon className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            /* Read-Only Lead Agency Badge for non-lead agencies */
+                            !isResolved && (
+                              <span
+                                className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md"
+                                title={`Lead Agency: ${report.selectedAgency}. Operational actions reserved.`}
+                              >
+                                <Lock className="w-3 h-3 text-slate-400" />
+                                <span>{report.selectedAgency} Lead</span>
+                              </span>
+                            )
                           )}
 
                           {/* Resolved Badge */}
@@ -698,20 +744,6 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                               <CheckCircle className="w-3 h-3 text-emerald-600" />
                               <span>Resolved</span>
                             </span>
-                          )}
-
-                          {/* Quick Reject (only when not resolved) */}
-                          {!isResolved && (
-                            <button
-                              onClick={() => {
-                                setRejectingReport(report);
-                                setRejectReason('');
-                              }}
-                              title="Reject and Archive Report"
-                              className="p-1.5 text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition cursor-pointer shadow-2xs"
-                            >
-                              <AlertOctagon className="w-3.5 h-3.5" />
-                            </button>
                           )}
 
                           {/* Open Dossier */}
@@ -736,7 +768,13 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
       {/* Reject Modal with documented justification requirement */}
       {rejectingReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
-          <div className="glass-card bg-white/95 backdrop-blur-2xl border border-rose-200 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative text-slate-800">
+          <div className="glass-card bg-white/95 backdrop-blur-2xl border border-rose-200 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative text-slate-800 overflow-hidden">
+            {/* Visual background ambient glow & watermark */}
+            <div className="absolute -top-16 -right-16 w-48 h-48 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute right-2 bottom-2 pointer-events-none opacity-[0.05] select-none">
+              <AlertOctagon className="w-36 h-36 text-rose-800" />
+            </div>
             <div className="flex items-center gap-3 mb-3 text-rose-600">
               <AlertOctagon className="w-6 h-6" />
               <h3 className="text-base font-black text-slate-900">

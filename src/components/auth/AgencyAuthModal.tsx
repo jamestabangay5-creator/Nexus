@@ -145,6 +145,12 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
         className="relative w-full max-w-lg glass-card border border-white/95 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] text-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Relevant Ambient Command Glow and Selected Agency Seal Watermark Background */}
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr from-purple-500/10 via-slate-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-4 bottom-4 pointer-events-none opacity-[0.05] select-none">
+          <AgencyLogo agency={selectedAgency} className="w-64 h-64 object-contain filter grayscale" />
+        </div>
         {/* Top Emergency Status Banner */}
         <div className="bg-white/80 px-6 py-4 border-b border-slate-200/80 flex items-center justify-between">
           <div className="flex items-center gap-3">

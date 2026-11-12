@@ -37,7 +37,13 @@ export const TermsAndConditionsModal: React.FC<Props> = ({ isOpen, onClose, onAc
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
-      <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-2xl w-full p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 flex flex-col max-h-[85vh]">
+      <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-2xl w-full p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 flex flex-col max-h-[85vh] overflow-hidden">
+        {/* Ambient Glow & Legal Shield Watermark Background */}
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr from-slate-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-4 bottom-4 pointer-events-none opacity-[0.04] select-none">
+          <ShieldCheck className="w-64 h-64 text-blue-900" />
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">

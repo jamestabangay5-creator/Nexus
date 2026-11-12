@@ -225,7 +225,15 @@ export const ResourceEditModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in overflow-y-auto">
-      <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 my-auto">
+      <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 my-auto overflow-hidden">
+        {/* Relevant Ambient Glow and Resource Equipment Watermark */}
+        <div className="absolute -top-20 -right-20 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-slate-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-2 bottom-2 pointer-events-none opacity-[0.04] select-none">
+          {agencyType === 'PNP' && <Car className="w-64 h-64 text-blue-900" />}
+          {agencyType === 'BFP' && <Truck className="w-64 h-64 text-orange-900" />}
+          {agencyType === 'MDRRMO' && <Ambulance className="w-64 h-64 text-emerald-900" />}
+        </div>
         {/* Close Button */}
         <button
           onClick={onClose}

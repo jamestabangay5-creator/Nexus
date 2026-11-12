@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNexus } from '../../context/NexusContext';
-import { IncidentReport, IncidentStatus, IncidentTypeId, Agency } from '../../types';
+import { IncidentReport, IncidentStatus, IncidentTypeId, Agency, AgencyScope } from '../../types';
 import { INCIDENT_TYPES, AGENCY_DETAILS } from '../../constants/incidentData';
 import { TRANSLATIONS } from '../../constants/translations';
 import { RequestAssistanceModal } from './RequestAssistanceModal';
@@ -25,7 +25,8 @@ import {
   Users,
   AlertOctagon,
   History,
-  RotateCcw
+  RotateCcw,
+  Lock
 } from 'lucide-react';
 
 interface Props {
@@ -53,11 +54,11 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
     portalMode === 'agency' &&
     activeRole !== 'resident' &&
     (isAgencyAuthenticated || agencyUser !== null);
-  const currentAgency: Agency =
-    isAgencyAdmin && (activeRole === 'PNP' || activeRole === 'BFP' || activeRole === 'MDRRMO')
+  const currentAgency: AgencyScope =
+    activeRole === 'CENTRAL' || activeRole === 'PNP' || activeRole === 'BFP' || activeRole === 'MDRRMO'
       ? activeRole
-      : 'PNP';
-  const currentAdmin = adminProfiles[currentAgency];
+      : agencyUser?.agency || 'PNP';
+  const currentAdmin = (currentAgency !== 'CENTRAL' ? adminProfiles[currentAgency as Agency] : null) || adminProfiles.PNP;
 
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -79,6 +80,20 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
   const report = reports.find((r) => r.id === reportId);
   if (!report) return null;
+
+  // Authority Enforcement:
+  // A report can only be managed (Accepted, Ongoing, Resolved, Rejected, Reopened, or Request Assistance)
+  // by its designated selectedAgency, or by CENTRAL Master Dispatch.
+  const isSelectedAgency = currentAgency === report.selectedAgency;
+  const isCentralCommand = currentAgency === 'CENTRAL' || agencyUser?.isSystemAdmin;
+  const canManageReport = isAgencyAdmin && (isSelectedAgency || isCentralCommand);
+
+  // Check if mutual aid assistance was requested for our viewing agency
+  const isRequestedPartner =
+    currentAgency !== 'CENTRAL' &&
+    report.assistanceRequests.some(
+      (req) => req.targetAgencies.includes(currentAgency as Agency)
+    );
 
   const typeDef = INCIDENT_TYPES.find(
     (t) => t.id === (report.verifiedTypeId || report.initialTypeId)
@@ -123,7 +138,14 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl overflow-y-auto animate-in fade-in">
-        <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl relative text-slate-800 my-8 max-h-[90vh] flex flex-col justify-between">
+        <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl relative text-slate-800 my-8 max-h-[90vh] flex flex-col justify-between overflow-hidden">
+          {/* Relevant Official Agency Seal Watermark & Ambient Command Glow Background */}
+          <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-gradient-to-tr from-purple-500/10 via-slate-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute right-4 bottom-4 pointer-events-none select-none opacity-[0.05] sm:opacity-[0.07] transform translate-x-4 translate-y-4">
+            <AgencyLogo agency={report.selectedAgency} className="w-80 h-80 object-contain filter grayscale" />
+          </div>
+
           {/* Close button */}
           <button
             onClick={onClose}
@@ -378,8 +400,8 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
               </div>
             </div>
 
-            {/* Rejection Form Box (Agency Admins Only) */}
-            {isAgencyAdmin && isRejectOpen && (
+            {/* Rejection Form Box (Only Lead Agency / Central Command Admins) */}
+            {canManageReport && isRejectOpen && (
               <form
                 onSubmit={handleConfirmReject}
                 className="p-4 bg-rose-50/90 border border-rose-200 rounded-2xl text-xs space-y-3"
@@ -418,114 +440,163 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
             )}
           </div>
 
-          {/* Action Footer: Agency Administrators vs Citizen / Resident Report Tracking */}
+          {/* Action Footer: Lead Agency Command vs Assisting/Unselected Agency vs Citizen View */}
           {isAgencyAdmin ? (
-            <div className="pt-4 mt-4 border-t border-slate-200/80">
-              {/* CASE 1: Archived / Rejected Report -> Provide Restore Button */}
-              {report.status === 'Rejected' && (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-rose-50/80 border border-rose-200 rounded-2xl p-4">
-                  <div className="flex items-start gap-2.5 text-xs text-rose-900">
-                    <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            canManageReport ? (
+              <div className="pt-4 mt-4 border-t border-slate-200/80">
+                {/* CASE 1: Archived / Rejected Report -> Provide Restore Button */}
+                {report.status === 'Rejected' && (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-rose-50/80 border border-rose-200 rounded-2xl p-4">
+                    <div className="flex items-start gap-2.5 text-xs text-rose-900">
+                      <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-rose-800">Incident Is In Emergency Archive</span>
+                        <p className="text-slate-600 text-[11px] mt-0.5 font-medium">
+                          "{report.rejection?.reason || 'Case was rejected / marked false alarm.'}"
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleRestoreFromArchive}
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition cursor-pointer shrink-0"
+                      title="Restore report back to active pending dispatch queue"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      <span>Restore Report to Active Registry</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* CASE 2: Resolved Report -> Lock Reject and Request Assistance */}
+                {report.status === 'Resolved' && (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4">
+                    <div className="flex items-start gap-2.5 text-xs text-emerald-900">
+                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-emerald-800">Incident Successfully Resolved & Logged in History</span>
+                        <p className="text-slate-600 text-[11px] mt-0.5">
+                          Response is completed. Reject and Assistance requests are disabled for resolved cases.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleStatusChange('Ongoing', 'Reopened resolved incident for follow-up verification')}
+                      className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition cursor-pointer shrink-0"
+                      title="Reopen case if further field dispatch is required"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Reopen Case (Ongoing)</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* CASE 3: Active Ongoing / Pending Cases -> Request Assistance & Reject allowed */}
+                {report.status !== 'Rejected' && report.status !== 'Resolved' && (
+                  <div className="flex flex-wrap items-center justify-between gap-2.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* Request Assistance Button */}
+                      <button
+                        onClick={() => setIsAssistanceModalOpen(true)}
+                        className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <Users className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>{t.requestAssistance}</span>
+                      </button>
+                    </div>
+
+                    {/* Status Update Action Pipeline: Accept -> Ongoing -> Resolved / Reject */}
+                    <div className="flex items-center gap-2">
+                      {report.status === 'Pending Verification' && (
+                        <button
+                          onClick={() => handleStatusChange('Accepted')}
+                          className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>{t.accept}</span>
+                        </button>
+                      )}
+
+                      {(report.status === 'Accepted' || report.status === 'Pending Verification') && (
+                        <button
+                          onClick={() => handleStatusChange('Ongoing')}
+                          className="px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                        >
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{t.setOngoing}</span>
+                        </button>
+                      )}
+
+                      {report.status === 'Ongoing' && (
+                        <button
+                          onClick={() => handleStatusChange('Resolved')}
+                          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>{t.resolve}</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setIsRejectOpen(true)}
+                        className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <AlertOctagon className="w-3.5 h-3.5" />
+                        <span>{t.reject}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Case 4: Viewing as Unselected Agency (or Partner Unit with Mutual Aid Request) */
+              <div className="pt-4 mt-4 border-t border-slate-200/80">
+                <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 shrink-0 mt-0.5">
+                      <Lock className="w-5 h-5 text-slate-500" />
+                    </div>
                     <div>
-                      <span className="font-bold text-rose-800">Incident Is In Emergency Archive</span>
-                      <p className="text-slate-600 text-[11px] mt-0.5 font-medium">
-                        "{report.rejection?.reason || 'Case was rejected / marked false alarm.'}"
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-slate-800 text-xs sm:text-sm">
+                          Designated Primary Authority: {report.selectedAgency} ({AGENCY_DETAILS[report.selectedAgency]?.name || report.selectedAgency})
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                          Jurisdiction Restricted
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                        This incident was reported directly to <strong>{report.selectedAgency}</strong>. Operational command (Accept, Deploy, Mark Resolved, Reject, or Mutual Aid) is reserved for the designated lead agency.
                       </p>
+                      {isRequestedPartner && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-semibold">
+                          <Users className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>Mutual Aid Assistance Requested: Your agency has been summoned to support field operations.</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleRestoreFromArchive}
-                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition cursor-pointer shrink-0"
-                    title="Restore report back to active pending dispatch queue"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    <span>Restore Report to Active Registry</span>
-                  </button>
-                </div>
-              )}
-
-              {/* CASE 2: Resolved Report -> Lock Reject and Request Assistance */}
-              {report.status === 'Resolved' && (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4">
-                  <div className="flex items-start gap-2.5 text-xs text-emerald-900">
-                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-emerald-800">Incident Successfully Resolved & Logged in History</span>
-                      <p className="text-slate-600 text-[11px] mt-0.5">
-                        Response is completed. Reject and Assistance requests are disabled for resolved cases.
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleStatusChange('Ongoing', 'Reopened resolved incident for follow-up verification')}
-                    className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition cursor-pointer shrink-0"
-                    title="Reopen case if further field dispatch is required"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Reopen Case (Ongoing)</span>
-                  </button>
-                </div>
-              )}
-
-              {/* CASE 3: Active Ongoing / Pending Cases -> Request Assistance & Reject allowed */}
-              {report.status !== 'Rejected' && report.status !== 'Resolved' && (
-                <div className="flex flex-wrap items-center justify-between gap-2.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Request Assistance Button */}
-                    <button
-                      onClick={() => setIsAssistanceModalOpen(true)}
-                      className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                    >
-                      <Users className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>{t.requestAssistance}</span>
-                    </button>
-                  </div>
-
-                  {/* Status Update Action Pipeline: Accept -> Ongoing -> Resolved / Reject */}
-                  <div className="flex items-center gap-2">
-                    {report.status === 'Pending Verification' && (
-                      <button
-                        onClick={() => handleStatusChange('Accepted')}
-                        className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        <span>{t.accept}</span>
-                      </button>
-                    )}
-
-                    {(report.status === 'Accepted' || report.status === 'Pending Verification') && (
-                      <button
-                        onClick={() => handleStatusChange('Ongoing')}
-                        className="px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
-                      >
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{t.setOngoing}</span>
-                      </button>
-                    )}
-
-                    {report.status === 'Ongoing' && (
-                      <button
-                        onClick={() => handleStatusChange('Resolved')}
-                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        <span>{t.resolve}</span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => setIsRejectOpen(true)}
-                      className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                    >
-                      <AlertOctagon className="w-3.5 h-3.5" />
-                      <span>{t.reject}</span>
-                    </button>
+                  <div className="self-end sm:self-center shrink-0">
+                    <span className={`px-3 py-1.5 rounded-xl text-xs font-bold border inline-flex items-center gap-1.5 ${
+                      report.status === 'Resolved'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : report.status === 'Ongoing'
+                        ? 'bg-orange-50 text-orange-700 border-orange-200'
+                        : report.status === 'Accepted'
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : report.status === 'Rejected'
+                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                    }`}>
+                      <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                      <span>Report Status: {report.status}</span>
+                    </span>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )
           ) : (
             /* Citizen / Resident View: Shows Actual Status of the Report */
             <div className="pt-4 mt-4 border-t border-slate-200/80 space-y-3.5">

@@ -200,6 +200,12 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
       <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-2xl w-full shadow-2xl relative text-slate-100 my-auto overflow-hidden">
+        {/* Ambient Department Glow & Official Agency Seal Background Watermark */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-0 bottom-0 pointer-events-none opacity-[0.04] select-none transform translate-x-10 translate-y-10">
+          <AgencyLogo agency={currentAgency} className="w-96 h-96 object-contain filter grayscale" />
+        </div>
         {/* Top Department Banner */}
         <div
           className={`px-6 py-4 bg-gradient-to-r ${currentDetails.bgGrad} border-b ${currentDetails.border} flex items-center justify-between`}

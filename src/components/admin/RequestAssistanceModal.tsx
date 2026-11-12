@@ -70,7 +70,13 @@ export const RequestAssistanceModal: React.FC<Props> = ({ report, isOpen, onClos
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
-      <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative text-slate-800">
+      <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative text-slate-800 overflow-hidden">
+        {/* Relevant Ambient Glow & Inter-Agency Watermark Background */}
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-indigo-500/10 via-blue-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr from-purple-500/10 via-slate-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-4 bottom-4 pointer-events-none opacity-[0.05] select-none">
+          <Users className="w-56 h-56 text-indigo-900" />
+        </div>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition cursor-pointer"
