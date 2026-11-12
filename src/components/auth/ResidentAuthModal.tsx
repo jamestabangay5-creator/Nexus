@@ -151,23 +151,6 @@ export const ResidentAuthModal: React.FC<Props> = ({
     }
   };
 
-  // Quick Demo Account Pre-fill
-  const handlePrefillAccount = (accountType: 'citizen' | 'pnp' | 'bfp' | 'mdrrmo' | 'central') => {
-    setErrorMsg(null);
-    setSuccessMsg(null);
-    if (accountType === 'citizen') {
-      setEmail('juan.delacruz@citizen.gov.ph');
-    } else if (accountType === 'pnp') {
-      setEmail(OFFICIAL_AGENCY_ACCOUNTS.PNP.email);
-    } else if (accountType === 'bfp') {
-      setEmail(OFFICIAL_AGENCY_ACCOUNTS.BFP.email);
-    } else if (accountType === 'mdrrmo') {
-      setEmail(OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.email);
-    } else if (accountType === 'central') {
-      setEmail(OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.email);
-    }
-  };
-
   // Google Sign-In for Citizens
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -615,55 +598,6 @@ export const ResidentAuthModal: React.FC<Props> = ({
         {/* FORM: UNIFIED LOGIN (Citizen & Agency) */}
         {mode === 'login' && (
           <div className="space-y-4">
-            {/* Automatic Detection Information Banner */}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-900 leading-relaxed shadow-xs">
-              <strong>Role-Aware Access:</strong> Enter your credentials. The system automatically detects your user role and directs you to the <strong>Resident Portal</strong> or your agency's <strong>Command Dashboard</strong> (PNP, BFP, MDRRMO, or Central).
-            </div>
-
-            {/* Quick Demo Pre-fill Helper Chips */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] text-slate-500 font-bold block uppercase tracking-wider">
-                Quick Test Accounts:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handlePrefillAccount('citizen')}
-                  className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-purple-700 rounded-lg text-[10px] font-bold transition cursor-pointer shadow-xs"
-                >
-                  Citizen
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePrefillAccount('pnp')}
-                  className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-blue-700 rounded-lg text-[10px] font-bold transition cursor-pointer shadow-xs"
-                >
-                  PNP Police
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePrefillAccount('bfp')}
-                  className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-amber-700 rounded-lg text-[10px] font-bold transition cursor-pointer shadow-xs"
-                >
-                  BFP Fire
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePrefillAccount('mdrrmo')}
-                  className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-emerald-700 rounded-lg text-[10px] font-bold transition cursor-pointer shadow-xs"
-                >
-                  MDRRMO Rescue
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePrefillAccount('central')}
-                  className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-indigo-700 rounded-lg text-[10px] font-bold transition cursor-pointer shadow-xs"
-                >
-                  Central 911
-                </button>
-              </div>
-            </div>
-
             {/* Google Authentication for Citizen */}
             <div>
               <button
