@@ -323,10 +323,11 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="absolute right-3.5 top-2.5 text-slate-400 hover:text-blue-600 cursor-pointer p-0.5 rounded transition-colors"
+                  title={showPassword ? 'Hide password' : 'Show password'}
                   aria-label="Toggle password visibility"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-4 h-4 text-blue-600" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>

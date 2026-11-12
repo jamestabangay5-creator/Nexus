@@ -79,6 +79,7 @@ export const ResidentAuthModal: React.FC<Props> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Form Fields
   const [email, setEmail] = useState('');
@@ -116,6 +117,8 @@ export const ResidentAuthModal: React.FC<Props> = ({
     setMode(initialMode);
     setErrorMsg(null);
     setSuccessMsg(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
   }, [initialMode, isOpen]);
 
   // Handle ESC close
@@ -679,9 +682,11 @@ export const ResidentAuthModal: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="absolute right-3 top-3 text-slate-400 hover:text-blue-600 cursor-pointer transition-colors"
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label="Toggle password visibility"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-4 h-4 text-blue-600" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -791,30 +796,48 @@ export const ResidentAuthModal: React.FC<Props> = ({
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">Password</label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       placeholder="Min. 6 chars"
-                      className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-purple-100 focus:border-purple-500 focus:outline-none shadow-xs"
+                      className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-10 py-2 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-purple-100 focus:border-purple-500 focus:outline-none shadow-xs"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-2 text-slate-400 hover:text-purple-600 cursor-pointer p-0.5 rounded transition-colors"
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4 text-purple-600" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">Confirm Password</label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       placeholder="Repeat password"
-                      className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-purple-100 focus:border-purple-500 focus:outline-none shadow-xs"
+                      className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-10 py-2 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-purple-100 focus:border-purple-500 focus:outline-none shadow-xs"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-2 text-slate-400 hover:text-purple-600 cursor-pointer p-0.5 rounded transition-colors"
+                      title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      aria-label="Toggle confirm password visibility"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4 text-purple-600" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
               </div>
