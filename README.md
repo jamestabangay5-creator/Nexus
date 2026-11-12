@@ -198,3 +198,4 @@ The optimized output will be generated in the `dist/` directory, ready to be hos
 
 ## 📄 License
 This project is developed for emergency management operations and public safety coordination. All rights reserved.
+

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background glow for app icon -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45" />
+      <stop offset="60%" stop-color="#6366f1" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Facet Gradients for 3D Crystal Gem -->
+    <linearGradient id="facet-top" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0f9ff" />
+      <stop offset="100%" stop-color="#bae6fd" />
+    </linearGradient>
+
+    <linearGradient id="facet-top-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe" />
+      <stop offset="100%" stop-color="#7dd3fc" />
+    </linearGradient>
+
+    <linearGradient id="facet-top-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#93c5fd" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+
+    <linearGradient id="facet-center" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+
+    <linearGradient id="facet-mid-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+
+    <linearGradient id="facet-mid-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+
+    <linearGradient id="facet-bottom-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+
+    <linearGradient id="facet-bottom-center" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+
+    <linearGradient id="facet-bottom-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#9333ea" />
+    </linearGradient>
+
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#1e1b4b" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="256" cy="256" r="230" fill="url(#glow)" />
+
+  <!-- 3D Geometric Faceted Crystal Polygon Group -->
+  <g filter="url(#soft-shadow)">
+    <!-- Top Cap / Apex Facet -->
+    <polygon points="256,60 320,130 256,170 192,130" fill="url(#facet-top)" />
+
+    <!-- Upper Left Facet -->
+    <polygon points="256,60 192,130 110,180 160,110" fill="url(#facet-top-left)" />
+
+    <!-- Upper Right Facet -->
+    <polygon points="256,60 352,110 402,180 320,130" fill="url(#facet-top-right)" />
+
+    <!-- Central Diamond Core Facet -->
+    <polygon points="256,170 340,230 256,310 172,230" fill="url(#facet-center)" />
+
+    <!-- Mid Left Lateral Facet -->
+    <polygon points="192,130 256,170 172,230 100,250 110,180" fill="url(#facet-mid-left)" />
+
+    <!-- Mid Right Lateral Facet -->
+    <polygon points="320,130 402,180 412,250 340,230 256,170" fill="url(#facet-mid-right)" />
+
+    <!-- Lower Mid Left Facet -->
+    <polygon points="100,250 172,230 256,310 200,380 130,340" fill="url(#facet-bottom-left)" />
+
+    <!-- Lower Mid Right Facet -->
+    <polygon points="340,230 412,250 382,340 312,380 256,310" fill="url(#facet-bottom-right)" />
+
+    <!-- Bottom Keel / Terminal Facet -->
+    <polygon points="256,310 312,380 256,452 200,380" fill="url(#facet-bottom-center)" />
+
+    <!-- Specular Highlight Accents -->
+    <polygon points="256,64 280,100 256,115 232,100" fill="#ffffff" opacity="0.65" />
+    <line x1="256" y1="60" x2="256" y2="170" stroke="#ffffff" stroke-width="2" opacity="0.5" />
+    <line x1="192" y1="130" x2="320" y2="130" stroke="#ffffff" stroke-width="2" opacity="0.4" />
+    <line x1="256" y1="170" x2="340" y2="230" stroke="#ffffff" stroke-width="1.5" opacity="0.3" />
+    <line x1="256" y1="170" x2="172" y2="230" stroke="#ffffff" stroke-width="1.5" opacity="0.3" />
+  </g>
+</svg>

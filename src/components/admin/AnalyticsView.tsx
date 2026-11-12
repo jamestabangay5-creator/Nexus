@@ -303,23 +303,23 @@ export const AnalyticsView: React.FC = () => {
   }, [typeStatistics, tableSearch]);
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-500 font-sans text-slate-100">
+    <div className="space-y-6 animate-in fade-in duration-500 font-sans text-slate-800">
       {/* Top Header Bar with Filter Controls */}
-      <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-950/60">
-              <div className="w-full h-full bg-[#0a1224] rounded-[10px] flex items-center justify-center">
-                <BarChart3 className="w-4 h-4 text-cyan-400" />
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-blue-50 text-blue-700 border border-blue-200/60 flex items-center justify-center shadow-sm">
+              <BarChart3 className="w-5 h-5" />
             </div>
-            <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
-              Unified Incident Intelligence & Operational Analytics
-            </h2>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Unified Incident Intelligence & Analytics
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Executive Command Center Telemetry · MIMAROPA Region IV-B Oriental Mindoro Provincial Grid
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Executive Command Center Telemetry · MIMAROPA Region IV-B Oriental Mindoro Provincial Grid
-          </p>
         </div>
 
         {/* Global Filter Toolbar */}
@@ -328,7 +328,7 @@ export const AnalyticsView: React.FC = () => {
           <select
             value={selectedMunicipality}
             onChange={(e) => setSelectedMunicipality(e.target.value)}
-            className="bg-[#091224] border border-[#1e345e] text-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-500 focus:outline-none cursor-pointer"
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer"
           >
             <option value="ALL">All 15 LGUs (Mindoro)</option>
             {ORIENTAL_MINDORO_MUNICIPALITIES.map((muni) => (
@@ -342,7 +342,7 @@ export const AnalyticsView: React.FC = () => {
           <select
             value={selectedBarangay}
             onChange={(e) => setSelectedBarangay(e.target.value)}
-            className="bg-[#091224] border border-[#1e345e] text-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-500 focus:outline-none max-w-[150px] cursor-pointer truncate"
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none max-w-[150px] cursor-pointer truncate"
           >
             <option value="ALL">All Barangays</option>
             {ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS.map((brgy, idx) => (
@@ -356,7 +356,7 @@ export const AnalyticsView: React.FC = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-[#091224] border border-[#1e345e] text-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-cyan-500 focus:outline-none cursor-pointer"
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer"
           >
             <option value="ALL">All Categories</option>
             <option value="RED">RED — Critical Safety</option>
@@ -369,46 +369,129 @@ export const AnalyticsView: React.FC = () => {
           {/* Verified Reports Toggle */}
           <button
             onClick={() => setVerifiedOnlyBasis(!verifiedOnlyBasis)}
-            className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition cursor-pointer shadow-sm ${
               verifiedOnlyBasis
-                ? 'bg-cyan-950/70 border-cyan-500/60 text-cyan-300 shadow-md shadow-cyan-950/50'
-                : 'bg-[#091224] border-[#1e345e] text-slate-400 hover:text-slate-200'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-blue-500/20'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
             }`}
           >
-            <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+            <CheckCircle2 className="w-3.5 h-3.5" />
             <span>{verifiedOnlyBasis ? 'Verified Cases Baseline' : 'All Reports Baseline'}</span>
           </button>
         </div>
       </div>
 
-      {/* Main 3-Column Command Dashboard Grid (Matching FineReport Reference Image 2) */}
+      {/* 4 Top KPI Cards (Matching visual reference layout: Blue, Purple, Cyan, Emerald circular badges) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Metric 1 */}
+        <div className="metric-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Inflow</span>
+              <span className="text-xs text-slate-400 font-medium">Incident Telemetry</span>
+            </div>
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
+            {totalSubmitted}
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
+            <span>↑ +20%</span>
+            <span className="text-slate-400 font-normal">from last week · verified intake</span>
+          </div>
+        </div>
+
+        {/* Metric 2 */}
+        <div className="metric-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+              <Shield className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Verification Rate</span>
+              <span className="text-xs text-slate-400 font-medium">Civilian Triage</span>
+            </div>
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
+            {verificationRate}%
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
+            <span>↑ +12.4%</span>
+            <span className="text-slate-400 font-normal">vs last month · zero prank</span>
+          </div>
+        </div>
+
+        {/* Metric 3 */}
+        <div className="metric-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">SLA Compliance</span>
+              <span className="text-xs text-slate-400 font-medium">Response Velocity</span>
+            </div>
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
+            {resolutionRate}%
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
+            <span>↑ +0.4%</span>
+            <span className="text-slate-400 font-normal">target &lt; 10 min arrival</span>
+          </div>
+        </div>
+
+        {/* Metric 4 */}
+        <div className="metric-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+              <Activity className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Cross-Agency Ops</span>
+              <span className="text-xs text-slate-400 font-medium">Joint Deployments</span>
+            </div>
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
+            {interAgencyRate}%
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
+            <span>↑ +8.1%</span>
+            <span className="text-slate-400 font-normal">tri-agency coordination</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main 3-Column Command Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         {/* ==================== LEFT COLUMN (3 cols) ==================== */}
         <div className="lg:col-span-3 space-y-5 flex flex-col justify-between">
           
-          {/* Card 1: Agency Concentric Multi-Ring Arcs ("Catalog Distribution" in ref) */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 shadow-xl backdrop-blur-xl space-y-3 relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#182a4d] pb-2.5">
-              <span className="text-xs font-black tracking-wider uppercase text-cyan-400 flex items-center gap-1.5">
-                <Compass className="w-4 h-4 text-cyan-400" />
+          {/* Card 1: Agency Concentric Multi-Ring Arcs */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <span className="text-xs font-black tracking-wider uppercase text-blue-600 flex items-center gap-1.5">
+                <Compass className="w-4 h-4 text-blue-600" />
                 <span>Agency Distribution</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">Live Telemetry</span>
+              <span className="text-[10px] text-slate-400 font-mono font-bold">Live Telemetry</span>
             </div>
 
             <div className="flex items-center justify-between gap-3 pt-1">
               {/* Concentric SVG Arcs */}
               <div className="relative w-32 h-32 shrink-0 flex items-center justify-center">
                 <svg viewBox="0 0 120 120" className="w-full h-full transform -rotate-90">
-                  {/* Outer Ring: PNP (Cyan) */}
-                  <circle cx="60" cy="60" r="48" fill="none" stroke="#122547" strokeWidth="7" />
+                  {/* Outer Ring: PNP (Blue) */}
+                  <circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" strokeWidth="7" />
                   <circle
                     cx="60"
                     cy="60"
                     r="48"
                     fill="none"
-                    stroke="#06b6d4"
+                    stroke="#2563eb"
                     strokeWidth="7"
                     strokeDasharray={2 * Math.PI * 48}
                     strokeDashoffset={2 * Math.PI * 48 * (1 - pnpPct / 100)}
@@ -417,7 +500,7 @@ export const AnalyticsView: React.FC = () => {
                   />
 
                   {/* Middle Ring: BFP (Orange) */}
-                  <circle cx="60" cy="60" r="36" fill="none" stroke="#122547" strokeWidth="7" />
+                  <circle cx="60" cy="60" r="36" fill="none" stroke="#f1f5f9" strokeWidth="7" />
                   <circle
                     cx="60"
                     cy="60"
@@ -432,7 +515,7 @@ export const AnalyticsView: React.FC = () => {
                   />
 
                   {/* Inner Ring: MDRRMO (Emerald) */}
-                  <circle cx="60" cy="60" r="24" fill="none" stroke="#122547" strokeWidth="7" />
+                  <circle cx="60" cy="60" r="24" fill="none" stroke="#f1f5f9" strokeWidth="7" />
                   <circle
                     cx="60"
                     cy="60"
@@ -448,7 +531,7 @@ export const AnalyticsView: React.FC = () => {
                 </svg>
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-sm font-black text-white font-mono">{baseCountTotal}</span>
+                  <span className="text-sm font-black text-slate-900 font-mono">{baseCountTotal}</span>
                   <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold">Cases</span>
                 </div>
               </div>
@@ -456,46 +539,48 @@ export const AnalyticsView: React.FC = () => {
               {/* Legend with Metrics */}
               <div className="space-y-2 text-xs flex-1">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-slate-300 font-semibold">
-                    <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                  <span className="flex items-center gap-1.5 text-slate-600 font-semibold">
+                    <span className="h-2 w-2 rounded-full bg-blue-600" />
                     <span>PNP Police</span>
                   </span>
-                  <span className="font-mono font-bold text-cyan-300">{pnpPct}%</span>
+                  <span className="font-mono font-bold text-blue-700">{pnpPct}%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-slate-300 font-semibold">
-                    <span className="h-2 w-2 rounded-full bg-orange-400" />
+                  <span className="flex items-center gap-1.5 text-slate-600 font-semibold">
+                    <span className="h-2 w-2 rounded-full bg-orange-500" />
                     <span>BFP Fire</span>
                   </span>
-                  <span className="font-mono font-bold text-orange-300">{bfpPct}%</span>
+                  <span className="font-mono font-bold text-orange-600">{bfpPct}%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-slate-300 font-semibold">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="flex items-center gap-1.5 text-slate-600 font-semibold">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     <span>MDRRMO</span>
                   </span>
-                  <span className="font-mono font-bold text-emerald-300">{mdrrmoPct}%</span>
+                  <span className="font-mono font-bold text-emerald-600">{mdrrmoPct}%</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Card 2: Department Readiness Radar Spider Chart ("Department" in ref) */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 shadow-xl backdrop-blur-xl space-y-2 relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#182a4d] pb-2">
-              <span className="text-xs font-black tracking-wider uppercase text-blue-400 flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4 text-blue-400" />
-                <span>Inter-Agency Readiness Radar</span>
+          {/* Card 2: Department Readiness Radar Spider Chart */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-2 relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <span className="text-xs font-black tracking-wider uppercase text-blue-600 flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-blue-600" />
+                <span>Inter-Agency Readiness</span>
               </span>
-              <span className="text-[10px] text-emerald-400 font-mono font-bold">94.2% Index</span>
+              <span className="text-[10px] text-emerald-600 font-mono font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                94.2% Index
+              </span>
             </div>
 
             <div className="relative w-full h-44 flex items-center justify-center my-1">
               <svg viewBox="0 0 190 190" className="w-full h-full overflow-visible">
                 <defs>
-                  <radialGradient id="radarGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0.08" />
+                  <radialGradient id="radarGradLight" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0.05" />
                   </radialGradient>
                 </defs>
 
@@ -511,7 +596,7 @@ export const AnalyticsView: React.FC = () => {
                       key={lvlIdx}
                       points={pts}
                       fill="none"
-                      stroke="#1e355c"
+                      stroke="#e2e8f0"
                       strokeWidth="1"
                       strokeDasharray={lvlIdx < 3 ? '2,2' : undefined}
                     />
@@ -528,7 +613,7 @@ export const AnalyticsView: React.FC = () => {
                       y1="95"
                       x2={(95 + 68 * Math.cos(ang)).toFixed(1)}
                       y2={(95 + 68 * Math.sin(ang)).toFixed(1)}
-                      stroke="#1b3156"
+                      stroke="#e2e8f0"
                       strokeWidth="1"
                     />
                   );
@@ -537,8 +622,8 @@ export const AnalyticsView: React.FC = () => {
                 {/* Filled Radar Polygon */}
                 <polygon
                   points={radarPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}
-                  fill="url(#radarGrad)"
-                  stroke="#38bdf8"
+                  fill="url(#radarGradLight)"
+                  stroke="#2563eb"
                   strokeWidth="2"
                   className="transition-all duration-700"
                 />
@@ -550,8 +635,8 @@ export const AnalyticsView: React.FC = () => {
                     cx={p.x}
                     cy={p.y}
                     r="3.5"
-                    fill="#38bdf8"
-                    stroke="#0b162c"
+                    fill="#2563eb"
+                    stroke="#ffffff"
                     strokeWidth="1.5"
                   />
                 ))}
@@ -564,7 +649,7 @@ export const AnalyticsView: React.FC = () => {
                     y={p.labelY}
                     textAnchor="middle"
                     dominantBaseline="central"
-                    fill="#94a3b8"
+                    fill="#64748b"
                     fontSize="8"
                     fontWeight="700"
                   >
@@ -575,30 +660,30 @@ export const AnalyticsView: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 3: Daily Incident Sampling ("Data Sampling" in ref) */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 shadow-xl backdrop-blur-xl space-y-3 relative">
-            <div className="flex items-center justify-between border-b border-[#182a4d] pb-2">
-              <span className="text-xs font-black tracking-wider uppercase text-cyan-400 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-cyan-400" />
+          {/* Card 3: Daily Incident Sampling */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3 relative">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <span className="text-xs font-black tracking-wider uppercase text-blue-600 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-600" />
                 <span>Weekly Incident Sampling</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">Mon — Sun Load</span>
+              <span className="text-[10px] text-slate-400 font-mono font-bold">Mon — Sun Load</span>
             </div>
 
             {/* Vertical Bar Chart */}
             <div className="h-28 flex items-end justify-between gap-1.5 pt-3 px-1">
               {dayOfWeekCounts.map((d, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group cursor-pointer">
-                  <div className="text-[9px] font-mono font-bold text-slate-400 group-hover:text-cyan-300 transition opacity-0 group-hover:opacity-100">
+                  <div className="text-[9px] font-mono font-bold text-slate-500 group-hover:text-blue-600 transition opacity-0 group-hover:opacity-100">
                     {d.count}
                   </div>
-                  <div className="w-full bg-[#122344] rounded-t-lg h-20 flex items-end overflow-hidden p-0.5">
+                  <div className="w-full bg-slate-100 rounded-t-lg h-20 flex items-end overflow-hidden p-0.5">
                     <div
-                      className="w-full rounded-t-md bg-gradient-to-t from-blue-600 via-cyan-500 to-teal-400 transition-all duration-700 group-hover:brightness-125"
+                      className="w-full rounded-t-md bg-gradient-to-t from-blue-600 via-cyan-500 to-teal-400 transition-all duration-700 group-hover:brightness-110 shadow-sm"
                       style={{ height: `${d.heightPct}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-400 group-hover:text-white transition">
+                  <span className="text-[10px] font-bold text-slate-500 group-hover:text-slate-900 transition">
                     {d.day}
                   </span>
                 </div>
@@ -611,14 +696,10 @@ export const AnalyticsView: React.FC = () => {
         {/* ==================== CENTER COLUMN (6 cols) ==================== */}
         <div className="lg:col-span-6 space-y-5 flex flex-col justify-between">
           
-          {/* Main Dual-Wave Curve Trend ("Data Exchange" in ref) */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-5 shadow-2xl backdrop-blur-xl space-y-4 relative overflow-hidden flex-1">
-            {/* Ambient subtle glow behind curves */}
-            <div className="absolute top-0 right-1/4 -z-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-1/4 -z-10 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
-
+          {/* Main Dual-Wave Curve Trend ("Campaign Performance" style in reference) */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-4 relative overflow-hidden flex-1">
             {/* Header: Title + Big Numbers with Growth Badges + Timeframe Filter */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#182a4d] pb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-bold block">
                   Incident Volume & Resolution Velocity
@@ -627,15 +708,15 @@ export const AnalyticsView: React.FC = () => {
                   {/* Metric 1: Received / Inflow */}
                   <div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
                         {(totalSubmitted * 120 + 850).toLocaleString()}
                       </span>
-                      <span className="inline-flex items-center text-[10px] font-bold text-emerald-400 bg-emerald-950/70 border border-emerald-500/40 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                         +20% ↑
                       </span>
                     </div>
-                    <span className="text-[11px] text-cyan-400 font-semibold flex items-center gap-1.5 mt-0.5">
-                      <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                    <span className="text-[11px] text-blue-600 font-semibold flex items-center gap-1.5 mt-0.5">
+                      <span className="h-2 w-2 rounded-full bg-blue-600" />
                       Incoming Incident Reports
                     </span>
                   </div>
@@ -643,15 +724,15 @@ export const AnalyticsView: React.FC = () => {
                   {/* Metric 2: Resolved / Output */}
                   <div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
                         {(resolvedCount * 110 + 720).toLocaleString()}
                       </span>
-                      <span className="inline-flex items-center text-[10px] font-bold text-orange-400 bg-orange-950/70 border border-orange-500/40 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
                         +18% ↑
                       </span>
                     </div>
-                    <span className="text-[11px] text-orange-400 font-semibold flex items-center gap-1.5 mt-0.5">
-                      <span className="h-2 w-2 rounded-full bg-orange-400" />
+                    <span className="text-[11px] text-orange-600 font-semibold flex items-center gap-1.5 mt-0.5">
+                      <span className="h-2 w-2 rounded-full bg-orange-500" />
                       Resolved & Closed Cases
                     </span>
                   </div>
@@ -659,15 +740,15 @@ export const AnalyticsView: React.FC = () => {
               </div>
 
               {/* Timeframe Toggle Buttons (Month / Quarter / Year) */}
-              <div className="flex items-center bg-[#081020] p-1 rounded-xl border border-[#1b3156] text-xs">
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
                 {(['month', 'quarter', 'year'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setTimeframeTab(tab)}
                     className={`px-3 py-1 rounded-lg capitalize font-bold transition cursor-pointer ${
                       timeframeTab === tab
-                        ? 'bg-blue-600 text-white shadow'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-white text-blue-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
                     }`}
                   >
                     {tab}
@@ -680,24 +761,24 @@ export const AnalyticsView: React.FC = () => {
             <div className="relative w-full h-52 sm:h-56">
               <svg viewBox="0 0 600 220" className="w-full h-full overflow-visible" preserveAspectRatio="none">
                 <defs>
-                  {/* Wave 1: Inflow Gradient (Cyan/Blue) */}
-                  <linearGradient id="waveInflowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0.02" />
+                  {/* Wave 1: Inflow Gradient (Blue) */}
+                  <linearGradient id="waveInflowGradLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0.30" />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0.02" />
                   </linearGradient>
 
                   {/* Wave 2: Resolved Gradient (Warm Coral/Orange) */}
-                  <linearGradient id="waveResolvedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.40" />
-                    <stop offset="100%" stopColor="#c2410c" stopOpacity="0.02" />
+                  <linearGradient id="waveResolvedGradLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#ea580c" stopOpacity="0.02" />
                   </linearGradient>
                 </defs>
 
                 {/* Horizontal Grid Lines */}
                 {[0, 50, 100, 150, 200].map((y, idx) => (
                   <g key={idx}>
-                    <line x1="0" y1={y} x2="600" y2={y} stroke="#16294d" strokeWidth="1" strokeDasharray="3,3" />
-                    <text x="4" y={y - 4} fill="#64748b" fontSize="9" fontFamily="monospace">
+                    <line x1="0" y1={y} x2="600" y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="4" y={y - 4} fill="#94a3b8" fontSize="9" fontFamily="monospace">
                       {500 - idx * 100}
                     </text>
                   </g>
@@ -706,24 +787,24 @@ export const AnalyticsView: React.FC = () => {
                 {/* Area Wave 1: Incoming Reports */}
                 <path
                   d={generateSmoothAreaPath(waveTimelineData.map((d) => d.inflow), 550, 600, 200)}
-                  fill="url(#waveInflowGrad)"
+                  fill="url(#waveInflowGradLight)"
                 />
                 <path
                   d={generateSmoothLinePath(waveTimelineData.map((d) => d.inflow), 550, 600, 200)}
                   fill="none"
-                  stroke="#38bdf8"
+                  stroke="#2563eb"
                   strokeWidth="2.5"
                 />
 
                 {/* Area Wave 2: Resolved Reports */}
                 <path
                   d={generateSmoothAreaPath(waveTimelineData.map((d) => d.resolved), 550, 600, 200)}
-                  fill="url(#waveResolvedGrad)"
+                  fill="url(#waveResolvedGradLight)"
                 />
                 <path
                   d={generateSmoothLinePath(waveTimelineData.map((d) => d.resolved), 550, 600, 200)}
                   fill="none"
-                  stroke="#fb923c"
+                  stroke="#ea580c"
                   strokeWidth="2"
                 />
 
@@ -738,8 +819,8 @@ export const AnalyticsView: React.FC = () => {
                       cx={x}
                       cy={y}
                       r="3.5"
-                      fill="#38bdf8"
-                      stroke="#0b162c"
+                      fill="#2563eb"
+                      stroke="#ffffff"
                       strokeWidth="2"
                       className="cursor-pointer hover:r-5 transition-all"
                     />
@@ -755,7 +836,7 @@ export const AnalyticsView: React.FC = () => {
                       x={i * stepX}
                       y="216"
                       textAnchor="middle"
-                      fill="#94a3b8"
+                      fill="#64748b"
                       fontSize="9"
                       fontFamily="monospace"
                       fontWeight="600"
@@ -767,39 +848,39 @@ export const AnalyticsView: React.FC = () => {
               </svg>
             </div>
 
-            {/* Bottom Peak Months Callout Row (No.1 to No.5 in ref) */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-[#182a4d]">
+            {/* Bottom Peak Months Callout Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
               {[
-                { rank: 'No.1', val: '850', label: 'Feb Peak', color: 'text-cyan-400' },
-                { rank: 'No.2', val: '750', label: 'Oct Storm', color: 'text-blue-400' },
-                { rank: 'No.3', val: '650', label: 'Nov Alert', color: 'text-indigo-400' },
-                { rank: 'No.4', val: '550', label: 'Aug Season', color: 'text-amber-400' },
-                { rank: 'No.5', val: '450', label: 'Mar High', color: 'text-rose-400' },
+                { rank: 'No.1', val: '850', label: 'Feb Peak', color: 'text-blue-600' },
+                { rank: 'No.2', val: '750', label: 'Oct Storm', color: 'text-cyan-600' },
+                { rank: 'No.3', val: '650', label: 'Nov Alert', color: 'text-indigo-600' },
+                { rank: 'No.4', val: '550', label: 'Aug Season', color: 'text-amber-600' },
+                { rank: 'No.5', val: '450', label: 'Mar High', color: 'text-rose-600' },
               ].map((item, idx) => (
-                <div key={idx} className="bg-[#081224]/80 p-2 rounded-xl border border-[#172b4f] text-center">
+                <div key={idx} className="bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80 text-center">
                   <span className="text-[10px] font-mono text-slate-400 block font-bold">{item.rank}</span>
                   <span className={`text-base font-black font-mono block ${item.color}`}>{item.val}</span>
-                  <span className="text-[9px] text-slate-400 block truncate">{item.label}</span>
+                  <span className="text-[9px] text-slate-500 font-semibold block truncate">{item.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Triple Circular Performance Gauges (Bottom Center in ref: 75% Succeed, 63% Fail, 45% Exchanging) */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur-xl">
+          {/* Triple Circular Performance Gauges */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               
               {/* Gauge 1: Verified Dispatch Rate */}
-              <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#081224]/50 border border-[#16294d]">
+              <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80">
                 <div className="relative w-24 h-24 mb-2">
                   <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#122444" strokeWidth="8" />
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f1f5f9" strokeWidth="8" />
                     <circle
                       cx="50"
                       cy="50"
                       r="40"
                       fill="none"
-                      stroke="#06b6d4"
+                      stroke="#2563eb"
                       strokeWidth="8"
                       strokeDasharray={2 * Math.PI * 40}
                       strokeDashoffset={2 * Math.PI * 40 * (1 - verificationRate / 100)}
@@ -808,19 +889,19 @@ export const AnalyticsView: React.FC = () => {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-cyan-400 font-mono">{verificationRate}%</span>
+                    <span className="text-xl font-black text-blue-700 font-mono">{verificationRate}%</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Verified Cases</span>
-                <span className="text-[10px] text-slate-400 mt-0.5">Civilian reports confirmed</span>
-                <span className="text-[9px] text-emerald-400 font-semibold mt-1">✓ Zero Prank Rate Goal</span>
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Verified Cases</span>
+                <span className="text-[10px] text-slate-500 mt-0.5">Civilian reports confirmed</span>
+                <span className="text-[9px] text-emerald-600 font-bold mt-1">✓ Zero Prank Rate Goal</span>
               </div>
 
               {/* Gauge 2: Response SLA Compliance */}
-              <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#081224]/50 border border-[#16294d]">
+              <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80">
                 <div className="relative w-24 h-24 mb-2">
                   <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#122444" strokeWidth="8" />
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f1f5f9" strokeWidth="8" />
                     <circle
                       cx="50"
                       cy="50"
@@ -835,19 +916,19 @@ export const AnalyticsView: React.FC = () => {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-orange-400 font-mono">{resolutionRate}%</span>
+                    <span className="text-xl font-black text-orange-600 font-mono">{resolutionRate}%</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Resolution SLA</span>
-                <span className="text-[10px] text-slate-400 mt-0.5">Response & triage under target</span>
-                <span className="text-[9px] text-orange-400 font-semibold mt-1">✓ Target &lt; 10m Arrival</span>
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Resolution SLA</span>
+                <span className="text-[10px] text-slate-500 mt-0.5">Response & triage under target</span>
+                <span className="text-[9px] text-orange-600 font-bold mt-1">✓ Target &lt; 10m Arrival</span>
               </div>
 
               {/* Gauge 3: Inter-Agency Joint Ops */}
-              <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#081224]/50 border border-[#16294d]">
+              <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80">
                 <div className="relative w-24 h-24 mb-2">
                   <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#122444" strokeWidth="8" />
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f1f5f9" strokeWidth="8" />
                     <circle
                       cx="50"
                       cy="50"
@@ -862,12 +943,12 @@ export const AnalyticsView: React.FC = () => {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-amber-400 font-mono">{interAgencyRate}%</span>
+                    <span className="text-xl font-black text-amber-600 font-mono">{interAgencyRate}%</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Cross-Agency Ops</span>
-                <span className="text-[10px] text-slate-400 mt-0.5">Joint PNP · BFP · MDRRMO</span>
-                <span className="text-[9px] text-amber-400 font-semibold mt-1">✓ Synchronized Hotline</span>
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Cross-Agency Ops</span>
+                <span className="text-[10px] text-slate-500 mt-0.5">Joint PNP · BFP · MDRRMO</span>
+                <span className="text-[9px] text-amber-600 font-bold mt-1">✓ Synchronized Hotline</span>
               </div>
 
             </div>
@@ -879,36 +960,36 @@ export const AnalyticsView: React.FC = () => {
         <div className="lg:col-span-3 space-y-5 flex flex-col justify-between">
           
           {/* Card 1: Command Duty Officer & Network Status */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 shadow-xl backdrop-blur-xl space-y-2.5 relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#182a4d] pb-2">
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-2.5 relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <span className="text-[10px] font-mono text-slate-400 uppercase font-bold flex items-center gap-1.5">
-                <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
                 <span>Command Duty Node</span>
               </span>
-              <span className="text-[10px] text-emerald-400 font-bold px-2 py-0.5 bg-emerald-950/70 border border-emerald-500/30 rounded-full">
+              <span className="text-[10px] text-emerald-700 font-bold px-2 py-0.5 bg-emerald-50 border border-emerald-200 rounded-full">
                 Active 911
               </span>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-[#081224] border border-[#1b3156] space-y-1">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
               <span className="text-[10px] text-slate-400 block font-semibold">Chief Watch Commander:</span>
-              <h4 className="text-xs font-black text-white truncate">
+              <h4 className="text-xs font-black text-slate-900 truncate">
                 {agencyUser?.name || 'Central Command Chief'}
               </h4>
-              <span className="text-[10px] text-cyan-400 font-mono block">
+              <span className="text-[10px] text-blue-600 font-mono block">
                 {agencyUser?.email || 'systemadmin@nexus.gov.ph'}
               </span>
             </div>
           </div>
 
-          {/* Card 2: Incident Case Status Donut with Pointer Callouts ("Catalog Status" in ref) */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 shadow-xl backdrop-blur-xl space-y-3 relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#182a4d] pb-2">
-              <span className="text-xs font-black tracking-wider uppercase text-cyan-400 flex items-center gap-1.5">
-                <PieIcon className="w-4 h-4 text-cyan-400" />
+          {/* Card 2: Incident Case Status Donut */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <span className="text-xs font-black tracking-wider uppercase text-blue-600 flex items-center gap-1.5">
+                <PieIcon className="w-4 h-4 text-blue-600" />
                 <span>Incident Case Status</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">Triage Map</span>
+              <span className="text-[10px] text-slate-400 font-mono font-bold">Triage Map</span>
             </div>
 
             {/* Donut with angled pointer callouts */}
@@ -934,11 +1015,11 @@ export const AnalyticsView: React.FC = () => {
                 })}
 
                 {/* Center Core */}
-                <circle cx="90" cy="90" r="28" fill="#081224" stroke="#16294d" strokeWidth="2" />
-                <text x="90" y="87" textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="monospace">
+                <circle cx="90" cy="90" r="28" fill="#ffffff" stroke="#e2e8f0" strokeWidth="2" />
+                <text x="90" y="87" textAnchor="middle" fill="#0f172a" fontSize="13" fontWeight="900" fontFamily="monospace">
                   {totalSubmitted}
                 </text>
-                <text x="90" y="100" textAnchor="middle" fill="#94a3b8" fontSize="7" fontWeight="700" letterSpacing="0.05em">
+                <text x="90" y="100" textAnchor="middle" fill="#64748b" fontSize="7" fontWeight="700" letterSpacing="0.05em">
                   TOTAL
                 </text>
 
@@ -946,60 +1027,60 @@ export const AnalyticsView: React.FC = () => {
                 {/* Resolved (Top Right) */}
                 <line x1="120" y1="65" x2="142" y2="48" stroke="#38bdf8" strokeWidth="1.2" />
                 <line x1="142" y1="48" x2="165" y2="48" stroke="#38bdf8" strokeWidth="1.2" />
-                <text x="168" y="51" fill="#38bdf8" fontSize="8" fontWeight="700">Resolved</text>
+                <text x="168" y="51" fill="#0284c7" fontSize="8" fontWeight="700">Resolved</text>
 
                 {/* Ongoing (Bottom Right) */}
                 <line x1="120" y1="115" x2="142" y2="130" stroke="#2563eb" strokeWidth="1.2" />
                 <line x1="142" y1="130" x2="165" y2="130" stroke="#2563eb" strokeWidth="1.2" />
-                <text x="168" y="133" fill="#60a5fa" fontSize="8" fontWeight="700">Ongoing</text>
+                <text x="168" y="133" fill="#1d4ed8" fontSize="8" fontWeight="700">Ongoing</text>
 
                 {/* Pending (Left) */}
                 <line x1="60" y1="90" x2="38" y2="90" stroke="#f59e0b" strokeWidth="1.2" />
                 <line x1="38" y1="90" x2="18" y2="90" stroke="#f59e0b" strokeWidth="1.2" />
-                <text x="15" y="93" textAnchor="end" fill="#fbbf24" fontSize="8" fontWeight="700">Pending</text>
+                <text x="15" y="93" textAnchor="end" fill="#d97706" fontSize="8" fontWeight="700">Pending</text>
               </svg>
             </div>
 
             {/* Quick Legend Breakdown */}
             <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
               {statusStats.map((s) => (
-                <div key={s.label} className="flex items-center justify-between p-1 rounded bg-[#081224]/80 px-2">
-                  <span className="flex items-center gap-1.5 font-semibold text-slate-300">
+                <div key={s.label} className="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 border border-slate-200/60 px-2.5">
+                  <span className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
                     <span>{s.label}</span>
                   </span>
-                  <span className="font-mono font-bold text-white">{s.pct}%</span>
+                  <span className="font-mono font-bold text-slate-900">{s.pct}%</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Card 3: Territorial Incident Leaderboard ("Interfaces Rank" in ref) */}
-          <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl p-4 shadow-xl backdrop-blur-xl space-y-3 relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#182a4d] pb-2">
-              <span className="text-xs font-black tracking-wider uppercase text-cyan-400 flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-cyan-400" />
-                <span>Territorial Incident Hotspots</span>
+          {/* Card 3: Territorial Incident Leaderboard ("Audience Breakdown" style from reference image) */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <span className="text-xs font-black tracking-wider uppercase text-blue-600 flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-blue-600" />
+                <span>Territorial Hotspots</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">Top 5 LGUs</span>
+              <span className="text-[10px] text-slate-400 font-mono font-bold">Top 5 LGUs</span>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {topMunicipalities.map((item, idx) => (
                 <div key={item.name} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300 font-semibold truncate max-w-[150px] flex items-center gap-1.5">
-                      <span className="text-[10px] font-mono text-cyan-400 font-bold">0{idx + 1}.</span>
+                    <span className="text-slate-700 font-semibold truncate max-w-[150px] flex items-center gap-1.5">
+                      <span className="text-[10px] font-mono text-blue-600 font-bold">0{idx + 1}.</span>
                       <span>{item.name}</span>
                     </span>
-                    <span className="font-mono text-xs font-bold text-white">{item.count}</span>
+                    <span className="font-mono text-xs font-bold text-slate-900">{item.count}</span>
                   </div>
 
-                  {/* Horizontal Gradient Progress Bar */}
-                  <div className="h-2 w-full bg-[#081224] rounded-full overflow-hidden border border-[#182c50]">
+                  {/* Horizontal Blue Progress Bar Matching Reference Image */}
+                  <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-400 transition-all duration-700"
-                      style={{ width: `${Math.max(item.percentage, 8)}%` }}
+                      className="h-full rounded-full bg-blue-600 transition-all duration-700"
+                      style={{ width: `${Math.max(item.percentage, 10)}%` }}
                     />
                   </div>
                 </div>
@@ -1012,15 +1093,17 @@ export const AnalyticsView: React.FC = () => {
       </div>
 
       {/* ==================== BOTTOM FULL-WIDTH: COMPLETE INCIDENT MATRIX ==================== */}
-      <div className="bg-[#0b162c]/95 border border-[#1e345e] rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
-        <div className="p-4 sm:p-5 border-b border-[#182a4d] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <Layers className="w-5 h-5 text-cyan-400" />
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50">
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-700 border border-blue-200/60">
+              <Layers className="w-5 h-5" />
+            </div>
             <div>
-              <h3 className="text-sm sm:text-base font-black text-white">
+              <h3 className="text-base font-black text-slate-900">
                 Complete Standardized Incident Classification Matrix (24 Types)
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Official Incident Registry mapping category color codes, primary responding agencies, and provincial share.
               </p>
             </div>
@@ -1032,9 +1115,9 @@ export const AnalyticsView: React.FC = () => {
               placeholder="Search classification..."
               value={tableSearch}
               onChange={(e) => setTableSearch(e.target.value)}
-              className="px-3 py-1.5 bg-[#081224] border border-[#1e345e] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 w-full sm:w-60"
+              className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full sm:w-60"
             />
-            <span className="text-xs font-mono text-cyan-400 font-bold shrink-0 bg-[#081224] px-2.5 py-1 rounded-lg border border-[#1e345e]">
+            <span className="text-xs font-mono text-blue-700 font-bold shrink-0 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-200/60">
               {filteredTypeStatistics.filter((t) => t.count > 0).length} Active Types
             </span>
           </div>
@@ -1042,7 +1125,7 @@ export const AnalyticsView: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#081224] text-slate-400 uppercase font-mono text-[10px] border-b border-[#182a4d]">
+            <thead className="bg-slate-50/90 text-slate-500 uppercase font-mono text-[10px] border-b border-slate-200/80">
               <tr>
                 <th className="py-3 px-4">#</th>
                 <th className="py-3 px-4">Standard Classification</th>
@@ -1053,43 +1136,43 @@ export const AnalyticsView: React.FC = () => {
                 <th className="py-3 px-4 text-right">Provincial Share</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#16274a] text-slate-300">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredTypeStatistics.map((type) => (
                 <tr
                   key={type.id}
-                  className={`hover:bg-[#122244]/60 transition ${
-                    type.count > 0 ? 'bg-[#102040]/40' : 'opacity-70'
+                  className={`hover:bg-slate-50/80 transition ${
+                    type.count > 0 ? 'bg-blue-50/20' : 'opacity-70'
                   }`}
                 >
-                  <td className="py-2.5 px-4 font-mono font-bold text-cyan-400">
+                  <td className="py-3 px-4 font-mono font-bold text-blue-700">
                     #{type.number}
                   </td>
-                  <td className="py-2.5 px-4 font-bold text-white">
+                  <td className="py-3 px-4 font-bold text-slate-900">
                     {type.en}
                   </td>
-                  <td className="py-2.5 px-4 text-slate-400">
+                  <td className="py-3 px-4 text-slate-500">
                     {type.fil}
                   </td>
-                  <td className="py-2.5 px-4">
+                  <td className="py-3 px-4">
                     <span
-                      className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase inline-block"
+                      className="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase inline-block"
                       style={{
-                        backgroundColor: `${type.colorHex}22`,
+                        backgroundColor: `${type.colorHex}18`,
                         color: type.colorHex,
-                        border: `1px solid ${type.colorHex}55`,
+                        border: `1px solid ${type.colorHex}40`,
                       }}
                     >
                       {type.category}
                     </span>
                   </td>
-                  <td className="py-2.5 px-4 font-semibold text-slate-300">
+                  <td className="py-3 px-4 font-semibold text-slate-700">
                     {type.primaryAgency}
                   </td>
-                  <td className="py-2.5 px-4 text-right font-mono font-bold text-white">
+                  <td className="py-3 px-4 text-right font-mono font-bold text-slate-900">
                     {type.count}
                   </td>
-                  <td className="py-2.5 px-4 text-right font-mono font-bold">
-                    <span className={type.count > 0 ? 'text-emerald-400' : 'text-slate-500'}>
+                  <td className="py-3 px-4 text-right font-mono font-bold">
+                    <span className={type.count > 0 ? 'text-emerald-600' : 'text-slate-400'}>
                       {type.percentage}%
                     </span>
                   </td>

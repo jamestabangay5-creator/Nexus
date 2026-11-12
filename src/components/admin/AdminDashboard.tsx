@@ -99,63 +99,71 @@ export const AdminDashboard: React.FC<Props> = ({
 
   return (
     <div className="space-y-6">
-      {/* Agency Command Banner */}
-      <div
-        className={`bg-gradient-to-r ${agencyInfo.bgGrad} border ${agencyInfo.border} rounded-2xl p-4 sm:p-5 shadow-2xl relative overflow-hidden`}
-      >
+      {/* Agency Command Banner - Luminous Frosted Neo-Aero Glass */}
+      <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
           <div className="flex items-center gap-3.5 sm:gap-4">
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-950/85 border border-slate-700/80 shadow-inner flex items-center justify-center shrink-0">
-              {agency === 'CENTRAL' && <Radio className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400 animate-pulse" />}
-              {agency === 'PNP' && <ShieldAlert className="w-7 h-7 sm:w-8 sm:h-8 text-blue-400 animate-pulse" />}
-              {agency === 'BFP' && <Flame className="w-7 h-7 sm:w-8 sm:h-8 text-orange-400 animate-pulse" />}
-              {agency === 'MDRRMO' && <Activity className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400 animate-pulse" />}
+            <div className={`p-3 sm:p-3.5 rounded-2xl shadow-sm border flex items-center justify-center shrink-0 ${
+              agency === 'CENTRAL' ? 'bg-purple-50 text-purple-600 border-purple-200' :
+              agency === 'PNP' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+              agency === 'BFP' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+              'bg-emerald-50 text-emerald-600 border-emerald-200'
+            }`}>
+              {agency === 'CENTRAL' && <Radio className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600 animate-pulse" />}
+              {agency === 'PNP' && <ShieldAlert className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600 animate-pulse" />}
+              {agency === 'BFP' && <Flame className="w-7 h-7 sm:w-8 sm:h-8 text-orange-600 animate-pulse" />}
+              {agency === 'MDRRMO' && <Activity className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 animate-pulse" />}
             </div>
 
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] sm:text-xs font-black tracking-widest uppercase px-2 py-0.5 rounded bg-white/10 text-white border border-white/20">
+                <span className={`text-[10px] sm:text-xs font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full border ${
+                  agency === 'CENTRAL' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                  agency === 'PNP' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                  agency === 'BFP' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                  'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}>
                   {agencyInfo.badge}
                 </span>
-                <span className="text-[11px] sm:text-xs text-slate-300 font-mono">
+                <span className="text-[11px] sm:text-xs text-slate-500 font-mono font-semibold">
                   Station: {adminProfile.badgeNumber}
                 </span>
               </div>
-              <h1 className="text-lg sm:text-2xl font-black text-white tracking-tight mt-1">
+              <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
                 {language === 'fil' ? agencyInfo.fullNameFil : agencyInfo.fullNameEn}
               </h1>
-              <p className="text-xs text-slate-300 max-w-2xl mt-0.5 hidden xs:block line-clamp-2 sm:line-clamp-none">
+              <p className="text-xs text-slate-500 max-w-2xl mt-0.5 hidden xs:block line-clamp-2 sm:line-clamp-none">
                 {language === 'fil' ? agencyInfo.descriptionFil : agencyInfo.descriptionEn}
               </p>
             </div>
           </div>
 
           {/* Commander, Hotline info & Profile Settings Button */}
-          <div className="flex flex-row items-center justify-between w-full lg:w-auto gap-3 bg-slate-950/85 border border-slate-800 p-3 rounded-xl text-xs shrink-0 flex-wrap sm:flex-nowrap">
+          <div className="flex flex-row items-center justify-between w-full lg:w-auto gap-3 bg-slate-50/90 border border-slate-200/80 p-3 rounded-2xl text-xs shrink-0 flex-wrap sm:flex-nowrap shadow-xs">
             <div>
-              <span className="text-[9px] sm:text-[10px] text-slate-400 block uppercase font-bold">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 block uppercase font-bold">
                 Duty Officer:
               </span>
-              <span className="font-bold text-white block truncate max-w-[140px]">
+              <span className="font-bold text-slate-900 block truncate max-w-[140px]">
                 {adminProfile?.name || (agency === 'CENTRAL' && agencyUser ? agencyUser.name : 'Duty Officer')}
               </span>
-              <span className="text-[10px] text-purple-300 font-mono block truncate max-w-[140px]">
+              <span className="text-[10px] text-indigo-600 font-mono font-bold block truncate max-w-[140px]">
                 {adminProfile?.title || (agency === 'CENTRAL' && agencyUser ? agencyUser.email : 'Command Staff')}
               </span>
             </div>
-            <div className="border-l border-slate-800 pl-3">
-              <span className="text-[9px] sm:text-[10px] text-slate-400 block uppercase font-bold flex items-center gap-1">
-                <Phone className="w-3 h-3 text-red-400" />
+            <div className="border-l border-slate-200 pl-3">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 block uppercase font-bold flex items-center gap-1">
+                <Phone className="w-3 h-3 text-red-500" />
                 Emergency Hotline:
               </span>
-              <span className="font-mono font-bold text-red-300 text-sm sm:text-base">
+              <span className="font-mono font-black text-red-600 text-sm sm:text-base">
                 {agencyDetails[agency]?.hotline || agencyInfo.hotline}
               </span>
             </div>
-            <div className="border-l border-slate-800 pl-3">
+            <div className="border-l border-slate-200 pl-3">
               <button
                 onClick={openAgencyProfileModal}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md hover:scale-[1.02]"
+                className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-500/20 hover:scale-[1.02]"
                 title="Edit department profile, change password, update duty officer & hotlines"
               >
                 <Settings className="w-3.5 h-3.5" />
@@ -168,21 +176,21 @@ export const AdminDashboard: React.FC<Props> = ({
       </div>
 
       {/* Navigation Sub-Tabs with Smooth Horizontal Mobile Scrolling */}
-      <div ref={tabContentRef} className="border-b border-slate-800 overflow-x-auto no-scrollbar pb-0.5 scroll-mt-20">
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-max">
+      <div ref={tabContentRef} className="overflow-x-auto no-scrollbar pb-0.5 scroll-mt-20">
+        <div className="glass-card-subtle bg-white/70 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 flex items-center gap-1.5 min-w-max shadow-sm">
           {/* Department Specialized Command Console */}
           <button
             onClick={() => setActiveTab('command')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-t-xl border-t border-x transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
               activeTab === 'command'
-                ? 'bg-slate-900 border-slate-700 text-white shadow-sm ring-1 ring-purple-500/20'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
             }`}
           >
-            {agency === 'CENTRAL' && <Radio className="w-4 h-4 text-purple-400 animate-pulse" />}
-            {agency === 'PNP' && <ShieldAlert className="w-4 h-4 text-blue-400 animate-pulse" />}
-            {agency === 'BFP' && <Flame className="w-4 h-4 text-orange-400 animate-pulse" />}
-            {agency === 'MDRRMO' && <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />}
+            {agency === 'CENTRAL' && <Radio className="w-4 h-4 text-purple-600 animate-pulse" />}
+            {agency === 'PNP' && <ShieldAlert className="w-4 h-4 text-blue-600 animate-pulse" />}
+            {agency === 'BFP' && <Flame className="w-4 h-4 text-orange-600 animate-pulse" />}
+            {agency === 'MDRRMO' && <Activity className="w-4 h-4 text-emerald-600 animate-pulse" />}
             <span>
               {agency === 'CENTRAL'
                 ? 'Joint Operations Command'
@@ -192,7 +200,7 @@ export const AdminDashboard: React.FC<Props> = ({
                 ? 'Fire Dispatch'
                 : 'Disaster Operations'}
             </span>
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-purple-950 text-purple-300 font-bold uppercase tracking-wider border border-purple-500/30">
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-indigo-50 text-indigo-700 font-black uppercase tracking-wider border border-indigo-200">
               Live
             </span>
           </button>
@@ -200,15 +208,15 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Active Reports Registry */}
           <button
             onClick={() => setActiveTab('reports')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-t-xl border-t border-x transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
               activeTab === 'reports'
-                ? 'bg-slate-900 border-slate-700 text-white shadow-sm ring-1 ring-blue-500/20'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
             }`}
           >
-            <ListFilter className="w-4 h-4 text-blue-400" />
+            <ListFilter className="w-4 h-4 text-blue-600" />
             <span>{t.tabActiveReports}</span>
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-950 text-slate-300 font-mono font-bold">
+            <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-50 text-blue-700 border border-blue-200/60 font-mono font-bold">
               {activeReportsCount}
             </span>
           </button>
@@ -216,42 +224,42 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Map & Heatmap */}
           <button
             onClick={() => setActiveTab('map')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-t-xl border-t border-x transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
               activeTab === 'map'
-                ? 'bg-slate-900 border-slate-700 text-white shadow-sm ring-1 ring-emerald-500/20'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
             }`}
           >
-            <Map className="w-4 h-4 text-emerald-400" />
+            <Map className="w-4 h-4 text-emerald-600" />
             <span>{t.tabMapHeatmap}</span>
           </button>
 
           {/* Statistics & Analytics */}
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-t-xl border-t border-x transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
               activeTab === 'analytics'
-                ? 'bg-slate-900 border-slate-700 text-white shadow-sm ring-1 ring-indigo-500/20'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
             }`}
           >
-            <BarChart3 className="w-4 h-4 text-indigo-400" />
+            <BarChart3 className="w-4 h-4 text-indigo-600" />
             <span>{t.tabStatistics}</span>
           </button>
 
           {/* Inter-Agency Coordination */}
           <button
             onClick={() => setActiveTab('coordination')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-t-xl border-t border-x transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
               activeTab === 'coordination'
-                ? 'bg-slate-900 border-slate-700 text-white shadow-sm ring-1 ring-amber-500/20'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
             }`}
           >
-            <Users className="w-4 h-4 text-amber-400" />
+            <Users className="w-4 h-4 text-amber-600" />
             <span>{t.tabCoordination}</span>
             {incomingCoordCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500 text-slate-950 font-bold animate-bounce">
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-white font-black animate-bounce shadow-xs">
                 {incomingCoordCount}
               </span>
             )}
@@ -260,15 +268,15 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Emergency Archive */}
           <button
             onClick={() => setActiveTab('archive')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-t-xl border-t border-x transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
               activeTab === 'archive'
-                ? 'bg-slate-900 border-slate-700 text-white shadow-sm ring-1 ring-rose-500/20'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
             }`}
           >
-            <Archive className="w-4 h-4 text-rose-400" />
+            <Archive className="w-4 h-4 text-rose-600" />
             <span>Emergency Archive</span>
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-rose-950 text-rose-300 font-mono font-bold">
+            <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-50 text-rose-700 border border-rose-200/60 font-mono font-bold">
               {archivedCount}
             </span>
           </button>

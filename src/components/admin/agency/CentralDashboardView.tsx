@@ -68,96 +68,116 @@ export const CentralDashboardView: React.FC<Props> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      {/* Top 911 Master KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Top 911 Master KPI Cards - Frosted Glass matching Reference Design */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Total Active Incidents */}
-        <div className="bg-slate-900 border border-purple-500/30 rounded-2xl p-4 shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Total 911 Incidents
             </span>
-            <span className="text-2xl sm:text-3xl font-black text-white mt-1 block">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0 shadow-2xs">
+              <Radio className="w-5 h-5 animate-pulse" />
+            </div>
+          </div>
+          <div>
+            <span className="text-2xl sm:text-3xl font-black text-slate-900 block">
               {activeReports.length}
             </span>
-            <span className="text-[10px] text-purple-400 font-medium">
-              Unified Provincial Registry
-            </span>
-          </div>
-          <div className="p-3 bg-purple-600/20 text-purple-400 rounded-xl border border-purple-500/30">
-            <Radio className="w-6 h-6 animate-pulse" />
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-0.5">
+                <TrendingUp className="w-3 h-3" /> Live Synced
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Unified Registry</span>
+            </div>
           </div>
         </div>
 
         {/* Pending Verification */}
-        <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               911 Triage Queue
             </span>
-            <span className="text-2xl sm:text-3xl font-black text-amber-400 mt-1 block">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center shrink-0 shadow-2xs">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <span className="text-2xl sm:text-3xl font-black text-amber-600 block">
               {pendingReports.length}
             </span>
-            <span className="text-[10px] text-amber-300 font-medium">
-              Requires Initial Verification
-            </span>
-          </div>
-          <div className="p-3 bg-amber-600/20 text-amber-400 rounded-xl border border-amber-500/30">
-            <Clock className="w-6 h-6" />
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                Action Required
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Needs Verification</span>
+            </div>
           </div>
         </div>
 
         {/* Critical Red Alerts */}
-        <div className="bg-slate-900 border border-red-500/30 rounded-2xl p-4 shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Critical Red Threats
             </span>
-            <span className="text-2xl sm:text-3xl font-black text-red-400 mt-1 block">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center shrink-0 shadow-2xs">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <span className="text-2xl sm:text-3xl font-black text-rose-600 block">
               {criticalReports.length}
             </span>
-            <span className="text-[10px] text-red-300 font-medium">
-              High-Risk Immediate Response
-            </span>
-          </div>
-          <div className="p-3 bg-red-600/20 text-red-400 rounded-xl border border-red-500/30">
-            <AlertTriangle className="w-6 h-6" />
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                High Priority
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Immediate Response</span>
+            </div>
           </div>
         </div>
 
         {/* Response Teams Deployed */}
-        <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4 shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Ongoing Deployments
             </span>
-            <span className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1 block">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0 shadow-2xs">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <span className="text-2xl sm:text-3xl font-black text-emerald-600 block">
               {ongoingReports.length}
             </span>
-            <span className="text-[10px] text-emerald-300 font-medium">
-              Active Units on Scene
-            </span>
-          </div>
-          <div className="p-3 bg-emerald-600/20 text-emerald-400 rounded-xl border border-emerald-500/30">
-            <CheckCircle2 className="w-6 h-6" />
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                Active En-route
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Units on Scene</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* High-Priority Inter-Agency Mutual Aid Command (At Top for Fast Notice) */}
-      <div className="bg-gradient-to-r from-purple-950/70 via-slate-900 to-slate-900 border border-purple-500/40 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in">
+      <div className="glass-card bg-gradient-to-r from-indigo-50/90 via-purple-50/80 to-blue-50/90 border border-indigo-200/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-purple-400 font-bold text-xs uppercase tracking-wider">
-            <Users className="w-4 h-4 text-purple-400 animate-pulse" />
+          <div className="flex items-center gap-2 text-indigo-700 font-black text-xs uppercase tracking-wider">
+            <Users className="w-4 h-4 text-indigo-600 animate-pulse" />
             <span>Unified 911 Inter-Agency Mutual Aid Command</span>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+          <p className="text-xs text-slate-600 leading-relaxed max-w-2xl font-medium">
             Coordinate synchronized multi-agency deployments across PNP Police, BFP Fire Protection, and MDRRMO Emergency Rescue.
           </p>
         </div>
         <button
           type="button"
           onClick={onRequestAssistance}
-          className="w-full md:w-auto px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-purple-950/60 cursor-pointer shrink-0"
+          className="w-full md:w-auto px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 cursor-pointer shrink-0"
         >
           <Users className="w-3.5 h-3.5" />
           <span>Launch Inter-Agency Mutual Aid</span>
@@ -168,51 +188,51 @@ export const CentralDashboardView: React.FC<Props> = ({
       <div>
         <div className="flex items-center justify-between pb-2 mb-3">
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-purple-400" />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            <Layers className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
               Synchronized Multi-Agency Department Matrix
             </h3>
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-500 font-medium">
             Live Central Operations Link
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* PNP Police Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/60 to-slate-900 border border-blue-500/40 shadow-xl space-y-3">
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-blue-200/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
+                <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200">
                   <ShieldAlert className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">PNP Police Command</h4>
-                  <span className="text-[10px] text-blue-300">{adminProfiles.PNP.name}</span>
+                  <h4 className="text-sm font-black text-slate-900">PNP Police Command</h4>
+                  <span className="text-[10px] text-blue-700 font-semibold">{adminProfiles.PNP.name}</span>
                 </div>
               </div>
-              <span className="text-xs font-mono font-bold text-blue-400 bg-blue-950 px-2 py-0.5 rounded border border-blue-800">
+              <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
                 {pnpReports.length} Cases
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs text-slate-300 pt-1">
+            <div className="space-y-1.5 text-xs text-slate-600 pt-1">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <Car className="w-3.5 h-3.5 text-blue-400" /> Patrol Fleet Ready:
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Car className="w-3.5 h-3.5 text-blue-600" /> Patrol Fleet Ready:
                 </span>
-                <span className="font-bold text-white">{onPatrolCount} Units</span>
+                <span className="font-bold text-slate-900">{onPatrolCount} Units</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Emergency Hotline:</span>
-                <span className="font-mono text-blue-300 font-bold">911 / (02) 8722-0650</span>
+                <span className="text-slate-500">Emergency Hotline:</span>
+                <span className="font-mono text-blue-700 font-bold">911 / (02) 8722-0650</span>
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => onSwitchAgencyView('PNP')}
-              className="w-full py-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 border border-blue-500/40 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+              className="w-full py-2.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2 shadow-2xs"
             >
               <span>Inspect Police Console</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -220,39 +240,39 @@ export const CentralDashboardView: React.FC<Props> = ({
           </div>
 
           {/* BFP Fire Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-950/60 to-slate-900 border border-orange-500/40 shadow-xl space-y-3">
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-orange-200/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-orange-600/20 text-orange-400 border border-orange-500/30">
+                <div className="p-2.5 rounded-2xl bg-orange-50 text-orange-600 border border-orange-200">
                   <Flame className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">BFP Fire Protection</h4>
-                  <span className="text-[10px] text-orange-300">{adminProfiles.BFP.name}</span>
+                  <h4 className="text-sm font-black text-slate-900">BFP Fire Protection</h4>
+                  <span className="text-[10px] text-orange-700 font-semibold">{adminProfiles.BFP.name}</span>
                 </div>
               </div>
-              <span className="text-xs font-mono font-bold text-orange-400 bg-orange-950 px-2 py-0.5 rounded border border-orange-800">
+              <span className="text-xs font-mono font-bold text-orange-700 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
                 {bfpReports.length} Cases
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs text-slate-300 pt-1">
+            <div className="space-y-1.5 text-xs text-slate-600 pt-1">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <Truck className="w-3.5 h-3.5 text-orange-400" /> In Station Ready:
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Truck className="w-3.5 h-3.5 text-orange-600" /> In Station Ready:
                 </span>
-                <span className="font-bold text-white">{inStationCount} Apparatus</span>
+                <span className="font-bold text-slate-900">{inStationCount} Apparatus</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Alarm Escalation:</span>
-                <span className="font-mono text-orange-300 font-bold">{fireAlarmLevel}</span>
+                <span className="text-slate-500">Alarm Escalation:</span>
+                <span className="font-mono text-orange-700 font-bold">{fireAlarmLevel}</span>
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => onSwitchAgencyView('BFP')}
-              className="w-full py-2 bg-orange-600/30 hover:bg-orange-600/50 text-orange-200 border border-orange-500/40 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+              className="w-full py-2.5 bg-orange-50 hover:bg-orange-600 text-orange-700 hover:text-white border border-orange-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2 shadow-2xs"
             >
               <span>Inspect Fire Console</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -260,35 +280,35 @@ export const CentralDashboardView: React.FC<Props> = ({
           </div>
 
           {/* MDRRMO Rescue Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/40 shadow-xl space-y-3">
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-emerald-200/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30">
+                <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200">
                   <Activity className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">MDRRMO Rescue</h4>
-                  <span className="text-[10px] text-emerald-300">{adminProfiles.MDRRMO.name}</span>
+                  <h4 className="text-sm font-black text-slate-900">MDRRMO Rescue</h4>
+                  <span className="text-[10px] text-emerald-700 font-semibold">{adminProfiles.MDRRMO.name}</span>
                 </div>
               </div>
-              <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+              <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 {mdrrmoReports.length} Cases
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs text-slate-300 pt-1">
+            <div className="space-y-1.5 text-xs text-slate-600 pt-1">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <Ambulance className="w-3.5 h-3.5 text-emerald-400" /> Ambulances Ready:
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Ambulance className="w-3.5 h-3.5 text-emerald-600" /> Ambulances Ready:
                 </span>
-                <span className="font-bold text-white">{availableMedics} / {medicalUnits.length} Medics</span>
+                <span className="font-bold text-slate-900">{availableMedics} / {medicalUnits.length} Medics</span>
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => onSwitchAgencyView('MDRRMO')}
-              className="w-full py-2 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 border border-emerald-500/40 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+              className="w-full py-2.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2 shadow-2xs"
             >
               <span>Inspect Rescue Console</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -298,11 +318,11 @@ export const CentralDashboardView: React.FC<Props> = ({
       </div>
 
       {/* Master 911 Live Triage & Intake Queue */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-purple-400 animate-pulse" />
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+            <Radio className="w-4 h-4 text-indigo-600 animate-pulse" />
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">
               Central 911 Unified Triage & Incoming Dispatch Stream
             </h2>
           </div>
@@ -311,7 +331,7 @@ export const CentralDashboardView: React.FC<Props> = ({
             <button
               type="button"
               onClick={onRequestAssistance}
-              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow"
+              className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20"
             >
               <Users className="w-3.5 h-3.5" />
               <span>Mutual Aid Hub</span>
@@ -320,7 +340,7 @@ export const CentralDashboardView: React.FC<Props> = ({
         </div>
 
         {activeReports.length === 0 ? (
-          <div className="text-center py-12 text-slate-500 text-xs">
+          <div className="text-center py-12 text-slate-500 text-xs font-medium">
             No active emergency incidents across any department in Oriental Mindoro.
           </div>
         ) : (
@@ -331,58 +351,58 @@ export const CentralDashboardView: React.FC<Props> = ({
                 <div
                   key={report.id}
                   onClick={() => onSelectReport(report.id)}
-                  className="p-3.5 sm:p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-purple-500/60 transition cursor-pointer group"
+                  className="p-4 rounded-2xl bg-slate-50/80 hover:bg-white border border-slate-200/80 hover:border-indigo-300 transition cursor-pointer group shadow-2xs"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-black text-white">
+                      <span className="font-mono text-xs font-black text-slate-900">
                         {report.trackingCode}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
                           agency === 'PNP'
-                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
                             : agency === 'BFP'
-                            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40'
-                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                            ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
                       >
                         {agency}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                           report.category === 'RED'
-                            ? 'bg-red-500/20 text-red-300 border border-red-500/40'
-                            : 'bg-slate-800 text-slate-300'
+                            ? 'bg-red-50 text-red-700 border border-red-200'
+                            : 'bg-slate-100 text-slate-700 border border-slate-200'
                         }`}
                       >
                         {report.category}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                           report.status === 'Ongoing'
-                            ? 'bg-orange-500/20 text-orange-300'
+                            ? 'bg-orange-50 text-orange-700 border border-orange-200'
                             : report.status === 'Accepted'
-                            ? 'bg-blue-500/20 text-blue-300'
-                            : 'bg-amber-500/20 text-amber-300'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
                         }`}
                       >
                         {report.status}
                       </span>
                     </div>
 
-                    <span className="text-[10px] text-slate-500 font-mono">
+                    <span className="text-[10px] text-slate-400 font-mono font-medium">
                       {report.dateTime?.slice(11, 16) || 'Just now'}
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-200 font-medium line-clamp-2 mb-2">
+                  <p className="text-xs text-slate-700 font-medium line-clamp-2 mb-2">
                     {report.description}
                   </p>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-900">
-                    <span className="flex items-center gap-1 text-slate-300 truncate max-w-[260px]">
-                      <MapPin className="w-3 h-3 text-red-400 shrink-0" />
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                    <span className="flex items-center gap-1 text-slate-600 truncate max-w-[260px]">
+                      <MapPin className="w-3 h-3 text-red-500 shrink-0" />
                       {report.barangay}, {report.municipality || 'Calapan City'} (Citizen: {report.residentName})
                     </span>
                     <button
@@ -391,7 +411,7 @@ export const CentralDashboardView: React.FC<Props> = ({
                         e.stopPropagation();
                         onSelectReport(report.id);
                       }}
-                      className="text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition"
+                      className="text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition"
                     >
                       <span>Command Triage</span>
                       <Eye className="w-3 h-3" />

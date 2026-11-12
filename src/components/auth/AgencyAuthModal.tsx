@@ -139,22 +139,26 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const currentCred = OFFICIAL_AGENCY_ACCOUNTS[selectedAgency];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in">
       <div
-        className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-lg glass-card border border-white/95 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] text-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Emergency Status Banner */}
-        <div className="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="bg-white/80 px-6 py-4 border-b border-slate-200/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-blue-400">
-              <Radio className="w-5 h-5 animate-pulse" />
+            <div className="w-10 h-10 rounded-2xl bg-white p-1 border border-slate-200/80 shadow-xs flex items-center justify-center">
+              <img
+                src="/icons/nexus-crystal-icon.svg"
+                alt="Nexus 3D Crystal"
+                className="w-full h-full object-contain drop-shadow-xs"
+              />
             </div>
             <div>
-              <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 shadow-xs">
                 Official Government Access
               </span>
-              <h2 className="text-base font-black text-white tracking-tight mt-0.5">
+              <h2 className="text-base font-black text-slate-900 tracking-tight mt-0.5">
                 Multi-Agency Command Sign-In
               </h2>
             </div>
@@ -162,7 +166,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer"
             aria-label="Close Agency Login"
           >
             <X className="w-5 h-5" />
@@ -173,7 +177,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-6 overflow-y-auto space-y-4">
           {/* Agency Selection Tabs */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-2">
+            <label className="block text-xs font-bold text-slate-700 mb-2">
               Select Agency Department:
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -181,72 +185,72 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => handleSelectAgencyTab('CENTRAL')}
-                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 shadow-xs ${
                   selectedAgency === 'CENTRAL'
-                    ? 'bg-purple-950/70 border-purple-500 text-white shadow-lg ring-1 ring-purple-500'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    ? 'bg-purple-50 border-purple-500 text-purple-900 shadow-sm ring-1 ring-purple-400 font-bold'
+                    : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Radio className={`w-4 h-4 ${selectedAgency === 'CENTRAL' ? 'text-purple-400' : 'text-slate-500'}`} />
-                <span className="text-[11px] font-bold">Central 911</span>
+                <Radio className={`w-4 h-4 ${selectedAgency === 'CENTRAL' ? 'text-purple-600' : 'text-slate-400'}`} />
+                <span className="text-[11px]">Central 911</span>
               </button>
 
               {/* PNP Police */}
               <button
                 type="button"
                 onClick={() => handleSelectAgencyTab('PNP')}
-                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 shadow-xs ${
                   selectedAgency === 'PNP'
-                    ? 'bg-blue-950/70 border-blue-500 text-white shadow-lg ring-1 ring-blue-500'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-sm ring-1 ring-blue-400 font-bold'
+                    : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <ShieldAlert className={`w-4 h-4 ${selectedAgency === 'PNP' ? 'text-blue-400' : 'text-slate-500'}`} />
-                <span className="text-[11px] font-bold">PNP Police</span>
+                <ShieldAlert className={`w-4 h-4 ${selectedAgency === 'PNP' ? 'text-blue-600' : 'text-slate-400'}`} />
+                <span className="text-[11px]">PNP Police</span>
               </button>
 
               {/* BFP Fire */}
               <button
                 type="button"
                 onClick={() => handleSelectAgencyTab('BFP')}
-                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 shadow-xs ${
                   selectedAgency === 'BFP'
-                    ? 'bg-orange-950/70 border-orange-500 text-white shadow-lg ring-1 ring-orange-500'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    ? 'bg-amber-50 border-amber-500 text-amber-900 shadow-sm ring-1 ring-amber-400 font-bold'
+                    : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Flame className={`w-4 h-4 ${selectedAgency === 'BFP' ? 'text-orange-400' : 'text-slate-500'}`} />
-                <span className="text-[11px] font-bold">BFP Fire</span>
+                <Flame className={`w-4 h-4 ${selectedAgency === 'BFP' ? 'text-amber-600' : 'text-slate-400'}`} />
+                <span className="text-[11px]">BFP Fire</span>
               </button>
 
               {/* MDRRMO Rescue */}
               <button
                 type="button"
                 onClick={() => handleSelectAgencyTab('MDRRMO')}
-                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
+                className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 shadow-xs ${
                   selectedAgency === 'MDRRMO'
-                    ? 'bg-emerald-950/70 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm ring-1 ring-emerald-400 font-bold'
+                    : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Activity className={`w-4 h-4 ${selectedAgency === 'MDRRMO' ? 'text-emerald-400' : 'text-slate-500'}`} />
-                <span className="text-[11px] font-bold">MDRRMO</span>
+                <Activity className={`w-4 h-4 ${selectedAgency === 'MDRRMO' ? 'text-emerald-600' : 'text-slate-400'}`} />
+                <span className="text-[11px]">MDRRMO</span>
               </button>
             </div>
           </div>
 
           {/* Selected Agency Info Card */}
-          <div className="p-3.5 bg-slate-950/90 border border-slate-800 rounded-2xl flex items-center justify-between gap-3">
+          <div className="p-3.5 bg-white/90 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-slate-900 border border-slate-700">
-                {selectedAgency === 'CENTRAL' && <Radio className="w-5 h-5 text-purple-400" />}
-                {selectedAgency === 'PNP' && <ShieldAlert className="w-5 h-5 text-blue-400" />}
-                {selectedAgency === 'BFP' && <Flame className="w-5 h-5 text-orange-400" />}
-                {selectedAgency === 'MDRRMO' && <Activity className="w-5 h-5 text-emerald-400" />}
+              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                {selectedAgency === 'CENTRAL' && <Radio className="w-5 h-5 text-purple-600" />}
+                {selectedAgency === 'PNP' && <ShieldAlert className="w-5 h-5 text-blue-600" />}
+                {selectedAgency === 'BFP' && <Flame className="w-5 h-5 text-amber-600" />}
+                {selectedAgency === 'MDRRMO' && <Activity className="w-5 h-5 text-emerald-600" />}
               </div>
               <div>
-                <span className="text-xs font-bold text-white block">{currentCred.name}</span>
-                <span className="text-[10px] text-slate-400 block">{currentCred.title} · {currentCred.badgeNumber}</span>
+                <span className="text-xs font-bold text-slate-900 block">{currentCred.name}</span>
+                <span className="text-[10px] text-slate-500 block font-medium">{currentCred.title} · {currentCred.badgeNumber}</span>
               </div>
             </div>
 
@@ -254,7 +258,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={() => handleDirectDemoLogin(selectedAgency)}
-              className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow cursor-pointer shrink-0"
+              className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer shrink-0"
               title={`Instantly sign in as ${selectedAgency} Admin`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
@@ -264,8 +268,8 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
           {/* Error & Success Messages */}
           {errorMsg && (
-            <div className="p-3 bg-rose-950/60 border border-rose-800 rounded-2xl flex items-start gap-2.5 text-xs text-rose-300 animate-in fade-in">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5 text-xs text-rose-700 animate-in fade-in shadow-xs">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <span className="font-bold block">Access Denied</span>
                 <span>{errorMsg}</span>
@@ -274,8 +278,8 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
           )}
 
           {successMsg && (
-            <div className="p-3 bg-emerald-950/60 border border-emerald-800 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-300 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-800 animate-in fade-in shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span className="font-bold">{successMsg}</span>
             </div>
           )}
@@ -284,42 +288,42 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
           <form onSubmit={handleSubmit} className="space-y-3.5 pt-1">
             {/* Email Field */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                 <span>Official Agency Email</span>
                 <span className="text-[10px] text-slate-500 font-mono">@nexus.gov.ph</span>
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={currentCred.email}
                   required
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-mono"
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition font-mono shadow-xs"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                 <span>Access Password</span>
                 <span className="text-[10px] text-slate-500">Official Department Key</span>
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+                <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter official password (optional for demo)"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-xs"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                  className="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                   aria-label="Toggle password visibility"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -331,7 +335,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-indigo-950/60 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[44px]"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white font-bold text-xs rounded-xl transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[44px]"
             >
               {loading ? (
                 <>
@@ -349,11 +353,11 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
           </form>
 
           {/* Footer note */}
-          <div className="text-center pt-2 border-t border-slate-800">
+          <div className="text-center pt-2 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="text-xs text-slate-400 hover:text-slate-200 transition font-semibold"
+              className="text-xs text-slate-500 hover:text-slate-800 transition font-semibold"
             >
               Cancel and Return to Main Page
             </button>

@@ -139,23 +139,23 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
   return (
     <div className="space-y-4">
-      {/* Search and Filters Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-lg space-y-3">
+      {/* Search and Filters Bar - Frosted Neo-Aero Glass */}
+      <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/50 space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
               type="text"
               placeholder="Search tracking code, citizen, barangay, or details..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 text-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-[40px]"
+              className="w-full bg-white border border-slate-200 text-slate-800 placeholder-slate-400 rounded-xl pl-10 pr-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[40px] shadow-2xs font-medium"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-white"
+                className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-slate-700 font-semibold"
               >
                 Clear
               </button>
@@ -166,9 +166,9 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] shrink-0"
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] shrink-0"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
               <span>Reset Filters</span>
             </button>
           )}
@@ -176,15 +176,15 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
         {/* Quick Scope Filter Toggle for Department Officers */}
         {currentScope !== 'CENTRAL' && (
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80">
-            <span className="text-[11px] text-slate-400 font-semibold">Registry Scope:</span>
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+            <span className="text-[11px] text-slate-500 font-bold">Registry Scope:</span>
             <button
               type="button"
               onClick={() => setAgencyFilter(currentScope)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer ${
                 agencyFilter === currentScope
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
               }`}
             >
               {currentScope} Department Incidents ({reports.filter((r) => r.selectedAgency === currentScope && r.status !== 'Rejected').length})
@@ -192,10 +192,10 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
             <button
               type="button"
               onClick={() => setAgencyFilter('ALL')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer ${
                 agencyFilter === 'ALL'
-                  ? 'bg-purple-600 text-white shadow'
-                  : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
               }`}
             >
               Unified 911 Provincial Registry ({activeReports.length})
@@ -204,19 +204,19 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
         )}
 
         {/* Quick Status & Resolved History Quick-Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80">
-          <span className="text-[11px] text-slate-400 font-semibold">Incident State:</span>
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <span className="text-[11px] text-slate-500 font-bold">Incident State:</span>
           <button
             type="button"
             onClick={() => setStatusFilter('ALL')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
               statusFilter === 'ALL'
-                ? 'bg-blue-600 text-white shadow'
-                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
             }`}
           >
             <span>All Incidents</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/80 text-slate-300 font-mono">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-700 font-mono font-bold">
               {activeReports.filter((r) => agencyFilter === 'ALL' || r.selectedAgency === agencyFilter).length}
             </span>
           </button>
@@ -224,15 +224,15 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <button
             type="button"
             onClick={() => setStatusFilter('Pending Verification')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
               statusFilter === 'Pending Verification'
-                ? 'bg-amber-600 text-white shadow'
-                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
             }`}
           >
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <Clock className="w-3.5 h-3.5 text-amber-500" />
             <span>Pending Triage</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/80 text-amber-300 font-mono">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-50 text-amber-700 font-mono font-bold border border-amber-200">
               {activeReports.filter((r) => (agencyFilter === 'ALL' || r.selectedAgency === agencyFilter) && r.status === 'Pending Verification').length}
             </span>
           </button>
@@ -240,15 +240,15 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <button
             type="button"
             onClick={() => setStatusFilter('Ongoing')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
               statusFilter === 'Ongoing'
-                ? 'bg-orange-600 text-white shadow'
-                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                ? 'bg-orange-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
             }`}
           >
-            <Clock className="w-3.5 h-3.5 text-orange-400" />
+            <Clock className="w-3.5 h-3.5 text-orange-500" />
             <span>Ongoing Response</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/80 text-orange-300 font-mono">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-orange-50 text-orange-700 font-mono font-bold border border-orange-200">
               {activeReports.filter((r) => (agencyFilter === 'ALL' || r.selectedAgency === agencyFilter) && (r.status === 'Ongoing' || r.status === 'Accepted')).length}
             </span>
           </button>
@@ -256,15 +256,15 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <button
             type="button"
             onClick={() => setStatusFilter('Resolved')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
               statusFilter === 'Resolved'
-                ? 'bg-emerald-600 text-white shadow ring-1 ring-emerald-300'
-                : 'bg-slate-950 text-emerald-400 hover:text-emerald-300 border border-emerald-900/60'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-200'
             }`}
           >
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>Resolved History</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-950 text-emerald-300 font-mono border border-emerald-800">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-50 text-emerald-700 font-mono font-bold border border-emerald-200">
               {activeReports.filter((r) => (agencyFilter === 'ALL' || r.selectedAgency === agencyFilter) && r.status === 'Resolved').length}
             </span>
           </button>
@@ -276,7 +276,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none min-h-[38px]"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
           >
             <option value="ALL">All Statuses</option>
             <option value="Pending Verification">Pending Verification</option>
@@ -289,7 +289,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <select
             value={barangayFilter}
             onChange={(e) => setBarangayFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none min-h-[38px]"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
           >
             <option value="ALL">All Barangays</option>
             {ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS.map((b, idx) => (
@@ -303,7 +303,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none min-h-[38px]"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
           >
             <option value="ALL">All Categories</option>
             <option value="RED">RED — Critical Safety</option>
@@ -318,7 +318,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <select
             value={agencyFilter}
             onChange={(e) => setAgencyFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none min-h-[38px]"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
           >
             <option value="ALL">All Primary Agencies</option>
             <option value="PNP">PNP Filed</option>
@@ -330,16 +330,16 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
       {/* Resolved Incidents History Context Banner */}
       {statusFilter === 'Resolved' && (
-        <div className="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-3 text-xs flex items-center justify-between gap-3 text-emerald-300 animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="bg-emerald-50/95 border border-emerald-200/90 rounded-2xl p-4 text-xs flex items-center justify-between gap-3 text-emerald-900 shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>
-              <strong>Resolved Cases History Archive:</strong> Viewing {filteredReports.length} completed incidents with resolution timestamps, responding agencies, and immutable audit timeline records.
+              <strong className="font-bold">Resolved Cases History Archive:</strong> Viewing {filteredReports.length} completed incidents with resolution timestamps, responding agencies, and immutable audit timeline records.
             </span>
           </div>
           <button
             onClick={() => setStatusFilter('ALL')}
-            className="text-xs font-semibold text-emerald-400 hover:text-white underline cursor-pointer shrink-0"
+            className="text-xs font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer shrink-0"
           >
             Show All Incidents
           </button>
@@ -349,7 +349,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
       {/* 1. MOBILE RESPONSIVE CARDS VIEW (Visible on screens < 768px) */}
       <div className="block md:hidden space-y-3">
         {filteredReports.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-500 text-xs">
+          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-8 text-center text-slate-500 text-xs shadow-sm">
             No active incident reports match the selected filters.
           </div>
         ) : (
@@ -366,43 +366,44 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
               <div
                 key={report.id}
                 onClick={() => onSelectReport(report.id)}
-                className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 shadow-xl space-y-3 cursor-pointer transition active:scale-[0.99]"
+                className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 hover:border-slate-300 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/50 space-y-3 cursor-pointer transition active:scale-[0.99]"
               >
                 {/* Header Row */}
-                <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-xs text-blue-400">
+                    <span className="font-mono font-black text-xs text-blue-700">
                       {report.trackingCode}
                     </span>
                     <button
                       onClick={(e) => handleCopyCode(e, report.trackingCode, report.id)}
-                      className="p-1 text-slate-400 hover:text-white"
+                      className="p-1 text-slate-400 hover:text-slate-700"
                       title="Copy Tracking Code"
                     >
-                      {copiedId === report.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {copiedId === report.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
                     </button>
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <span
-                      className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
+                      className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full"
                       style={{
                         color: typeDef?.colorHex,
-                        backgroundColor: `${typeDef?.colorHex}22`,
+                        backgroundColor: `${typeDef?.colorHex}15`,
+                        border: `1px solid ${typeDef?.colorHex}30`,
                       }}
                     >
                       {report.category}
                     </span>
 
                     <span
-                      className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
+                      className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border ${
                         isResolved
-                          ? 'bg-emerald-950 text-emerald-400 border-emerald-800'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : isOngoing
-                          ? 'bg-orange-950 text-orange-400 border-orange-800'
+                          ? 'bg-orange-50 text-orange-700 border-orange-200'
                           : isAccepted
-                          ? 'bg-blue-950 text-blue-400 border-blue-800'
-                          : 'bg-amber-950 text-amber-400 border-amber-800'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
                       }`}
                     >
                       {t[report.status] || report.status}
@@ -412,25 +413,25 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
                 {/* Title & Description */}
                 <div>
-                  <h4 className="text-sm font-bold text-white">
+                  <h4 className="text-sm font-black text-slate-900">
                     {language === 'fil' ? typeDef?.fil : typeDef?.en}
                   </h4>
-                  <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
                     {report.description}
                   </p>
                 </div>
 
                 {/* Location & Agency & Time */}
-                <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                <div className="bg-slate-50/80 p-2.5 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2 text-[11px] text-slate-500">
                   <div className="flex items-center gap-1 truncate">
-                    <MapPin className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                    <span className="truncate text-slate-200">{report.barangay}</span>
+                    <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                    <span className="truncate text-slate-800 font-medium">{report.barangay}</span>
                   </div>
                   <div className="flex items-center gap-1 justify-end">
-                    <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                    <span className="font-bold text-white uppercase">{report.selectedAgency}</span>
+                    <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span className="font-bold text-slate-900 uppercase">{report.selectedAgency}</span>
                   </div>
-                  <div className="flex items-center gap-1 col-span-2 text-[10px] text-slate-500">
+                  <div className="flex items-center gap-1 col-span-2 text-[10px] text-slate-400">
                     <Calendar className="w-3 h-3 shrink-0" />
                     <span>{new Date(report.dateTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
@@ -446,7 +447,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                     {isPending && (
                       <button
                         onClick={(e) => handleQuickStatus(e, report.id, 'Accepted')}
-                        className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs transition flex-1 min-h-[36px]"
+                        className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs"
                       >
                         Accept
                       </button>
@@ -454,7 +455,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                     {(isAccepted || isPending) && (
                       <button
                         onClick={(e) => handleQuickStatus(e, report.id, 'Ongoing')}
-                        className="px-2.5 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-bold text-xs transition flex-1 min-h-[36px]"
+                        className="px-2.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs"
                       >
                         Deploy
                       </button>
@@ -462,7 +463,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                     {isOngoing && (
                       <button
                         onClick={(e) => handleQuickStatus(e, report.id, 'Resolved')}
-                        className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs transition flex-1 min-h-[36px]"
+                        className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition flex-1 min-h-[36px] shadow-xs"
                       >
                         Resolve
                       </button>
@@ -473,7 +474,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                       <button
                         onClick={() => setAssistanceReport(report)}
                         title="Request Assistance"
-                        className="p-2 text-indigo-300 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                        className="p-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer shadow-2xs"
                       >
                         <Users className="w-4 h-4" />
                       </button>
@@ -487,7 +488,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                           setRejectReason('');
                         }}
                         title="Reject Report"
-                        className="p-2 text-rose-300 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/60 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                        className="p-2 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer shadow-2xs"
                       >
                         <AlertOctagon className="w-4 h-4" />
                       </button>
@@ -495,8 +496,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
                     {/* Resolved status indicator for mobile */}
                     {isResolved && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-lg">
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Resolved</span>
                       </span>
                     )}
@@ -505,7 +506,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                   {/* View Details */}
                   <button
                     onClick={() => onSelectReport(report.id)}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1 min-h-[36px]"
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1 min-h-[36px]"
                   >
                     <span>Details</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -517,25 +518,25 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
         )}
       </div>
 
-      {/* 2. DESKTOP TABLE VIEW (Visible on screens >= 768px) */}
-      <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      {/* 2. DESKTOP TABLE VIEW (Visible on screens >= 768px) - Reference Image Table Styling */}
+      <div className="hidden md:block glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-50/90 text-slate-500 uppercase font-black text-[10px] tracking-wider border-b border-slate-200/80">
               <tr>
-                <th className="py-3 px-4">{t.trackingCode}</th>
-                <th className="py-3 px-4">{t.incidentType}</th>
-                <th className="py-3 px-4">{t.location}</th>
-                <th className="py-3 px-4">{t.agency}</th>
-                <th className="py-3 px-4">{t.dateTime}</th>
-                <th className="py-3 px-4">{t.status}</th>
-                <th className="py-3 px-4 text-right">{t.actions}</th>
+                <th className="py-3.5 px-4 font-bold">{t.trackingCode}</th>
+                <th className="py-3.5 px-4 font-bold">{t.incidentType}</th>
+                <th className="py-3.5 px-4 font-bold">{t.location}</th>
+                <th className="py-3.5 px-4 font-bold">{t.agency}</th>
+                <th className="py-3.5 px-4 font-bold">{t.dateTime}</th>
+                <th className="py-3.5 px-4 font-bold">{t.status}</th>
+                <th className="py-3.5 px-4 text-right font-bold">{t.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-500 text-xs">
+                  <td colSpan={7} className="py-12 text-center text-slate-400 text-xs font-medium">
                     No active incident reports match the selected filters.
                   </td>
                 </tr>
@@ -552,39 +553,40 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                   return (
                     <tr
                       key={report.id}
-                      className="hover:bg-slate-800/40 transition group cursor-pointer"
+                      className="hover:bg-slate-50/80 transition group cursor-pointer"
                       onClick={() => onSelectReport(report.id)}
                     >
                       {/* Tracking Code */}
-                      <td className="py-3 px-4 font-mono font-bold text-blue-400 whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono font-black text-blue-700 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <span>{report.trackingCode}</span>
                           <button
                             onClick={(e) => handleCopyCode(e, report.trackingCode, report.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition"
+                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-700 transition"
                             title="Copy Tracking Code"
                           >
-                            {copiedId === report.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                            {copiedId === report.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
                           </button>
                         </div>
                       </td>
 
                       {/* Incident Type & Color Category */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow"
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
                             style={{ backgroundColor: typeDef?.colorHex }}
                           />
                           <div>
-                            <span className="font-semibold text-white block">
+                            <span className="font-bold text-slate-900 block">
                               {language === 'fil' ? typeDef?.fil : typeDef?.en}
                             </span>
                             <span
-                              className="text-[9px] font-bold uppercase inline-block px-1 rounded"
+                              className="text-[9px] font-bold uppercase inline-block px-1.5 py-0.2 rounded-full"
                               style={{
                                 color: typeDef?.colorHex,
-                                backgroundColor: `${typeDef?.colorHex}22`,
+                                backgroundColor: `${typeDef?.colorHex}15`,
+                                border: `1px solid ${typeDef?.colorHex}30`,
                               }}
                             >
                               {report.category}
@@ -594,24 +596,24 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                       </td>
 
                       {/* Location */}
-                      <td className="py-3 px-4">
-                        <span className="font-medium text-slate-200 block">
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold text-slate-800 block">
                           {report.barangay}
                         </span>
-                        <span className="text-[11px] text-slate-400 truncate block max-w-[180px]">
+                        <span className="text-[11px] text-slate-500 truncate block max-w-[180px]">
                           {report.locationDetails}
                         </span>
                       </td>
 
                       {/* Selected Agency */}
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-white uppercase text-[11px] px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                      <td className="py-3.5 px-4">
+                        <span className="font-black text-slate-800 uppercase text-[11px] px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200">
                           {report.selectedAgency}
                         </span>
                       </td>
 
                       {/* Date & Time */}
-                      <td className="py-3 px-4 text-slate-400 text-[11px] whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
                         {new Date(report.dateTime).toLocaleString([], {
                           month: 'short',
                           day: 'numeric',
@@ -620,26 +622,29 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                         })}
                       </td>
 
-                      {/* Status */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      {/* Status matching Reference Image (Recent Campaigns dot + pill) */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border inline-block ${
+                          className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
                             isResolved
-                              ? 'bg-emerald-950 text-emerald-400 border-emerald-800'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : isOngoing
-                              ? 'bg-orange-950 text-orange-400 border-orange-800'
+                              ? 'bg-orange-50 text-orange-700 border-orange-200'
                               : isAccepted
-                              ? 'bg-blue-950 text-blue-400 border-blue-800'
-                              : 'bg-amber-950 text-amber-400 border-amber-800'
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
                           }`}
                         >
-                          {t[report.status] || report.status}
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            isResolved ? 'bg-emerald-500' : isOngoing ? 'bg-orange-500' : isAccepted ? 'bg-blue-500' : 'bg-amber-500'
+                          }`} />
+                          <span>{t[report.status] || report.status}</span>
                         </span>
                       </td>
 
                       {/* Actions */}
                       <td
-                        className="py-3 px-4 text-right whitespace-nowrap"
+                        className="py-3.5 px-4 text-right whitespace-nowrap"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex items-center justify-end gap-1.5">
@@ -648,7 +653,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                             <button
                               onClick={() => setAssistanceReport(report)}
                               title="Request Inter-Agency Assistance"
-                              className="p-1.5 text-indigo-400 hover:text-indigo-200 bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-700/50 rounded-lg transition cursor-pointer"
+                              className="p-1.5 text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition cursor-pointer shadow-2xs"
                             >
                               <Users className="w-3.5 h-3.5" />
                             </button>
@@ -659,7 +664,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                             <button
                               onClick={(e) => handleQuickStatus(e, report.id, 'Accepted')}
                               title="Accept Report"
-                              className="px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold text-[11px] transition shadow cursor-pointer"
+                              className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
                             >
                               {t.accept}
                             </button>
@@ -670,7 +675,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                             <button
                               onClick={(e) => handleQuickStatus(e, report.id, 'Ongoing')}
                               title="Deploy response (Ongoing)"
-                              className="px-2 py-1 bg-orange-600 hover:bg-orange-500 text-white rounded font-bold text-[11px] transition shadow cursor-pointer"
+                              className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
                             >
                               {t.setOngoing}
                             </button>
@@ -681,7 +686,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                             <button
                               onClick={(e) => handleQuickStatus(e, report.id, 'Resolved')}
                               title="Mark as Resolved"
-                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold text-[11px] transition shadow cursor-pointer"
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs cursor-pointer"
                             >
                               {t.resolve}
                             </button>
@@ -689,8 +694,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
                           {/* Resolved Badge */}
                           {isResolved && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded">
-                              <CheckCircle className="w-3 h-3 text-emerald-400" />
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                              <CheckCircle className="w-3 h-3 text-emerald-600" />
                               <span>Resolved</span>
                             </span>
                           )}
@@ -703,7 +708,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                                 setRejectReason('');
                               }}
                               title="Reject and Archive Report"
-                              className="p-1.5 text-rose-400 hover:text-rose-200 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-800/50 rounded-lg transition cursor-pointer"
+                              className="p-1.5 text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition cursor-pointer shadow-2xs"
                             >
                               <AlertOctagon className="w-3.5 h-3.5" />
                             </button>
@@ -713,7 +718,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                           <button
                             onClick={() => onSelectReport(report.id)}
                             title="View Full Report"
-                            className="p-1.5 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer"
+                            className="p-1.5 text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer"
                           >
                             <ChevronRight className="w-3.5 h-3.5" />
                           </button>
@@ -730,22 +735,22 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
       {/* Reject Modal with documented justification requirement */}
       {rejectingReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-rose-600/60 rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative text-slate-100">
-            <div className="flex items-center gap-3 mb-3 text-rose-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
+          <div className="glass-card bg-white/95 backdrop-blur-2xl border border-rose-200 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative text-slate-800">
+            <div className="flex items-center gap-3 mb-3 text-rose-600">
               <AlertOctagon className="w-6 h-6" />
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-black text-slate-900">
                 Reject Incident Report ({rejectingReport.trackingCode})
               </h3>
             </div>
 
-            <p className="text-xs text-slate-300 mb-4 leading-relaxed">
-              Per emergency protocol, this report will be moved to the <strong>Rejected Reports Archive</strong> and removed from active dispatch and map. You must document the reason.
+            <p className="text-xs text-slate-600 mb-4 leading-relaxed font-medium">
+              Per emergency protocol, this report will be moved to the <strong className="text-slate-900">Rejected Reports Archive</strong> and removed from active dispatch and map. You must document the reason.
             </p>
 
             <form onSubmit={handleConfirmReject} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   Documented Rejection Reason:
                 </label>
                 <textarea
@@ -754,26 +759,26 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                   placeholder="e.g. Verified false alarm by patrol / Duplicate case / Unverified prank submission..."
                   rows={3}
                   required
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs font-medium"
                 />
               </div>
 
-              <div className="text-[11px] text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <div className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                 <span>Recorded Admin: </span>
-                <strong className="text-white">{currentAdmin?.name}</strong> ({currentAgency})
+                <strong className="text-slate-900 font-bold">{currentAdmin?.name}</strong> ({currentAgency})
               </div>
 
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setRejectingReport(null)}
-                  className="px-4 py-2 text-xs text-slate-400 hover:text-white"
+                  className="px-4 py-2 text-xs text-slate-500 hover:text-slate-800 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-950 transition"
+                  className="px-4 py-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-500/20 transition cursor-pointer"
                 >
                   Confirm Rejection
                 </button>

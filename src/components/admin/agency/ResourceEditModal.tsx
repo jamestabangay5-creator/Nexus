@@ -224,34 +224,34 @@ export const ResourceEditModal: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl relative text-slate-100 my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in overflow-y-auto">
+      <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 my-auto">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition cursor-pointer"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-800">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-100">
           <div className={`p-2.5 rounded-2xl ${
             agencyType === 'PNP'
-              ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+              ? 'bg-blue-50 text-blue-600 border border-blue-200'
               : agencyType === 'BFP'
-              ? 'bg-orange-600/20 text-orange-400 border border-orange-500/30'
-              : 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'
+              ? 'bg-orange-50 text-orange-600 border border-orange-200'
+              : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
           }`}>
             {agencyType === 'PNP' && <Car className="w-6 h-6" />}
             {agencyType === 'BFP' && <Truck className="w-6 h-6" />}
             {agencyType === 'MDRRMO' && <Ambulance className="w-6 h-6" />}
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-black text-white">
+            <h3 className="text-base sm:text-lg font-black text-slate-900">
               {isEditing ? `Edit ${unitToEdit.callSign}` : `Add New ${agencyType} Resource`}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 font-medium">
               Configure personnel on duty, driver, emergency contact, shift schedule, and dispatch status.
             </p>
           </div>
@@ -261,7 +261,7 @@ export const ResourceEditModal: React.FC<Props> = ({
           {/* Unit Call Sign & Plate */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                 Unit Callsign / Name *
               </label>
               <input
@@ -270,11 +270,11 @@ export const ResourceEditModal: React.FC<Props> = ({
                 value={callSign}
                 onChange={(e) => setCallSign(e.target.value)}
                 placeholder="e.g. Mobile Unit Alpha-1"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-bold"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-bold shadow-2xs"
               />
             </div>
             <div>
-              <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                 Vehicle Plate / Registration
               </label>
               <input
@@ -282,7 +282,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                 value={vehiclePlate}
                 onChange={(e) => setVehiclePlate(e.target.value)}
                 placeholder="e.g. PNP-101-MIM"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-mono shadow-2xs"
               />
             </div>
           </div>
@@ -292,7 +292,7 @@ export const ResourceEditModal: React.FC<Props> = ({
             {agencyType === 'PNP' && (
               <>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                     Police Division / Station
                   </label>
                   <input
@@ -300,11 +300,11 @@ export const ResourceEditModal: React.FC<Props> = ({
                     value={divisionOrStation}
                     onChange={(e) => setDivisionOrStation(e.target.value)}
                     placeholder="e.g. Calapan City Police Station"
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                     Assigned Sector / Jurisdiction
                   </label>
                   <input
@@ -312,7 +312,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                     value={sectorOrBase}
                     onChange={(e) => setSectorOrBase(e.target.value)}
                     placeholder="e.g. Poblacion Commercial District"
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
                   />
                 </div>
               </>
@@ -321,13 +321,13 @@ export const ResourceEditModal: React.FC<Props> = ({
             {agencyType === 'BFP' && (
               <>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                     Apparatus Type
                   </label>
                   <select
                     value={specificType}
                     onChange={(e) => setSpecificType(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-orange-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 shadow-2xs font-semibold"
                   >
                     <option value="Pumper Engine">Pumper Engine (Fire Extinguishment)</option>
                     <option value="Water Tanker">Water Tanker (10,000L Shuttle Supply)</option>
@@ -336,7 +336,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                     Fire Station Headquarters
                   </label>
                   <input
@@ -344,7 +344,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                     value={divisionOrStation}
                     onChange={(e) => setDivisionOrStation(e.target.value)}
                     placeholder="e.g. Calapan Central Fire Station"
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-orange-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-500 shadow-2xs"
                   />
                 </div>
               </>
@@ -353,13 +353,13 @@ export const ResourceEditModal: React.FC<Props> = ({
             {agencyType === 'MDRRMO' && (
               <>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                     Medical & Rescue Unit Type
                   </label>
                   <select
                     value={specificType}
                     onChange={(e) => setSpecificType(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-emerald-500 shadow-2xs font-semibold"
                   >
                     <option value="Type-1 Ambulance">Type-1 Advanced Life Support Ambulance</option>
                     <option value="Rescue Boat">Rescue Boat (Flood / Riverine SAR)</option>
@@ -368,7 +368,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                     Operations Base / Station
                   </label>
                   <input
@@ -376,7 +376,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                     value={sectorOrBase}
                     onChange={(e) => setSectorOrBase(e.target.value)}
                     placeholder="e.g. Calapan City DRRM Operations Base"
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-emerald-500 shadow-2xs"
                   />
                 </div>
               </>
@@ -385,10 +385,10 @@ export const ResourceEditModal: React.FC<Props> = ({
 
           {/* Water level slider for BFP */}
           {agencyType === 'BFP' && (
-            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div className="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200">
               <div className="flex items-center justify-between mb-1.5 text-xs">
-                <span className="font-bold text-slate-300">Water Tank Readiness Level</span>
-                <span className="font-mono font-bold text-orange-400">{waterLevelPercent}%</span>
+                <span className="font-bold text-slate-700">Water Tank Readiness Level</span>
+                <span className="font-mono font-bold text-orange-600">{waterLevelPercent}%</span>
               </div>
               <input
                 type="range"
@@ -396,20 +396,20 @@ export const ResourceEditModal: React.FC<Props> = ({
                 max="100"
                 value={waterLevelPercent}
                 onChange={(e) => setWaterLevelPercent(Number(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
               />
             </div>
           )}
 
           {/* Section: Who uses & Scheduled to be Dispatched */}
-          <div className="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800/80 space-y-3">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-bold block">
+          <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80 space-y-3">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-700 font-bold block">
               Personnel Assignment & Active Crew
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                   {agencyType === 'PNP' ? 'Officer in Charge (OIC)' : agencyType === 'BFP' ? 'Team Commander' : 'Paramedic Lead'} *
                 </label>
                 <input
@@ -418,12 +418,12 @@ export const ResourceEditModal: React.FC<Props> = ({
                   value={officerInCharge}
                   onChange={(e) => setOfficerInCharge(e.target.value)}
                   placeholder="e.g. Lt. D. Navarro"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+                <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                   Designated Driver / Operator
                 </label>
                 <input
@@ -431,13 +431,13 @@ export const ResourceEditModal: React.FC<Props> = ({
                   value={driverName}
                   onChange={(e) => setDriverName(e.target.value)}
                   placeholder="e.g. PO2 J. Ramos / Driver"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                 Additional Responders / Crew Members
               </label>
               <input
@@ -445,21 +445,21 @@ export const ResourceEditModal: React.FC<Props> = ({
                 value={crewMembers}
                 onChange={(e) => setCrewMembers(e.target.value)}
                 placeholder="e.g. Pat. A. Cruz, Pat. B. Reyes (2 Patrolmen)"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
               />
             </div>
           </div>
 
           {/* Section: Contact & Scheduled Dispatch */}
-          <div className="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800/80 space-y-3">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-bold block">
+          <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80 space-y-3">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-blue-700 font-bold block">
               Emergency Contact & Dispatch Schedule
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1 flex items-center gap-1">
-                  <Phone className="w-3 h-3 text-red-400" />
+                <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1 flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-red-500" />
                   <span>Contact Phone / Radio Callsign *</span>
                 </label>
                 <input
@@ -468,19 +468,19 @@ export const ResourceEditModal: React.FC<Props> = ({
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
                   placeholder="e.g. 0917-889-1101 / VHF 142.50 MHz"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-mono shadow-2xs"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-amber-400" />
+                <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1 flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-amber-500" />
                   <span>Duty Shift Schedule</span>
                 </label>
                 <select
                   value={shift}
                   onChange={(e) => setShift(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs font-semibold"
                 >
                   <option value="Morning Duty (06:00 - 14:00)">Morning Duty (06:00 - 14:00)</option>
                   <option value="Afternoon Duty (14:00 - 22:00)">Afternoon Duty (14:00 - 22:00)</option>
@@ -493,7 +493,7 @@ export const ResourceEditModal: React.FC<Props> = ({
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                 Scheduled Dispatch / Area Deployment Notes
               </label>
               <input
@@ -501,19 +501,19 @@ export const ResourceEditModal: React.FC<Props> = ({
                 value={scheduledDispatch}
                 onChange={(e) => setScheduledDispatch(e.target.value)}
                 placeholder="e.g. Scheduled for Calapan commercial district roving and bank escort"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
               />
             </div>
 
             {/* Current Operational Status */}
             <div>
-              <label className="text-[11px] font-bold text-slate-300 uppercase block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">
                 Current Readiness Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-bold"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-bold shadow-2xs"
               >
                 {agencyType === 'PNP' && (
                   <>
@@ -551,7 +551,7 @@ export const ResourceEditModal: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={handleDelete}
-                className="px-3.5 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/60 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete Unit</span>
@@ -562,18 +562,18 @@ export const ResourceEditModal: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className={`px-5 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer ${
+                className={`px-5 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer ${
                   agencyType === 'PNP'
-                    ? 'bg-blue-600 hover:bg-blue-500'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20'
                     : agencyType === 'BFP'
-                    ? 'bg-orange-600 hover:bg-orange-500'
-                    : 'bg-emerald-600 hover:bg-emerald-500'
+                    ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-orange-500/20'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-500/20'
                 }`}
               >
                 <Save className="w-4 h-4" />

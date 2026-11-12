@@ -555,34 +555,34 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 text-slate-800 font-sans">
       {/* Top Banner and Filter Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-4">
         {/* Title & Quick Stats */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-600/20 text-red-400 border border-red-500/30">
+            <div className="p-2.5 rounded-2xl bg-red-50 text-red-600 border border-red-200/60 shadow-sm">
               <MapPin className="w-6 h-6 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-extrabold text-white">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                   Color-Coded Incident Map & Heatmap
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200/60">
                   {mapMode === 'osm' ? '🗺️ OpenStreetMap' : mapMode === 'satellite' ? '🛰️ Esri Satellite' : mapMode === 'hybrid' ? '🌐 Satellite Hybrid' : '🌙 Dark Ops'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Real-time spatial visualization of public safety incidents across Oriental Mindoro.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 font-mono">
-              <span className="text-emerald-400 font-bold">{filteredReports.length}</span>
-              <span className="text-slate-400">Markers Mapped</span>
+            <div className="flex items-center gap-1.5 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/80 font-mono">
+              <span className="text-blue-700 font-black">{filteredReports.length}</span>
+              <span className="text-slate-500 font-medium">Markers Mapped</span>
             </div>
 
             <button
@@ -591,7 +591,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 setSelectedMunicipality('ALL');
                 setSelectedBarangay('ALL');
               }}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-semibold flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl font-bold flex items-center gap-1.5 transition cursor-pointer"
               title="Reset map view to Oriental Mindoro center"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -602,16 +602,16 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
         {/* Filters Controls Row */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex flex-wrap items-center gap-2 flex-1">
+          <div className="flex flex-wrap items-center gap-2.5 flex-1">
             {/* Search Input */}
             <div className="relative min-w-[180px] max-w-xs">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
               <input
                 type="text"
                 placeholder="Search code, citizen, details..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 text-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
               />
             </div>
 
@@ -619,7 +619,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none font-medium"
+              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
             >
               <option value="ALL">All Categories (6 Colors)</option>
               <option value="RED">RED — Critical Safety</option>
@@ -644,7 +644,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                   }
                 }
               }}
-              className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none font-medium"
+              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
             >
               <option value="ALL">All Municipalities (Oriental Mindoro)</option>
               {ORIENTAL_MINDORO_MUNICIPALITIES.map((muni) => (
@@ -654,11 +654,11 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
               ))}
             </select>
 
-            {/* Barangay Filter (Auto-generated from selected municipality) */}
+            {/* Barangay Filter */}
             <select
               value={selectedBarangay}
               onChange={(e) => setSelectedBarangay(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none font-medium"
+              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer max-w-[150px] truncate"
             >
               <option value="ALL">
                 {selectedMunicipality === 'ALL' ? 'All Barangays' : `All Barangays in ${selectedMunicipality}`}
@@ -674,7 +674,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value as any)}
-              className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none font-medium"
+              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
             >
               <option value="ALL">All Time</option>
               <option value="24h">Past 24 Hours (Daily)</option>
@@ -686,7 +686,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none font-medium"
+              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
             >
               <option value="ALL">All Statuses</option>
               <option value="Pending Verification">Pending Verification</option>
@@ -698,20 +698,20 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
           {/* Map Layer Controls */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Map Mode Selector (Street OSM vs Satellite vs Hybrid vs Dark) */}
-            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5">
+            {/* Map Mode Selector */}
+            <div className="flex items-center bg-slate-100 border border-slate-200 rounded-xl p-0.5">
               <button
                 type="button"
                 onClick={() => setMapMode('osm')}
                 className={`px-2.5 py-1 text-xs rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer ${
                   mapMode === 'osm'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
                 title="OpenStreetMap Standard Street Map"
               >
-                <MapIcon className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Street (OSM)</span>
+                <MapIcon className="w-3.5 h-3.5 text-blue-600" />
+                <span>Street</span>
               </button>
 
               <button
@@ -719,12 +719,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 onClick={() => setMapMode('satellite')}
                 className={`px-2.5 py-1 text-xs rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer ${
                   mapMode === 'satellite'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
                 title="Esri World Imagery Satellite"
               >
-                <Satellite className="w-3.5 h-3.5 text-amber-400" />
+                <Satellite className="w-3.5 h-3.5 text-amber-500" />
                 <span>Satellite</span>
               </button>
 
@@ -733,12 +733,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 onClick={() => setMapMode('hybrid')}
                 className={`px-2 py-1 text-xs rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer ${
                   mapMode === 'hybrid'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
                 title="Satellite with Streets and Place Labels"
               >
-                <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                <Globe className="w-3.5 h-3.5 text-emerald-500" />
                 <span className="hidden sm:inline">Hybrid</span>
               </button>
 
@@ -747,12 +747,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 onClick={() => setMapMode('dark')}
                 className={`px-2 py-1 text-xs rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer ${
                   mapMode === 'dark'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
                 title="Dark Tactical Mode"
               >
-                <Layers className="w-3.5 h-3.5 text-purple-400" />
+                <Layers className="w-3.5 h-3.5 text-purple-500" />
                 <span className="hidden sm:inline">Dark</span>
               </button>
             </div>
@@ -760,26 +760,26 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             {/* Heatmap Toggle */}
             <button
               onClick={() => setShowHeatmap(!showHeatmap)}
-              className={`px-3 py-1.5 rounded-xl border font-bold flex items-center gap-1.5 transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl border font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm ${
                 showHeatmap
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <Flame className="w-3.5 h-3.5 text-amber-500" />
               <span>Heatmap</span>
             </button>
 
             {showHeatmap && (
-              <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5">
+              <div className="flex items-center bg-slate-100 border border-slate-200 rounded-xl p-0.5">
                 {(['low', 'med', 'high'] as const).map((lvl) => (
                   <button
                     key={lvl}
                     onClick={() => setHeatIntensity(lvl)}
                     className={`px-2 py-0.5 text-[10px] rounded-lg font-bold capitalize transition ${
                       heatIntensity === lvl
-                        ? 'bg-amber-600 text-white shadow'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-white text-amber-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
                     }`}
                   >
                     {lvl}
@@ -791,13 +791,13 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             {/* Markers Toggle */}
             <button
               onClick={() => setShowMarkers(!showMarkers)}
-              className={`px-3 py-1.5 rounded-xl border font-bold flex items-center gap-1.5 transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl border font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm ${
                 showMarkers
-                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <Layers className="w-3.5 h-3.5 text-blue-600" />
               <span>Markers</span>
             </button>
           </div>
@@ -805,12 +805,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       </div>
 
       {/* Mobile view switch (Map vs Dossier) on small screens */}
-      <div className="flex lg:hidden items-center bg-slate-900 border border-slate-800 p-1 rounded-xl">
+      <div className="flex lg:hidden items-center bg-white/90 border border-slate-200 p-1 rounded-2xl shadow-sm">
         <button
           type="button"
           onClick={() => setMobileMapTab('map')}
-          className={`flex-1 py-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
-            mobileMapTab === 'map' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-white'
+          className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
+            mobileMapTab === 'map' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <MapIcon className="w-3.5 h-3.5" />
@@ -819,8 +819,8 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
         <button
           type="button"
           onClick={() => setMobileMapTab('dossier')}
-          className={`flex-1 py-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
-            mobileMapTab === 'dossier' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-white'
+          className={`flex-1 py-2 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
+            mobileMapTab === 'dossier' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <List className="w-3.5 h-3.5" />
@@ -829,25 +829,25 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       </div>
 
       {/* Main Map View + Side Detail & List Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left 2 Cols: Interactive Map Container */}
-        <div className={`lg:col-span-2 relative bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl h-[420px] sm:h-[480px] lg:h-[560px] ${mobileMapTab === 'map' ? 'block' : 'hidden lg:block'}`}>
+        <div className={`lg:col-span-2 relative bg-slate-100 border border-slate-200/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 h-[420px] sm:h-[480px] lg:h-[580px] ${mobileMapTab === 'map' ? 'block' : 'hidden lg:block'}`}>
           <div ref={mapContainerRef} className="w-full h-full z-0" />
           <canvas
             ref={heatCanvasRef}
             className="absolute inset-0 pointer-events-none z-10"
           />
 
-          {/* Color Category Reference Pill Bar (Responsive with right clearance for zoom control) */}
-          <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-slate-950/90 backdrop-blur-md border border-slate-800 p-1.5 rounded-xl shadow-xl max-w-[calc(100%-4.5rem)]">
+          {/* Color Category Reference Pill Bar */}
+          <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-white/90 backdrop-blur-md border border-white/80 p-1.5 rounded-2xl shadow-lg max-w-[calc(100%-4.5rem)]">
             {/* All Category Pill */}
             <button
               type="button"
               onClick={() => setSelectedCategory('ALL')}
-              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer shrink-0 ${
+              className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition cursor-pointer shrink-0 ${
                 selectedCategory === 'ALL'
-                  ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
-                  : 'bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-800'
+                  ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-500'
+                  : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
               }`}
               title="Show all incident categories"
             >
@@ -858,10 +858,10 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <button
               type="button"
               onClick={() => setSelectedCategory(selectedCategory === 'RED' ? 'ALL' : 'RED')}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition shrink-0 ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
                 selectedCategory === 'RED'
-                  ? 'bg-red-600 text-white shadow-md shadow-red-950/60 ring-1 ring-red-400'
-                  : 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-900/40'
+                  ? 'bg-red-600 text-white shadow-sm ring-1 ring-red-400'
+                  : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
               }`}
               title="RED: Critical Safety Emergencies (Click to filter)"
             >
@@ -873,10 +873,10 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <button
               type="button"
               onClick={() => setSelectedCategory(selectedCategory === 'ORANGE' ? 'ALL' : 'ORANGE')}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition shrink-0 ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
                 selectedCategory === 'ORANGE'
-                  ? 'bg-orange-600 text-white shadow-md shadow-orange-950/60 ring-1 ring-orange-400'
-                  : 'bg-orange-500/20 text-orange-300 border border-orange-500/40 hover:bg-orange-900/40'
+                  ? 'bg-orange-500 text-white shadow-sm ring-1 ring-orange-400'
+                  : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
               }`}
               title="ORANGE: Accidents, Rescue & Medical (Click to filter)"
             >
@@ -888,14 +888,14 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <button
               type="button"
               onClick={() => setSelectedCategory(selectedCategory === 'YELLOW' ? 'ALL' : 'YELLOW')}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition shrink-0 ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
                 selectedCategory === 'YELLOW'
-                  ? 'bg-yellow-500 text-slate-950 font-black shadow-md shadow-yellow-950/60 ring-1 ring-yellow-300'
-                  : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 hover:bg-yellow-900/40'
+                  ? 'bg-yellow-500 text-slate-900 font-black shadow-sm ring-1 ring-yellow-400'
+                  : 'bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-100'
               }`}
               title="YELLOW: Suspected Criminal Activities (Click to filter)"
             >
-              <span className="w-2 h-2 rounded-full bg-yellow-400 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-yellow-500 shrink-0" />
               <span className="whitespace-nowrap">Crime</span>
             </button>
 
@@ -903,10 +903,10 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <button
               type="button"
               onClick={() => setSelectedCategory(selectedCategory === 'GREEN' ? 'ALL' : 'GREEN')}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition shrink-0 ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
                 selectedCategory === 'GREEN'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400'
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900/40'
+                  ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
               }`}
               title="GREEN: Community & Personal Safety (Click to filter)"
             >
@@ -918,14 +918,14 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <button
               type="button"
               onClick={() => setSelectedCategory(selectedCategory === 'BLUE' ? 'ALL' : 'BLUE')}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition shrink-0 ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
                 selectedCategory === 'BLUE'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-950/60 ring-1 ring-blue-400'
-                  : 'bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-900/40'
+                  ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                  : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
               }`}
               title="BLUE: Public Complaints & Online (Click to filter)"
             >
-              <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
               <span className="whitespace-nowrap">Online</span>
             </button>
 
@@ -933,99 +933,99 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <button
               type="button"
               onClick={() => setSelectedCategory(selectedCategory === 'WHITE' ? 'ALL' : 'WHITE')}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition shrink-0 ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
                 selectedCategory === 'WHITE'
-                  ? 'bg-slate-200 text-slate-950 font-black shadow-md ring-1 ring-white'
-                  : 'bg-slate-800/40 text-slate-300 border border-slate-700 hover:bg-slate-800'
+                  ? 'bg-slate-700 text-white font-bold shadow-sm'
+                  : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
               }`}
               title="WHITE: Other / Unclassified Incidents (Click to filter)"
             >
-              <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
               <span className="whitespace-nowrap">Other</span>
             </button>
           </div>
 
-          {/* On-Map Floating Map Layer Switcher (Street OSM / Satellite / Hybrid / Dark Ops) */}
-          <div className="absolute bottom-3 left-3 z-20 flex items-center bg-slate-950/90 backdrop-blur-md border border-slate-700/80 p-1 rounded-xl shadow-2xl">
+          {/* On-Map Floating Map Layer Switcher */}
+          <div className="absolute bottom-3 left-3 z-20 flex items-center bg-white/95 backdrop-blur-md border border-white/80 p-1 rounded-2xl shadow-xl">
             <button
               type="button"
               onClick={() => setMapMode('osm')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                 mapMode === 'osm'
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
-              title="OpenStreetMap Standard (Open Source Street Map)"
+              title="OpenStreetMap Standard"
             >
-              <MapIcon className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Street (OSM)</span>
+              <MapIcon className="w-3.5 h-3.5 text-blue-600" />
+              <span>Street</span>
             </button>
 
             <button
               type="button"
               onClick={() => setMapMode('satellite')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                 mapMode === 'satellite'
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
-              title="Esri World Imagery (High-Resolution Satellite)"
+              title="Esri World Imagery"
             >
-              <Satellite className="w-3.5 h-3.5 text-amber-400" />
+              <Satellite className="w-3.5 h-3.5 text-amber-500" />
               <span>Satellite</span>
             </button>
 
             <button
               type="button"
               onClick={() => setMapMode('hybrid')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                 mapMode === 'hybrid'
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
-              title="Satellite + Streets & Place Names Overlay"
+              title="Satellite + Streets & Place Names"
             >
-              <Globe className="w-3.5 h-3.5 text-emerald-400" />
+              <Globe className="w-3.5 h-3.5 text-emerald-500" />
               <span className="hidden xs:inline">Hybrid</span>
             </button>
 
             <button
               type="button"
               onClick={() => setMapMode('dark')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                 mapMode === 'dark'
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
               title="Tactical Dark Mode"
             >
-              <Layers className="w-3.5 h-3.5 text-purple-400" />
+              <Layers className="w-3.5 h-3.5 text-purple-500" />
               <span className="hidden sm:inline">Dark Ops</span>
             </button>
           </div>
 
-          {/* Color Policy Notice (Compact above layer dock on wide screens) */}
-          <div className="absolute bottom-16 left-3 z-20 bg-slate-900/90 backdrop-blur border border-slate-800/80 rounded-xl p-2.5 text-[10px] shadow-xl max-w-sm hidden xl:block">
-            <div className="flex items-center gap-1.5 font-bold text-amber-300 mb-0.5">
-              <Info className="w-3.5 h-3.5 text-amber-400" />
+          {/* Color Policy Notice */}
+          <div className="absolute bottom-16 left-3 z-20 bg-white/95 backdrop-blur-md border border-white/80 rounded-2xl p-3 text-[10px] shadow-xl max-w-sm hidden xl:block text-slate-700">
+            <div className="flex items-center gap-1.5 font-bold text-amber-700 mb-0.5">
+              <Info className="w-3.5 h-3.5 text-amber-600" />
               <span>Standard Color-Coded Incident Policy</span>
             </div>
-            <p className="text-slate-400 leading-tight">
+            <p className="text-slate-500 leading-tight">
               {t.mapLegendNote}
             </p>
           </div>
         </div>
 
         {/* Right Col: Side Panel with Details & Fast Incident List Switcher */}
-        <div className={`bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between overflow-hidden min-h-[460px] max-h-[560px] ${mobileMapTab === 'dossier' ? 'block' : 'hidden lg:block'}`}>
+        <div className={`glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col justify-between overflow-hidden min-h-[460px] max-h-[580px] ${mobileMapTab === 'dossier' ? 'block' : 'hidden lg:block'}`}>
           {/* Subtabs for Side Panel: Incident Details vs Active Markers List */}
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5 mb-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
             <button
               onClick={() => setActiveSideTab('details')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeSideTab === 'details'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -1034,10 +1034,10 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
             <button
               onClick={() => setActiveSideTab('list')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeSideTab === 'list'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <List className="w-3.5 h-3.5" />
@@ -1051,25 +1051,25 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
               {selectedReport ? (
                 <div className="space-y-4">
                   {/* Header */}
-                  <div className="border-b border-slate-800 pb-3 space-y-2">
+                  <div className="border-b border-slate-100 pb-3 space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-blue-400">
+                        <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200/60">
                           {selectedReport.trackingCode}
                         </span>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase ${
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-lg border uppercase ${
                             selectedReport.category === 'RED'
-                              ? 'bg-red-500/20 text-red-300 border-red-500/40'
+                              ? 'bg-red-50 text-red-700 border-red-200'
                               : selectedReport.category === 'ORANGE'
-                              ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                              ? 'bg-orange-50 text-orange-700 border-orange-200'
                               : selectedReport.category === 'YELLOW'
-                              ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
+                              ? 'bg-yellow-50 text-yellow-800 border-yellow-200'
                               : selectedReport.category === 'GREEN'
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : selectedReport.category === 'BLUE'
-                              ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                              : 'bg-slate-200/20 text-slate-200 border-slate-300/40'
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : 'bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
                           {selectedReport.category}
@@ -1079,7 +1079,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => handleInspectDossier(selectedReport.id)}
-                          className="px-2.5 py-1 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/50 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer shadow-sm"
+                          className="px-2.5 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer shadow-sm"
                           title="Open Full Incident Dossier"
                         >
                           <Eye className="w-3 h-3" />
@@ -1090,7 +1090,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                             setSelectedReportId(null);
                             setSilencedReportId(null);
                           }}
-                          className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
                           title="Close panel & stop alarm sound"
                           aria-label="Close panel"
                         >
@@ -1101,17 +1101,17 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
                     {/* RED:Critical Continuous Notification Sound Alarm Banner */}
                     {selectedReport.category === 'RED' && selectedReport.status !== 'Resolved' && selectedReport.status !== 'Rejected' && (
-                      <div className="p-2.5 rounded-xl bg-red-950/80 border border-red-500/60 shadow-lg flex items-center justify-between gap-2 animate-pulse-glow">
+                      <div className="p-3 rounded-2xl bg-red-50 border border-red-200 shadow-sm flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="relative flex h-3 w-3 shrink-0">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
                           </span>
                           <div className="min-w-0">
-                            <span className="text-[11px] font-extrabold text-red-200 block uppercase tracking-wider">
-                              🚨 RED:Critical Continuous Alarm
+                            <span className="text-[11px] font-extrabold text-red-900 block uppercase tracking-wider">
+                              🚨 Critical Alarm Active
                             </span>
-                            <span className="text-[10px] text-red-300/90 block truncate">
+                            <span className="text-[10px] text-red-700 block truncate">
                               {silencedReportId === selectedReport.id || soundMuted
                                 ? 'Alarm audio silenced · Click another report to clear'
                                 : 'Continuous notification sound active · Stops when another report is clicked'}
@@ -1121,17 +1121,17 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
                         <button
                           onClick={() => setSilencedReportId(silencedReportId === selectedReport.id ? null : selectedReport.id)}
-                          className="px-2.5 py-1 rounded-lg bg-red-900/80 hover:bg-red-800 text-[10px] font-bold text-white border border-red-500/60 cursor-pointer flex items-center gap-1 shrink-0 transition"
+                          className="px-2.5 py-1 rounded-xl bg-red-600 hover:bg-red-700 text-[10px] font-bold text-white shadow-sm cursor-pointer flex items-center gap-1 shrink-0 transition"
                           title={silencedReportId === selectedReport.id ? 'Re-enable alarm siren' : 'Silence alarm siren'}
                         >
                           {silencedReportId === selectedReport.id || soundMuted ? (
                             <>
-                              <Volume2 className="w-3.5 h-3.5 text-amber-300" />
+                              <Volume2 className="w-3.5 h-3.5 text-white" />
                               <span>Unmute</span>
                             </>
                           ) : (
                             <>
-                              <VolumeX className="w-3.5 h-3.5 text-red-300" />
+                              <VolumeX className="w-3.5 h-3.5 text-white" />
                               <span>Silence</span>
                             </>
                           )}
@@ -1139,7 +1139,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                       </div>
                     )}
 
-                    <h3 className="text-base font-bold text-white mt-1">
+                    <h3 className="text-base font-extrabold text-slate-900 mt-1">
                       {(() => {
                         const def = INCIDENT_TYPES.find(
                           (t) => t.id === (selectedReport.verifiedTypeId || selectedReport.initialTypeId)
@@ -1149,40 +1149,40 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                     </h3>
 
                     {selectedReport.verifiedTypeId && selectedReport.verifiedTypeId !== selectedReport.initialTypeId && (
-                      <span className="text-[10px] text-amber-300 flex items-center gap-1 font-semibold mt-1">
-                        <CheckCircle className="w-3 h-3 text-amber-400" />
+                      <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1 font-semibold mt-1 w-fit">
+                        <CheckCircle className="w-3 h-3 text-amber-600" />
                         Verified & Reclassified by Administrator
                       </span>
                     )}
                   </div>
 
                   {/* Status & Receiving Agency */}
-                  <div className="flex items-center justify-between text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                  <div className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
                     <div>
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold">
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">
                         Selected Agency
                       </span>
-                      <span className="font-bold text-white">{selectedReport.selectedAgency}</span>
+                      <span className="font-bold text-slate-900">{selectedReport.selectedAgency}</span>
                     </div>
 
                     <span
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                      className={`text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm ${
                         selectedReport.status === 'Resolved'
-                          ? 'bg-emerald-950 text-emerald-400 border-emerald-800'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : selectedReport.status === 'Ongoing'
-                          ? 'bg-orange-950 text-orange-400 border-orange-800'
+                          ? 'bg-orange-50 text-orange-700 border-orange-200'
                           : selectedReport.status === 'Accepted'
-                          ? 'bg-blue-950 text-blue-400 border-blue-800'
-                          : 'bg-amber-950 text-amber-400 border-amber-800'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
                       }`}
                     >
                       {t[selectedReport.status] || selectedReport.status}
                     </span>
                   </div>
 
-                  {/* Evidence Photo with Resilient Fallback */}
+                  {/* Evidence Photo */}
                   {selectedReport.photoUrl && (
-                    <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-100">
                       <img
                         src={selectedReport.photoUrl}
                         alt="Incident Evidence"
@@ -1197,15 +1197,15 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                             const parent = target.parentElement;
                             if (parent && !parent.querySelector('.evidence-fallback')) {
                               const fallback = document.createElement('div');
-                              fallback.className = 'evidence-fallback flex flex-col items-center justify-center p-4 bg-slate-900 text-slate-400 text-xs h-32';
-                              fallback.innerHTML = '<span class="font-bold text-slate-300">Evidence Record Captured</span><span class="text-[10px] text-slate-500 mt-1">Verified Digital Image on File</span>';
+                              fallback.className = 'evidence-fallback flex flex-col items-center justify-center p-4 bg-slate-100 text-slate-500 text-xs h-32';
+                              fallback.innerHTML = '<span class="font-bold text-slate-700">Evidence Record Captured</span><span class="text-[10px] text-slate-400 mt-1">Verified Digital Image on File</span>';
                               parent.prepend(fallback);
                             }
                           }
                         }}
                       />
                       {selectedReport.photoCaption && (
-                        <div className="p-1.5 text-[10px] text-slate-400 bg-slate-950/90 truncate">
+                        <div className="p-2 text-[10px] text-slate-600 bg-white/90 truncate border-t border-slate-200">
                           {selectedReport.photoCaption}
                         </div>
                       )}
@@ -1213,31 +1213,31 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                   )}
 
                   {/* Location & Details */}
-                  <div className="space-y-2 text-xs text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                  <div className="space-y-2.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
                     <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                      <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                       <div>
-                        <strong className="text-white block">{selectedReport.barangay}, {selectedReport.municipality || 'Calapan City'}</strong>
-                        <span className="text-slate-400">{selectedReport.locationDetails}</span>
-                        <span className="block font-mono text-[10px] text-slate-500 mt-0.5">
+                        <strong className="text-slate-900 block">{selectedReport.barangay}, {selectedReport.municipality || 'Calapan City'}</strong>
+                        <span className="text-slate-500">{selectedReport.locationDetails}</span>
+                        <span className="block font-mono text-[10px] text-slate-400 mt-0.5">
                           GPS: {selectedReport.coordinates.lat.toFixed(4)}, {selectedReport.coordinates.lng.toFixed(4)} · Oriental Mindoro
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-1 border-t border-slate-800/80">
-                      <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-200/80">
+                      <Clock className="w-4 h-4 text-amber-500 shrink-0" />
                       <span>{new Date(selectedReport.dateTime).toLocaleString()}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-purple-400 shrink-0" />
+                      <User className="w-4 h-4 text-purple-500 shrink-0" />
                       <span>
-                        Resident: <strong className="text-white">{selectedReport.residentName}</strong> ({selectedReport.residentPhone})
+                        Resident: <strong className="text-slate-800">{selectedReport.residentName}</strong> ({selectedReport.residentPhone})
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-300 pt-1 border-t border-slate-800/80 leading-relaxed italic">
+                    <p className="text-xs text-slate-700 pt-2 border-t border-slate-200/80 leading-relaxed italic">
                       "{selectedReport.description}"
                     </p>
                   </div>
@@ -1245,7 +1245,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                   {/* Full Dossier Inspector */}
                   <button
                     onClick={() => handleInspectDossier(selectedReport.id)}
-                    className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-900/40 transition cursor-pointer hover:shadow-blue-600/30"
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition cursor-pointer"
                   >
                     <Eye className="w-4 h-4" />
                     <span>Inspect Full Dossier & Audit Log</span>
@@ -1253,13 +1253,13 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center py-16 text-slate-400">
-                  <MapPin className="w-10 h-10 text-slate-600 mb-2 stroke-1" />
-                  <p className="text-sm font-semibold text-slate-300">
+                  <MapPin className="w-10 h-10 text-slate-300 mb-2 stroke-1" />
+                  <p className="text-sm font-bold text-slate-700">
                     {language === 'fil'
                       ? 'Pumili ng marker sa mapa'
                       : 'Click an incident on the map'}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1 max-w-[220px]">
+                  <p className="text-xs text-slate-400 mt-1 max-w-[220px]">
                     Select any color-coded pin or choose from the "Map Items" tab to inspect the incident and reclassify.
                   </p>
                 </div>
@@ -1280,30 +1280,30 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                   <button
                     key={item.id}
                     onClick={() => focusOnIncident(item)}
-                    className={`w-full p-2.5 rounded-xl border text-left transition flex items-start gap-2.5 cursor-pointer ${
+                    className={`w-full p-3 rounded-2xl border text-left transition flex items-start gap-2.5 cursor-pointer ${
                       isSelected
-                        ? 'bg-blue-950/70 border-blue-500 text-white shadow-md'
-                        : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                        ? 'bg-blue-50/90 border-blue-500 text-slate-900 shadow-md'
+                        : 'bg-slate-50/80 border-slate-200/80 text-slate-700 hover:border-slate-300'
                     }`}
                   >
                     <span
-                      className="w-3 h-3 rounded-full shrink-0 mt-1 shadow"
+                      className="w-3 h-3 rounded-full shrink-0 mt-1 shadow-sm"
                       style={{ backgroundColor: def?.colorHex }}
                     />
                     <div className="flex-1 truncate">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="font-mono text-[10px] text-blue-400 font-bold">
+                        <span className="font-mono text-[10px] text-blue-700 font-bold">
                           {item.trackingCode}
                         </span>
                         <div className="flex items-center gap-1.5">
                           {item.category === 'RED' && item.status !== 'Resolved' && item.status !== 'Rejected' && (
-                            <span className="text-[9px] font-black text-red-400 bg-red-950/80 px-1.5 py-0.2 rounded border border-red-600/50 flex items-center gap-1 animate-pulse">
-                              <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-ping" />
+                            <span className="text-[9px] font-black text-red-700 bg-red-50 px-1.5 py-0.2 rounded border border-red-200 flex items-center gap-1 animate-pulse">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-600 animate-ping" />
                               CRITICAL
                             </span>
                           )}
                           {isSelected && item.category === 'RED' && (
-                            <span className="text-[8px] font-black text-red-300 bg-red-900/80 px-1 py-0.2 rounded border border-red-400 animate-bounce">
+                            <span className="text-[8px] font-black text-red-700 bg-red-100 px-1 py-0.2 rounded border border-red-300">
                               🔊 SIREN
                             </span>
                           )}
@@ -1312,10 +1312,10 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                           </span>
                         </div>
                       </div>
-                      <h4 className="text-xs font-bold text-white truncate mt-0.5">
+                      <h4 className="text-xs font-bold text-slate-900 truncate mt-0.5">
                         {language === 'fil' ? def?.fil : def?.en}
                       </h4>
-                      <p className="text-[10px] text-slate-400 truncate">
+                      <p className="text-[10px] text-slate-500 truncate">
                         {item.barangay}, {item.municipality || 'Calapan City'}
                       </p>
                     </div>
@@ -1324,7 +1324,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
               })}
 
               {filteredReports.length === 0 && (
-                <div className="text-center py-10 text-slate-500 text-xs">
+                <div className="text-center py-10 text-slate-400 text-xs">
                   No incidents match the active map filters.
                 </div>
               )}
@@ -1334,22 +1334,22 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       </div>
 
       {/* Comprehensive Legend Table of the 6 Color Categories */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
-        <div className="flex items-center gap-2 mb-3">
-          <Info className="w-4 h-4 text-blue-400" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50">
+        <div className="flex items-center gap-2 mb-4">
+          <Info className="w-4 h-4 text-blue-600" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
             Official Color-Coded Incident Hierarchy (Nexus Standards)
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 text-xs">
           {/* RED */}
-          <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/30 space-y-1">
+          <div className="p-4 rounded-2xl bg-red-50/80 border border-red-200 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500 shadow" />
-              <strong className="text-red-400">RED — Critical Safety Incidents</strong>
+              <span className="w-3 h-3 rounded-full bg-red-500 shadow-sm" />
+              <strong className="text-red-700 font-extrabold">RED — Critical Safety Incidents</strong>
             </div>
-            <ul className="text-[11px] text-slate-300 list-disc list-inside space-y-0.5">
+            <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Suspected Killing — Pinaghihinalaang pagpatay</li>
               <li>Person Found Unresponsive — Taong walang malay</li>
               <li>Suspected Sexual Assault — Seksiyonwal na pag-atake</li>
@@ -1358,12 +1358,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* ORANGE */}
-          <div className="p-3 rounded-xl bg-orange-950/20 border border-orange-500/30 space-y-1">
+          <div className="p-4 rounded-2xl bg-orange-50/80 border border-orange-200 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-orange-500 shadow" />
-              <strong className="text-orange-400">ORANGE — Accidents and Emergencies</strong>
+              <span className="w-3 h-3 rounded-full bg-orange-500 shadow-sm" />
+              <strong className="text-orange-700 font-extrabold">ORANGE — Accidents and Emergencies</strong>
             </div>
-            <ul className="text-[11px] text-slate-300 list-disc list-inside space-y-0.5">
+            <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Road Accident — Aksidente sa kalsada</li>
               <li>Fire Incident — Sunog</li>
               <li>Medical Emergency — Emerhensiyang medikal</li>
@@ -1373,12 +1373,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* YELLOW */}
-          <div className="p-3 rounded-xl bg-yellow-950/20 border border-yellow-500/30 space-y-1">
+          <div className="p-4 rounded-2xl bg-yellow-50/80 border border-yellow-200 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-yellow-400 shadow" />
-              <strong className="text-yellow-400">YELLOW — Suspected Criminal Activities</strong>
+              <span className="w-3 h-3 rounded-full bg-yellow-500 shadow-sm" />
+              <strong className="text-yellow-800 font-extrabold">YELLOW — Suspected Criminal Activities</strong>
             </div>
-            <ul className="text-[11px] text-slate-300 list-disc list-inside space-y-0.5">
+            <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Theft / Robbery — Pagnanakaw / Holdup</li>
               <li>Suspected Break-in — Sapilitang pagpasok</li>
               <li>Scam / Fraud — Panloloko / Budol</li>
@@ -1388,12 +1388,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* GREEN */}
-          <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
+          <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow" />
-              <strong className="text-emerald-400">GREEN — Community & Personal Safety</strong>
+              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm" />
+              <strong className="text-emerald-700 font-extrabold">GREEN — Community & Personal Safety</strong>
             </div>
-            <ul className="text-[11px] text-slate-300 list-disc list-inside space-y-0.5">
+            <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Vandalism / Property Damage — Paninira</li>
               <li>Public Disturbance — Kaguluhan sa publiko</li>
               <li>Domestic Violence — Karahasan sa tahanan</li>
@@ -1403,12 +1403,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* BLUE */}
-          <div className="p-3 rounded-xl bg-blue-950/20 border border-blue-500/30 space-y-1">
+          <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-blue-500 shadow" />
-              <strong className="text-blue-400">BLUE — Community Complaints & Online</strong>
+              <span className="w-3 h-3 rounded-full bg-blue-600 shadow-sm" />
+              <strong className="text-blue-700 font-extrabold">BLUE — Community Complaints & Online</strong>
             </div>
-            <ul className="text-[11px] text-slate-300 list-disc list-inside space-y-0.5">
+            <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Noise Complaint — Reklamo sa ingay</li>
               <li>Drunk and Disorderly — Lasing na nanggugulo</li>
               <li>Cyber Harassment — Panliligalig sa internet</li>
@@ -1417,12 +1417,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* WHITE */}
-          <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/60 space-y-1">
+          <div className="p-4 rounded-2xl bg-slate-100 border border-slate-200 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-slate-200 shadow" />
-              <strong className="text-slate-200">WHITE — Other / Unclassified</strong>
+              <span className="w-3 h-3 rounded-full bg-slate-400 shadow-sm" />
+              <strong className="text-slate-700 font-extrabold">WHITE — Other / Unclassified</strong>
             </div>
-            <ul className="text-[11px] text-slate-300 list-disc list-inside space-y-0.5">
+            <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Not Sure / Other — Hindi tiyak / Iba pa</li>
               <li className="text-slate-400 italic">Manual dispatch inspection required</li>
             </ul>
