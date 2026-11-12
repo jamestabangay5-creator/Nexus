@@ -3,6 +3,7 @@ import { useNexus } from '../context/NexusContext';
 import { TRANSLATIONS } from '../constants/translations';
 import { AGENCY_DETAILS } from '../constants/incidentData';
 import { Agency, AgencyScope } from '../types';
+import { AgencyLogo } from './common/AgencyLogo';
 import {
   ShieldAlert,
   Flame,
@@ -500,7 +501,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'bg-white/90 border-slate-200 text-slate-700'
                     }`}
                   >
-                    <Radio className="w-4 h-4 text-blue-300 shrink-0" />
+                    <AgencyLogo agency="CENTRAL" className="w-5 h-5 shrink-0" />
                     <div>
                       <span className="block leading-tight">Centralized (All)</span>
                       <span className="text-[9px] text-slate-400 font-normal block">Master Dispatch</span>
@@ -515,7 +516,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'bg-white/90 border-slate-200 text-slate-700'
                     }`}
                   >
-                    <ShieldAlert className="w-4 h-4 text-blue-300 shrink-0" />
+                    <AgencyLogo agency="PNP" className="w-5 h-5 shrink-0" />
                     <div>
                       <span className="block leading-tight">PNP Police</span>
                       <span className="text-[9px] text-slate-400 font-normal block">Law Enforcement</span>
@@ -530,7 +531,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'bg-white/90 border-slate-200 text-slate-700'
                     }`}
                   >
-                    <Flame className="w-4 h-4 text-amber-200 shrink-0" />
+                    <AgencyLogo agency="BFP" className="w-5 h-5 shrink-0" />
                     <div>
                       <span className="block leading-tight">BFP Fire</span>
                       <span className="text-[9px] text-slate-400 font-normal block">Fire & Rescue</span>
@@ -545,7 +546,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'bg-white/90 border-slate-200 text-slate-700'
                     }`}
                   >
-                    <Activity className="w-4 h-4 text-emerald-200 shrink-0" />
+                    <AgencyLogo agency="MDRRMO" className="w-5 h-5 shrink-0" />
                     <div>
                       <span className="block leading-tight">MDRRMO</span>
                       <span className="text-[9px] text-slate-400 font-normal block">Disaster/Medical</span>
@@ -555,9 +556,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               ) : (
                 <div className="p-3 rounded-xl bg-white/90 border border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {activeRole === 'PNP' && <ShieldAlert className="w-4 h-4 text-blue-600" />}
-                    {activeRole === 'BFP' && <Flame className="w-4 h-4 text-amber-600" />}
-                    {activeRole === 'MDRRMO' && <Activity className="w-4 h-4 text-emerald-600" />}
+                    <AgencyLogo agency={activeRole as AgencyScope} className="w-5 h-5 shrink-0" />
                     <span className="text-xs font-bold text-slate-800">
                       {AGENCY_DETAILS[activeRole as AgencyScope]?.name} Department Console
                     </span>

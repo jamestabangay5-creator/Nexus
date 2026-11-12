@@ -3,6 +3,7 @@ import { useNexus } from '../../context/NexusContext';
 import { TRANSLATIONS } from '../../constants/translations';
 import { AGENCY_DETAILS } from '../../constants/incidentData';
 import { ORIENTAL_MINDORO_MUNICIPALITIES, MUNICIPALITY_COORDINATES } from '../../constants/orientalMindoroData';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   ShieldAlert,
   Flame,
@@ -463,8 +464,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* PNP Card */}
           <div className="p-6 rounded-3xl glass-card border border-blue-100 hover:border-blue-300 transition shadow-lg space-y-4 relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl border border-blue-200/80 flex items-center justify-center shadow-xs">
-                <ShieldAlert className="w-6 h-6" />
+              <div className="w-12 h-12 bg-white rounded-2xl border border-blue-200/80 flex items-center justify-center shadow-xs p-1.5 shrink-0">
+                <AgencyLogo agency="PNP" className="w-9 h-9 object-contain" />
               </div>
               <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold shadow-xs">
                 HOTLINE: 911 / 117
@@ -490,8 +491,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* BFP Card */}
           <div className="p-6 rounded-3xl glass-card border border-amber-100 hover:border-amber-300 transition shadow-lg space-y-4 relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl border border-amber-200/80 flex items-center justify-center shadow-xs">
-                <Flame className="w-6 h-6" />
+              <div className="w-12 h-12 bg-white rounded-2xl border border-amber-200/80 flex items-center justify-center shadow-xs p-1.5 shrink-0">
+                <AgencyLogo agency="BFP" className="w-9 h-9 object-contain" />
               </div>
               <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold shadow-xs">
                 HOTLINE: 160
@@ -517,8 +518,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* MDRRMO Card */}
           <div className="p-6 rounded-3xl glass-card border border-emerald-100 hover:border-emerald-300 transition shadow-lg space-y-4 relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-200/80 flex items-center justify-center shadow-xs">
-                <Activity className="w-6 h-6" />
+              <div className="w-12 h-12 bg-white rounded-2xl border border-emerald-200/80 flex items-center justify-center shadow-xs p-1.5 shrink-0">
+                <AgencyLogo agency="MDRRMO" className="w-9 h-9 object-contain" />
               </div>
               <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold shadow-xs">
                 HOTLINE: 122
@@ -545,8 +546,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* Central Command Integration Banner */}
         <div className="p-5 rounded-2xl glass-card border border-indigo-200/60 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
           <div className="flex items-center gap-3.5">
-            <div className="p-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl text-white shadow-md shadow-blue-500/20">
-              <Radio className="w-5 h-5 animate-pulse" />
+            <div className="w-11 h-11 p-1.5 bg-white rounded-xl shadow-md border border-indigo-200/80 flex items-center justify-center shrink-0">
+              <AgencyLogo agency="CENTRAL" className="w-8 h-8 object-contain" animate />
             </div>
             <div>
               <h4 className="text-sm font-bold text-slate-900">

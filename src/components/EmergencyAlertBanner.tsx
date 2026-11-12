@@ -2,6 +2,7 @@ import React from 'react';
 import { useNexus } from '../context/NexusContext';
 import { INCIDENT_TYPES, AGENCY_DETAILS } from '../constants/incidentData';
 import { TRANSLATIONS } from '../constants/translations';
+import { AgencyLogo } from './common/AgencyLogo';
 import { AlertTriangle, MapPin, Clock, Building2, X, ChevronRight, Volume2 } from 'lucide-react';
 
 interface Props {
@@ -82,7 +83,7 @@ export const EmergencyAlertBanner: React.FC<Props> = ({ onSelectReport }) => {
             </div>
 
             <div className="flex items-center gap-1.5 col-span-2 sm:col-span-1">
-              <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <AgencyLogo agency={report.selectedAgency} className="w-4 h-4 object-contain shrink-0" />
               <div>
                 <span className="text-slate-400 block text-[9px] sm:text-[10px] uppercase font-bold">
                   {t.agency}

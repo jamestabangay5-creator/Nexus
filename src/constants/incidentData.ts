@@ -428,6 +428,7 @@ export const AGENCY_DETAILS: Record<AgencyScope, {
   descriptionEn: string;
   descriptionFil: string;
   iconName: string;
+  logo: string;
 }> = {
   CENTRAL: {
     name: 'CENTRAL',
@@ -441,6 +442,7 @@ export const AGENCY_DETAILS: Record<AgencyScope, {
     descriptionEn: 'Unified inter-agency dispatch coordination and centralized operations command for PNP, BFP, and MDRRMO.',
     descriptionFil: 'Pinag-isang sentral na koordinasyon para sa Pulisya, Bumbero, at Pagsagip sa Sakuna.',
     iconName: 'Radio',
+    logo: '/logos/central.png',
   },
   PNP: {
     name: 'PNP',
@@ -454,6 +456,7 @@ export const AGENCY_DETAILS: Record<AgencyScope, {
     descriptionEn: 'Crime prevention, public safety, law enforcement, armed threat response, and investigation.',
     descriptionFil: 'Pagpapanatili ng kapayapaan, paglaban sa krimen, at pagpapatupad ng batas.',
     iconName: 'ShieldAlert',
+    logo: '/logos/pnp.svg',
   },
   BFP: {
     name: 'BFP',
@@ -467,6 +470,7 @@ export const AGENCY_DETAILS: Record<AgencyScope, {
     descriptionEn: 'Fire prevention, suppression, chemical emergencies, hazardous materials, and structural rescue.',
     descriptionFil: 'Pag-apula ng sunog, pagsagip sa nasusunugang gusali, at pag-iwas sa sunog.',
     iconName: 'Flame',
+    logo: '/logos/bfp.png',
   },
   MDRRMO: {
     name: 'MDRRMO',
@@ -480,6 +484,7 @@ export const AGENCY_DETAILS: Record<AgencyScope, {
     descriptionEn: 'Natural disasters, flood/landslide evacuation, search & rescue, and community paramedic response.',
     descriptionFil: 'Paghahanda at pagtugon sa bagyo, lindol, baha, landslide, at medikal na emerhensiya.',
     iconName: 'Activity',
+    logo: '/logos/mdrrmo.svg',
   },
 };
 

@@ -3,6 +3,7 @@ import { useNexus } from '../../../context/NexusContext';
 import { IncidentReport, MedicalUnit } from '../../../types';
 import { AGENCY_DETAILS } from '../../../constants/incidentData';
 import { TRANSLATIONS } from '../../../constants/translations';
+import { AgencyLogo } from '../../common/AgencyLogo';
 import {
   Activity,
   Ambulance,
@@ -78,8 +79,8 @@ export const MdrrmoDashboardView: React.FC<Props> = ({ onSelectReport, onRequest
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Disaster & Medical Calls
             </span>
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0 shadow-2xs">
-              <Activity className="w-5 h-5 animate-pulse" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-2xs p-1">
+              <AgencyLogo agency="MDRRMO" className="w-7 h-7 object-contain" animate />
             </div>
           </div>
           <div>

@@ -14,6 +14,7 @@ import { LandingPage } from './components/landing/LandingPage';
 import { MobileBottomNav } from './components/navigation/MobileBottomNav';
 import { QuickHotlinesModal } from './components/resident/QuickHotlinesModal';
 import { AGENCY_DETAILS } from './constants/incidentData';
+import { AgencyLogo } from './components/common/AgencyLogo';
 import { TRANSLATIONS } from './constants/translations';
 import {
   ShieldAlert,
@@ -201,16 +202,16 @@ const AppContent: React.FC = () => {
 
           {/* Quick Hotline & Separated Agency Link */}
           <div className="flex flex-wrap items-center gap-4 text-[11px] font-semibold">
-            <span className="flex items-center gap-1 text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200/60 shadow-xs">
-              <ShieldAlert className="w-3.5 h-3.5" />
+            <span className="flex items-center gap-1.5 text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200/60 shadow-xs">
+              <AgencyLogo agency="PNP" className="w-3.5 h-3.5 object-contain" />
               PNP: 911
             </span>
-            <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60 shadow-xs">
-              <Flame className="w-3.5 h-3.5" />
+            <span className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60 shadow-xs">
+              <AgencyLogo agency="BFP" className="w-3.5 h-3.5 object-contain" />
               BFP: 160
             </span>
-            <span className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60 shadow-xs">
-              <Activity className="w-3.5 h-3.5" />
+            <span className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60 shadow-xs">
+              <AgencyLogo agency="MDRRMO" className="w-3.5 h-3.5 object-contain" />
               MDRRMO: 122
             </span>
             {portalMode !== 'resident' && (

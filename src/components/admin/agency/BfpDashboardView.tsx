@@ -3,6 +3,7 @@ import { useNexus } from '../../../context/NexusContext';
 import { IncidentReport, FireApparatus, FireAlarmLevel } from '../../../types';
 import { AGENCY_DETAILS } from '../../../constants/incidentData';
 import { TRANSLATIONS } from '../../../constants/translations';
+import { AgencyLogo } from '../../common/AgencyLogo';
 import {
   Flame,
   Truck,
@@ -85,8 +86,8 @@ export const BfpDashboardView: React.FC<Props> = ({ onSelectReport, onRequestAss
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Active Fire Calls
             </span>
-            <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 border border-orange-200 flex items-center justify-center shrink-0 shadow-2xs">
-              <Flame className="w-5 h-5 animate-pulse" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-orange-200/80 flex items-center justify-center shrink-0 shadow-2xs p-1">
+              <AgencyLogo agency="BFP" className="w-7 h-7 object-contain" animate />
             </div>
           </div>
           <div>

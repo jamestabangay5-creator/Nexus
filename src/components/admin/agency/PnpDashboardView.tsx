@@ -3,6 +3,7 @@ import { useNexus } from '../../../context/NexusContext';
 import { IncidentReport, PatrolUnit } from '../../../types';
 import { AGENCY_DETAILS } from '../../../constants/incidentData';
 import { TRANSLATIONS } from '../../../constants/translations';
+import { AgencyLogo } from '../../common/AgencyLogo';
 import {
   ShieldAlert,
   Shield,
@@ -74,8 +75,8 @@ export const PnpDashboardView: React.FC<Props> = ({ onSelectReport, onRequestAss
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Active Police Cases
             </span>
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0 shadow-2xs">
-              <ShieldAlert className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-blue-200/80 flex items-center justify-center shrink-0 shadow-2xs p-1">
+              <AgencyLogo agency="PNP" className="w-7 h-7 object-contain" />
             </div>
           </div>
           <div>

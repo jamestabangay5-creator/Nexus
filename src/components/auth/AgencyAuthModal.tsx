@@ -3,6 +3,7 @@ import { useNexus } from '../../context/NexusContext';
 import { TRANSLATIONS } from '../../constants/translations';
 import { AgencyScope, AgencyUser } from '../../types';
 import { OFFICIAL_AGENCY_ACCOUNTS, AGENCY_DETAILS } from '../../constants/incidentData';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   auth,
   signInWithEmailAndPassword,
@@ -191,7 +192,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Radio className={`w-4 h-4 ${selectedAgency === 'CENTRAL' ? 'text-purple-600' : 'text-slate-400'}`} />
+                <AgencyLogo agency="CENTRAL" className="w-5 h-5 object-contain" />
                 <span className="text-[11px]">Central 911</span>
               </button>
 
@@ -205,7 +206,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <ShieldAlert className={`w-4 h-4 ${selectedAgency === 'PNP' ? 'text-blue-600' : 'text-slate-400'}`} />
+                <AgencyLogo agency="PNP" className="w-5 h-5 object-contain" />
                 <span className="text-[11px]">PNP Police</span>
               </button>
 
@@ -219,7 +220,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Flame className={`w-4 h-4 ${selectedAgency === 'BFP' ? 'text-amber-600' : 'text-slate-400'}`} />
+                <AgencyLogo agency="BFP" className="w-5 h-5 object-contain" />
                 <span className="text-[11px]">BFP Fire</span>
               </button>
 
@@ -233,7 +234,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Activity className={`w-4 h-4 ${selectedAgency === 'MDRRMO' ? 'text-emerald-600' : 'text-slate-400'}`} />
+                <AgencyLogo agency="MDRRMO" className="w-5 h-5 object-contain" />
                 <span className="text-[11px]">MDRRMO</span>
               </button>
             </div>
@@ -242,11 +243,8 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
           {/* Selected Agency Info Card */}
           <div className="p-3.5 bg-white/90 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200">
-                {selectedAgency === 'CENTRAL' && <Radio className="w-5 h-5 text-purple-600" />}
-                {selectedAgency === 'PNP' && <ShieldAlert className="w-5 h-5 text-blue-600" />}
-                {selectedAgency === 'BFP' && <Flame className="w-5 h-5 text-amber-600" />}
-                {selectedAgency === 'MDRRMO' && <Activity className="w-5 h-5 text-emerald-600" />}
+              <div className="w-10 h-10 p-1 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                <AgencyLogo agency={selectedAgency} className="w-7 h-7 object-contain" />
               </div>
               <div>
                 <span className="text-xs font-bold text-slate-900 block">{currentCred.name}</span>

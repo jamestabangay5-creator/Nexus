@@ -3,6 +3,7 @@ import { useNexus } from '../../../context/NexusContext';
 import { IncidentReport, Agency } from '../../../types';
 import { AGENCY_DETAILS } from '../../../constants/incidentData';
 import { TRANSLATIONS } from '../../../constants/translations';
+import { AgencyLogo } from '../../common/AgencyLogo';
 import {
   Radio,
   ShieldAlert,
@@ -76,8 +77,8 @@ export const CentralDashboardView: React.FC<Props> = ({
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Total 911 Incidents
             </span>
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0 shadow-2xs">
-              <Radio className="w-5 h-5 animate-pulse" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-indigo-200/80 flex items-center justify-center shrink-0 shadow-2xs p-1">
+              <AgencyLogo agency="CENTRAL" className="w-7 h-7 object-contain" animate />
             </div>
           </div>
           <div>
@@ -203,8 +204,8 @@ export const CentralDashboardView: React.FC<Props> = ({
           <div className="glass-card bg-white/90 backdrop-blur-xl border border-blue-200/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200">
-                  <ShieldAlert className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-white border border-blue-200/80 p-1 flex items-center justify-center shrink-0 shadow-xs">
+                  <AgencyLogo agency="PNP" className="w-8 h-8 object-contain" />
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-slate-900">PNP Police Command</h4>
@@ -243,8 +244,8 @@ export const CentralDashboardView: React.FC<Props> = ({
           <div className="glass-card bg-white/90 backdrop-blur-xl border border-orange-200/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2.5 rounded-2xl bg-orange-50 text-orange-600 border border-orange-200">
-                  <Flame className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-white border border-orange-200/80 p-1 flex items-center justify-center shrink-0 shadow-xs">
+                  <AgencyLogo agency="BFP" className="w-8 h-8 object-contain" />
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-slate-900">BFP Fire Protection</h4>
@@ -283,8 +284,8 @@ export const CentralDashboardView: React.FC<Props> = ({
           <div className="glass-card bg-white/90 backdrop-blur-xl border border-emerald-200/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200">
-                  <Activity className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-white border border-emerald-200/80 p-1 flex items-center justify-center shrink-0 shadow-xs">
+                  <AgencyLogo agency="MDRRMO" className="w-8 h-8 object-contain" />
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-slate-900">MDRRMO Rescue</h4>

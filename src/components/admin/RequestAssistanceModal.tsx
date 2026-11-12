@@ -3,6 +3,7 @@ import { useNexus } from '../../context/NexusContext';
 import { IncidentReport, Agency } from '../../types';
 import { AGENCY_DETAILS } from '../../constants/incidentData';
 import { TRANSLATIONS } from '../../constants/translations';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   Users,
   Send,
@@ -127,9 +128,7 @@ export const RequestAssistanceModal: React.FC<Props> = ({ report, isOpen, onClos
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="font-extrabold text-sm text-slate-900">{agency}</span>
-                      {agency === 'PNP' && <Shield className="w-4 h-4 text-blue-600" />}
-                      {agency === 'BFP' && <Flame className="w-4 h-4 text-orange-600" />}
-                      {agency === 'MDRRMO' && <Activity className="w-4 h-4 text-emerald-600" />}
+                      <AgencyLogo agency={agency} className="w-5 h-5 object-contain" />
                     </div>
                     <span className="text-[11px] text-slate-500 block line-clamp-1">
                       {info.fullNameEn}

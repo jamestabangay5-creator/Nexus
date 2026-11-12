@@ -3,6 +3,7 @@ import { useNexus } from '../../context/NexusContext';
 import { AgencyScope } from '../../types';
 import { AGENCY_DETAILS } from '../../constants/incidentData';
 import { TRANSLATIONS } from '../../constants/translations';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   auth,
   updatePassword,
@@ -204,11 +205,8 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
           className={`px-6 py-4 bg-gradient-to-r ${currentDetails.bgGrad} border-b ${currentDetails.border} flex items-center justify-between`}
         >
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-slate-700 shadow-md">
-              {currentAgency === 'CENTRAL' && <Radio className="w-6 h-6 text-purple-400 animate-pulse" />}
-              {currentAgency === 'PNP' && <ShieldAlert className="w-6 h-6 text-blue-400 animate-pulse" />}
-              {currentAgency === 'BFP' && <Flame className="w-6 h-6 text-orange-400 animate-pulse" />}
-              {currentAgency === 'MDRRMO' && <Activity className="w-6 h-6 text-emerald-400 animate-pulse" />}
+            <div className="w-12 h-12 p-2 rounded-2xl bg-white/95 border border-white/20 shadow-md flex items-center justify-center shrink-0">
+              <AgencyLogo agency={currentAgency} className="w-8 h-8 object-contain" animate />
             </div>
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-white/10 text-white border border-white/20">

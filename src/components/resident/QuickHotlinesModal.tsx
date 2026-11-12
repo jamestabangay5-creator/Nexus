@@ -39,6 +39,7 @@ export const QuickHotlinesModal: React.FC = () => {
       color: 'bg-red-500/20 text-red-400 border-red-500/40',
       btnColor: 'bg-red-600 hover:bg-red-500 text-white',
       icon: Radio,
+      logo: '/logos/central.png',
       pulse: true,
     },
     {
@@ -50,6 +51,7 @@ export const QuickHotlinesModal: React.FC = () => {
       color: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
       btnColor: 'bg-blue-600 hover:bg-blue-500 text-white',
       icon: ShieldAlert,
+      logo: '/logos/pnp.svg',
       pulse: false,
     },
     {
@@ -61,6 +63,7 @@ export const QuickHotlinesModal: React.FC = () => {
       color: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
       btnColor: 'bg-orange-600 hover:bg-orange-500 text-white',
       icon: Flame,
+      logo: '/logos/bfp.png',
       pulse: false,
     },
     {
@@ -72,6 +75,7 @@ export const QuickHotlinesModal: React.FC = () => {
       color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
       btnColor: 'bg-emerald-600 hover:bg-emerald-500 text-white',
       icon: Activity,
+      logo: '/logos/mdrrmo.svg',
       pulse: false,
     },
     {
@@ -138,8 +142,12 @@ export const QuickHotlinesModal: React.FC = () => {
                 className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 flex items-center justify-between gap-3 transition hover:border-slate-300 hover:bg-white shadow-2xs"
               >
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className={`p-2.5 rounded-xl border ${item.color} shrink-0`}>
-                    <Icon className="w-5 h-5" />
+                  <div className={`p-1.5 rounded-xl border ${item.color} bg-white shrink-0 flex items-center justify-center w-11 h-11 shadow-2xs`}>
+                    {item.logo ? (
+                      <img src={item.logo} alt={item.agency} className="w-8 h-8 object-contain" />
+                    ) : (
+                      <Icon className="w-5 h-5" />
+                    )}
                   </div>
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2">

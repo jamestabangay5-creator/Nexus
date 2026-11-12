@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNexus } from '../../context/NexusContext';
 import { AgencyScope, Agency } from '../../types';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   AlertTriangle,
   FileText,
@@ -169,7 +170,7 @@ export const MobileBottomNav: React.FC<Props> = ({
               agencyActiveTab === 'command' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <AgencyIcon className="w-5 h-5 animate-pulse" />
+            <AgencyLogo agency={currentAgency} className="w-5 h-5 object-contain" animate />
             <span className="text-[10px] leading-none">Command</span>
           </button>
 

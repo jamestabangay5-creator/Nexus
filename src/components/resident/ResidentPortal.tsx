@@ -14,6 +14,7 @@ import { TRANSLATIONS } from '../../constants/translations';
 import { compressEvidenceImage } from '../../utils/imageUtils';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { UserProfileModal } from './UserProfileModal';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   ShieldAlert,
   Flame,
@@ -526,8 +527,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600 border border-blue-200">
-                    <ShieldAlert className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 p-1.5 rounded-xl bg-white text-blue-600 border border-blue-200/80 shadow-xs flex items-center justify-center shrink-0">
+                    <AgencyLogo agency="PNP" className="w-8 h-8 sm:w-9 sm:h-9 object-contain" />
                   </div>
                   <span className="font-mono text-lg sm:text-xl font-black text-slate-900">PNP</span>
                 </div>
@@ -567,8 +568,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2.5 rounded-xl bg-orange-100 text-orange-600 border border-orange-200">
-                    <Flame className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 p-1.5 rounded-xl bg-white text-orange-600 border border-orange-200/80 shadow-xs flex items-center justify-center shrink-0">
+                    <AgencyLogo agency="BFP" className="w-8 h-8 sm:w-9 sm:h-9 object-contain" />
                   </div>
                   <span className="font-mono text-lg sm:text-xl font-black text-slate-900">BFP</span>
                 </div>
@@ -608,8 +609,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 border border-emerald-200">
-                    <Activity className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 p-1.5 rounded-xl bg-white text-emerald-600 border border-emerald-200/80 shadow-xs flex items-center justify-center shrink-0">
+                    <AgencyLogo agency="MDRRMO" className="w-8 h-8 sm:w-9 sm:h-9 object-contain" />
                   </div>
                   <span className="font-mono text-lg sm:text-xl font-black text-slate-900">MDRRMO</span>
                 </div>

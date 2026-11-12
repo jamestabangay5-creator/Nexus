@@ -13,6 +13,7 @@ import { PnpDashboardView } from './agency/PnpDashboardView';
 import { BfpDashboardView } from './agency/BfpDashboardView';
 import { MdrrmoDashboardView } from './agency/MdrrmoDashboardView';
 import { CentralDashboardView } from './agency/CentralDashboardView';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   ShieldAlert,
   Flame,
@@ -103,16 +104,17 @@ export const AdminDashboard: React.FC<Props> = ({
       <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
           <div className="flex items-center gap-3.5 sm:gap-4">
-            <div className={`p-3 sm:p-3.5 rounded-2xl shadow-sm border flex items-center justify-center shrink-0 ${
-              agency === 'CENTRAL' ? 'bg-purple-50 text-purple-600 border-purple-200' :
-              agency === 'PNP' ? 'bg-blue-50 text-blue-600 border-blue-200' :
-              agency === 'BFP' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-              'bg-emerald-50 text-emerald-600 border-emerald-200'
+            <div className={`p-2.5 sm:p-3 rounded-2xl shadow-sm border flex items-center justify-center shrink-0 w-16 h-16 sm:w-18 sm:h-18 bg-white/95 ${
+              agency === 'CENTRAL' ? 'border-purple-200 shadow-purple-500/10' :
+              agency === 'PNP' ? 'border-blue-200 shadow-blue-500/10' :
+              agency === 'BFP' ? 'border-orange-200 shadow-orange-500/10' :
+              'border-emerald-200 shadow-emerald-500/10'
             }`}>
-              {agency === 'CENTRAL' && <Radio className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600 animate-pulse" />}
-              {agency === 'PNP' && <ShieldAlert className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600 animate-pulse" />}
-              {agency === 'BFP' && <Flame className="w-7 h-7 sm:w-8 sm:h-8 text-orange-600 animate-pulse" />}
-              {agency === 'MDRRMO' && <Activity className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 animate-pulse" />}
+              <AgencyLogo
+                agency={agency}
+                className="w-11 h-11 sm:w-13 sm:h-13 object-contain drop-shadow-sm"
+                animate
+              />
             </div>
 
             <div>
@@ -187,10 +189,7 @@ export const AdminDashboard: React.FC<Props> = ({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
             }`}
           >
-            {agency === 'CENTRAL' && <Radio className="w-4 h-4 text-purple-600 animate-pulse" />}
-            {agency === 'PNP' && <ShieldAlert className="w-4 h-4 text-blue-600 animate-pulse" />}
-            {agency === 'BFP' && <Flame className="w-4 h-4 text-orange-600 animate-pulse" />}
-            {agency === 'MDRRMO' && <Activity className="w-4 h-4 text-emerald-600 animate-pulse" />}
+            <AgencyLogo agency={agency} className="w-4 h-4 object-contain" animate />
             <span>
               {agency === 'CENTRAL'
                 ? 'Joint Operations Command'

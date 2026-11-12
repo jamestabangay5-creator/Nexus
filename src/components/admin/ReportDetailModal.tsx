@@ -4,6 +4,7 @@ import { IncidentReport, IncidentStatus, IncidentTypeId, Agency } from '../../ty
 import { INCIDENT_TYPES, AGENCY_DETAILS } from '../../constants/incidentData';
 import { TRANSLATIONS } from '../../constants/translations';
 import { RequestAssistanceModal } from './RequestAssistanceModal';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   X,
   MapPin,
@@ -282,8 +283,8 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                 </div>
 
                 <div className="flex items-center gap-2.5 pt-2 border-t border-slate-200/80">
-                  <div className="p-1.5 rounded-lg bg-blue-100 text-blue-600 shrink-0">
-                    <Shield className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
+                    <AgencyLogo agency={report.selectedAgency} className="w-6 h-6 object-contain" />
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
@@ -696,7 +697,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
               {/* Citizen Hotline Speed Dial & Close Action */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
                 <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-                  <Shield className="w-4 h-4 text-blue-600 shrink-0" />
+                  <AgencyLogo agency={report.selectedAgency} className="w-4 h-4 object-contain shrink-0" />
                   <span>
                     {language === 'fil'
                       ? `Nakatakdang Ahensya: ${report.selectedAgency} (${agencyInfo?.fullNameFil})`

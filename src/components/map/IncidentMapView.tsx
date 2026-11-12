@@ -12,6 +12,7 @@ import {
   OrientalMindoroMunicipality,
 } from '../../constants/orientalMindoroData';
 import { TRANSLATIONS } from '../../constants/translations';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   Layers,
   Filter,
@@ -1193,11 +1194,14 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
                   {/* Status & Receiving Agency */}
                   <div className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-                    <div>
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">
-                        Selected Agency
-                      </span>
-                      <span className="font-bold text-slate-900">{selectedReport.selectedAgency}</span>
+                    <div className="flex items-center gap-2">
+                      <AgencyLogo agency={selectedReport.selectedAgency} className="w-5 h-5 object-contain" />
+                      <div>
+                        <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">
+                          Selected Agency
+                        </span>
+                        <span className="font-bold text-slate-900">{selectedReport.selectedAgency}</span>
+                      </div>
                     </div>
 
                     <span

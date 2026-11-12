@@ -3,6 +3,7 @@ import { useNexus } from '../../context/NexusContext';
 import { Agency, IncidentReport, AssistanceRequest } from '../../types';
 import { AGENCY_DETAILS } from '../../constants/incidentData';
 import { TRANSLATIONS } from '../../constants/translations';
+import { AgencyLogo } from '../common/AgencyLogo';
 import {
   Users,
   CheckCircle2,
@@ -88,9 +89,7 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
         <div className="flex items-center gap-3 text-xs bg-slate-50 px-4 py-2 rounded-xl border border-slate-200/80">
           <span className="text-slate-500 font-medium">Operating As:</span>
           <span className="font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
-            {currentAgency === 'PNP' && <Shield className="w-4 h-4 text-blue-600" />}
-            {currentAgency === 'BFP' && <Flame className="w-4 h-4 text-orange-600" />}
-            {currentAgency === 'MDRRMO' && <Activity className="w-4 h-4 text-emerald-600" />}
+            <AgencyLogo agency={currentAgency} className="w-4 h-4 object-contain" />
             {currentAgency} Command
           </span>
         </div>
