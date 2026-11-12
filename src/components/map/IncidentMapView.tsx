@@ -438,7 +438,14 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
         }
       });
 
-      marker.bindPopup(popupContent);
+      marker.bindPopup(popupContent, {
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(16, 24),
+        autoPanPaddingBottomRight: L.point(16, 65),
+        maxWidth: 290,
+        minWidth: 220,
+        closeButton: true,
+      });
 
       marker.on('popupopen', () => {
         setSelectedReportId(report.id);
@@ -554,6 +561,126 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       }
     }
   };
+
+  const renderCategoryPills = (isMobile: boolean) => (
+    <div
+      className={
+        isMobile
+          ? 'flex lg:hidden items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-2.5 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xs shrink-0'
+          : 'hidden lg:flex absolute top-3 left-3 z-20 flex-wrap items-center gap-1.5 bg-white/90 backdrop-blur-md border border-white/80 p-1.5 rounded-2xl shadow-lg max-w-[calc(100%-4.5rem)]'
+      }
+    >
+      {isMobile && (
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1 shrink-0">
+          Filters:
+        </span>
+      )}
+
+      {/* All Category Pill */}
+      <button
+        type="button"
+        onClick={() => setSelectedCategory('ALL')}
+        className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition cursor-pointer shrink-0 ${
+          selectedCategory === 'ALL'
+            ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-500'
+            : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
+        }`}
+        title="Show all incident categories"
+      >
+        All
+      </button>
+
+      {/* RED */}
+      <button
+        type="button"
+        onClick={() => setSelectedCategory(selectedCategory === 'RED' ? 'ALL' : 'RED')}
+        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+          selectedCategory === 'RED'
+            ? 'bg-red-600 text-white shadow-sm ring-1 ring-red-400'
+            : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+        }`}
+        title="RED: Critical Safety Emergencies (Click to filter)"
+      >
+        <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+        <span className="whitespace-nowrap">Critical</span>
+      </button>
+
+      {/* ORANGE */}
+      <button
+        type="button"
+        onClick={() => setSelectedCategory(selectedCategory === 'ORANGE' ? 'ALL' : 'ORANGE')}
+        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+          selectedCategory === 'ORANGE'
+            ? 'bg-orange-500 text-white shadow-sm ring-1 ring-orange-400'
+            : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
+        }`}
+        title="ORANGE: Accidents, Rescue & Medical (Click to filter)"
+      >
+        <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
+        <span className="whitespace-nowrap">Accidents</span>
+      </button>
+
+      {/* YELLOW */}
+      <button
+        type="button"
+        onClick={() => setSelectedCategory(selectedCategory === 'YELLOW' ? 'ALL' : 'YELLOW')}
+        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+          selectedCategory === 'YELLOW'
+            ? 'bg-yellow-500 text-slate-900 font-black shadow-sm ring-1 ring-yellow-400'
+            : 'bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-100'
+        }`}
+        title="YELLOW: Suspected Criminal Activities (Click to filter)"
+      >
+        <span className="w-2 h-2 rounded-full bg-yellow-500 shrink-0" />
+        <span className="whitespace-nowrap">Crime</span>
+      </button>
+
+      {/* GREEN */}
+      <button
+        type="button"
+        onClick={() => setSelectedCategory(selectedCategory === 'GREEN' ? 'ALL' : 'GREEN')}
+        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+          selectedCategory === 'GREEN'
+            ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
+            : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+        }`}
+        title="GREEN: Community & Personal Safety (Click to filter)"
+      >
+        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+        <span className="whitespace-nowrap">Safety</span>
+      </button>
+
+      {/* BLUE */}
+      <button
+        type="button"
+        onClick={() => setSelectedCategory(selectedCategory === 'BLUE' ? 'ALL' : 'BLUE')}
+        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+          selectedCategory === 'BLUE'
+            ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+            : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+        }`}
+        title="BLUE: Public Complaints & Online (Click to filter)"
+      >
+        <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+        <span className="whitespace-nowrap">Online</span>
+      </button>
+
+      {/* WHITE */}
+      <button
+        type="button"
+        onClick={() => setSelectedCategory(selectedCategory === 'WHITE' ? 'ALL' : 'WHITE')}
+        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+          selectedCategory === 'WHITE'
+            ? 'bg-slate-700 text-white font-bold shadow-sm'
+            : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
+        }`}
+        title="WHITE: Other / Unclassified Incidents (Click to filter)"
+      >
+        <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+        <span className="whitespace-nowrap">Other</span>
+      </button>
+    </div>
+  );
 
   return (
     <div className="space-y-5 text-slate-800 font-sans">
@@ -829,11 +956,14 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
         </button>
       </div>
 
+      {/* Mobile Category Filters: Clean horizontal touch carousel outside map to prevent overlapping */}
+      {mobileMapTab === 'map' && renderCategoryPills(true)}
+
       {/* Main Map View + Side Detail & List Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left 2 Cols: Interactive Map Container */}
-        <div className={`lg:col-span-2 relative bg-slate-100 border border-slate-200/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 h-[420px] sm:h-[480px] lg:h-[580px] ${mobileMapTab === 'map' ? 'block' : 'hidden lg:block'}`}>
-          <div ref={mapContainerRef} className="w-full h-full z-0" />
+        <div className={`lg:col-span-2 relative bg-slate-100 border border-slate-200/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 h-[440px] sm:h-[480px] lg:h-[580px] ${mobileMapTab === 'map' ? 'block' : 'hidden lg:block'}`}>
+          <div ref={mapContainerRef} className="w-full h-full" />
           <canvas
             ref={heatCanvasRef}
             className="absolute inset-0 pointer-events-none z-10"
@@ -841,116 +971,14 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
           {/* Offline Map Mode Indicator */}
           {!isOnline && (
-            <div className="absolute top-15 left-3 z-20 bg-amber-950/85 backdrop-blur-md text-amber-200 border border-amber-500/50 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1.5 shadow-lg">
+            <div className="absolute top-3 left-3 lg:top-15 lg:left-3 z-20 bg-amber-950/85 backdrop-blur-md text-amber-200 border border-amber-500/50 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1.5 shadow-lg">
               <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
               <span>Offline GIS: Coordinate markers & incident dossiers active</span>
             </div>
           )}
-          <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-white/90 backdrop-blur-md border border-white/80 p-1.5 rounded-2xl shadow-lg max-w-[calc(100%-4.5rem)]">
-            {/* All Category Pill */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('ALL')}
-              className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition cursor-pointer shrink-0 ${
-                selectedCategory === 'ALL'
-                  ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-500'
-                  : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
-              title="Show all incident categories"
-            >
-              All
-            </button>
 
-            {/* RED */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(selectedCategory === 'RED' ? 'ALL' : 'RED')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
-                selectedCategory === 'RED'
-                  ? 'bg-red-600 text-white shadow-sm ring-1 ring-red-400'
-                  : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
-              }`}
-              title="RED: Critical Safety Emergencies (Click to filter)"
-            >
-              <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-              <span className="whitespace-nowrap">Critical</span>
-            </button>
-
-            {/* ORANGE */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(selectedCategory === 'ORANGE' ? 'ALL' : 'ORANGE')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
-                selectedCategory === 'ORANGE'
-                  ? 'bg-orange-500 text-white shadow-sm ring-1 ring-orange-400'
-                  : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
-              }`}
-              title="ORANGE: Accidents, Rescue & Medical (Click to filter)"
-            >
-              <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
-              <span className="whitespace-nowrap">Accidents</span>
-            </button>
-
-            {/* YELLOW */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(selectedCategory === 'YELLOW' ? 'ALL' : 'YELLOW')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
-                selectedCategory === 'YELLOW'
-                  ? 'bg-yellow-500 text-slate-900 font-black shadow-sm ring-1 ring-yellow-400'
-                  : 'bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-100'
-              }`}
-              title="YELLOW: Suspected Criminal Activities (Click to filter)"
-            >
-              <span className="w-2 h-2 rounded-full bg-yellow-500 shrink-0" />
-              <span className="whitespace-nowrap">Crime</span>
-            </button>
-
-            {/* GREEN */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(selectedCategory === 'GREEN' ? 'ALL' : 'GREEN')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
-                selectedCategory === 'GREEN'
-                  ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-              }`}
-              title="GREEN: Community & Personal Safety (Click to filter)"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-              <span className="whitespace-nowrap">Safety</span>
-            </button>
-
-            {/* BLUE */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(selectedCategory === 'BLUE' ? 'ALL' : 'BLUE')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
-                selectedCategory === 'BLUE'
-                  ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
-                  : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
-              }`}
-              title="BLUE: Public Complaints & Online (Click to filter)"
-            >
-              <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
-              <span className="whitespace-nowrap">Online</span>
-            </button>
-
-            {/* WHITE */}
-            <button
-              type="button"
-              onClick={() => setSelectedCategory(selectedCategory === 'WHITE' ? 'ALL' : 'WHITE')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
-                selectedCategory === 'WHITE'
-                  ? 'bg-slate-700 text-white font-bold shadow-sm'
-                  : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
-              }`}
-              title="WHITE: Other / Unclassified Incidents (Click to filter)"
-            >
-              <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
-              <span className="whitespace-nowrap">Other</span>
-            </button>
-          </div>
+          {/* Desktop Floating Category Filter Bar (Only shown on large desktop screens) */}
+          {renderCategoryPills(false)}
 
           {/* On-Map Floating Map Layer Switcher */}
           <div className="absolute bottom-3 left-3 z-20 flex items-center bg-white/95 backdrop-blur-md border border-white/80 p-1 rounded-2xl shadow-xl">

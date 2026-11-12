@@ -263,3 +263,4 @@ export async function getCachedReportsOffline(): Promise<IncidentReport[]> {
     return [];
   }
 }
+
