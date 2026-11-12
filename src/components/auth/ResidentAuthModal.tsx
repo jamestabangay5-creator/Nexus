@@ -707,17 +707,9 @@ export const ResidentAuthModal: React.FC<Props> = ({
           </div>
         )}
 
-        {/* FORM: CITIZEN REGISTRATION ONLY */}
+        {/* FORM: CITIZEN REGISTRATION */}
         {mode === 'register' && (
           <div className="space-y-3.5 text-xs">
-            {/* Notice stating citizen registration only */}
-            <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl text-[11px] text-purple-900 leading-relaxed shadow-xs">
-              <strong className="block text-purple-950 mb-0.5">Citizen Registration Only</strong>
-              <span>
-                Agency responder and dispatch officer accounts are provisioned by Central Command. If you are an authorized agency official, please use the <strong>Sign In</strong> tab.
-              </span>
-            </div>
-
             <form onSubmit={handleRegister} className="space-y-3.5 max-h-[58vh] overflow-y-auto pr-1">
               {/* Upload Profile Photo Section */}
               <div className="p-3.5 bg-white/90 rounded-2xl border border-purple-200/80 space-y-2 shadow-xs">
