@@ -58,6 +58,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
     reports,
     activeRole,
     language,
+    isOnline,
     reclassifyIncidentReport,
     updateIncidentStatus,
     adminProfiles,
@@ -838,7 +839,13 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             className="absolute inset-0 pointer-events-none z-10"
           />
 
-          {/* Color Category Reference Pill Bar */}
+          {/* Offline Map Mode Indicator */}
+          {!isOnline && (
+            <div className="absolute top-15 left-3 z-20 bg-amber-950/85 backdrop-blur-md text-amber-200 border border-amber-500/50 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1.5 shadow-lg">
+              <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+              <span>Offline GIS: Coordinate markers & incident dossiers active</span>
+            </div>
+          )}
           <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-white/90 backdrop-blur-md border border-white/80 p-1.5 rounded-2xl shadow-lg max-w-[calc(100%-4.5rem)]">
             {/* All Category Pill */}
             <button

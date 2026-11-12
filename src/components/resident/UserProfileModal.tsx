@@ -7,7 +7,8 @@ import {
   OrientalMindoroMunicipality,
   PROVINCE_NAME,
 } from '../../constants/orientalMindoroData';
-import { compressImage } from '../../utils/imageUtils';
+import { compressImage, compressAvatarImage } from '../../utils/imageUtils';
+import { persistUserAvatar } from '../../services/offlineStorage';
 import {
   auth,
   db,
@@ -114,8 +115,30 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
 
     try {
       setUploadingPhoto(true);
-      const compressedDataUrl = await compressImage(file, 500, 500, 0.85);
+      // High-performance avatar compression: 360x360 square thumbnail (~20KB)
+      const compressedDataUrl = await compressAvatarImage(file);
       setFormData((prev) => ({ ...prev, avatarUrl: compressedDataUrl }));
+
+      // Immediately auto-save to React state, IndexedDB, and LocalStorage so it is NEVER lost
+      updateResidentUser({ avatarUrl: compressedDataUrl });
+      const uid = residentUser.uid || firebaseUser?.uid || residentUser.id;
+      await persistUserAvatar(uid, residentUser.email, compressedDataUrl);
+
+      // If signed into Firebase, immediately sync to Cloud Firestore
+      if (uid && firebaseUser) {
+        const userRef = doc(db, 'users', uid);
+        await setDoc(
+          userRef,
+          {
+            avatarUrl: compressedDataUrl,
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        ).catch((err) => console.warn('Could not sync avatar to Firestore:', err));
+      }
+
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2000);
     } catch (err) {
       console.error('Error compressing profile photo:', err);
     } finally {
@@ -127,9 +150,15 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
     e.preventDefault();
     updateResidentUser(formData);
 
+    const uid = residentUser.uid || firebaseUser?.uid || residentUser.id;
+
+    // Permanently persist avatar to IndexedDB and LocalStorage
+    if (formData.avatarUrl) {
+      await persistUserAvatar(uid, residentUser.email, formData.avatarUrl);
+    }
+
     // If signed into Firebase, update Firestore and Auth profile
-    const uid = residentUser.uid || firebaseUser?.uid;
-    if (uid) {
+    if (uid && firebaseUser) {
       try {
         const cleanPayload = sanitizeForFirestore({
           ...formData,
@@ -489,7 +518,12 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
                     <button
                       key={i}
                       type="button"
-                      onClick={() => setFormData({ ...formData, avatarUrl: url })}
+                      onClick={() => {
+                        setFormData({ ...formData, avatarUrl: url });
+                        updateResidentUser({ avatarUrl: url });
+                        const uid = residentUser.uid || firebaseUser?.uid || residentUser.id;
+                        persistUserAvatar(uid, residentUser.email, url);
+                      }}
                       className={`rounded-2xl p-0.5 border-2 transition cursor-pointer ${
                         formData.avatarUrl === url ? 'border-indigo-600 scale-105 shadow-sm' : 'border-transparent hover:border-slate-300'
                       }`}

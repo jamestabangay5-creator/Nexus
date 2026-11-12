@@ -49,3 +49,21 @@ export const compressImage = (
     reader.onerror = (err) => reject(err);
   });
 };
+
+/**
+ * Optimized specifically for Resident Profile Avatars:
+ * Generates an ultra-crisp 360x360 square thumbnail that is extremely lightweight (~20KB),
+ * preventing storage quota exhaustion while maintaining pin-sharp clarity on retina screens.
+ */
+export const compressAvatarImage = (file: File): Promise<string> => {
+  return compressImage(file, 360, 360, 0.82);
+};
+
+/**
+ * Optimized for Emergency Evidence Photos:
+ * Preserves high resolution (960px) for incident assessment while compressing
+ * smartphone 10MB images down to ~60-80KB for instant transmission and resilient offline caching.
+ */
+export const compressEvidenceImage = (file: File): Promise<string> => {
+  return compressImage(file, 960, 960, 0.78);
+};

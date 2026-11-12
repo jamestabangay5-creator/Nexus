@@ -56,6 +56,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     triggerEmergencySound,
     simulateIncomingIncident,
     reports,
+    isOnline,
+    queuedSyncCount,
+    syncOfflineQueue,
     residentUser,
     firebaseUser,
     openAuthModal,
@@ -122,15 +125,38 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           {/* Left: Inter-Agency Network Status */}
           <div className="flex items-center gap-2 overflow-hidden">
-            <span className="flex items-center gap-1.5 text-emerald-600 font-semibold shrink-0">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <Database className="w-3 h-3 text-emerald-600" />
-              <span className="hidden xs:inline">{t.centralizedDatabaseBadge}</span>
-              <span className="xs:hidden">Live 911 Cloud</span>
-            </span>
+            {isOnline ? (
+              <span className="flex items-center gap-1.5 text-emerald-600 font-semibold shrink-0">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Database className="w-3 h-3 text-emerald-600" />
+                <span className="hidden xs:inline">{t.centralizedDatabaseBadge}</span>
+                <span className="xs:hidden">Live 911 Cloud</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-amber-600 font-bold shrink-0">
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+                <Database className="w-3 h-3 text-amber-600" />
+                <span className="hidden xs:inline">Offline Resilient Mode · Local Cache Active</span>
+                <span className="xs:hidden">Offline Mode</span>
+              </span>
+            )}
+
+            {queuedSyncCount > 0 && (
+              <button
+                onClick={syncOfflineQueue}
+                className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 hover:bg-amber-200 transition cursor-pointer"
+                title={`${queuedSyncCount} offline report/update queued for automatic sync. Click to retry sync now.`}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span>{queuedSyncCount} Pending Sync</span>
+              </button>
+            )}
+
             <span className="text-slate-300 hidden md:inline">|</span>
             <span className="text-slate-500 hidden lg:inline truncate">
-              PNP · BFP · MDRRMO Unified Inter-Agency Link Active
+              {isOnline
+                ? 'PNP · BFP · MDRRMO Unified Inter-Agency Link Active'
+                : 'Reports & evidence cached on-device · Auto-sync upon reconnection'}
             </span>
           </div>
 

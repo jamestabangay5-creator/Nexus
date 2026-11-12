@@ -11,6 +11,7 @@ import {
   PROVINCE_NAME,
 } from '../../constants/orientalMindoroData';
 import { TRANSLATIONS } from '../../constants/translations';
+import { compressEvidenceImage } from '../../utils/imageUtils';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { UserProfileModal } from './UserProfileModal';
 import {
@@ -60,6 +61,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     submitIncidentReport,
     language,
     firebaseUser,
+    isOnline,
     openAuthModal,
     residentActiveTab,
     setResidentActiveTab,
@@ -129,6 +131,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   const [description, setDescription] = useState('');
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [photoCaption, setPhotoCaption] = useState<string>('');
+  const [compressingEvidence, setCompressingEvidence] = useState(false);
   const [submittedReport, setSubmittedReport] = useState<IncidentReport | null>(null);
   const [showAgencyRequiredError, setShowAgencyRequiredError] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -205,17 +208,28 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        if (typeof uploadEvent.target?.result === 'string') {
-          setPhotoUrl(uploadEvent.target.result);
-          setPhotoCaption(file.name);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        setCompressingEvidence(true);
+        // Compress evidence image so it doesn't exhaust browser storage quota
+        const compressed = await compressEvidenceImage(file);
+        setPhotoUrl(compressed);
+        setPhotoCaption(file.name);
+      } catch (err) {
+        console.warn('Evidence compression fallback to standard reader:', err);
+        const reader = new FileReader();
+        reader.onload = (uploadEvent) => {
+          if (typeof uploadEvent.target?.result === 'string') {
+            setPhotoUrl(uploadEvent.target.result);
+            setPhotoCaption(file.name);
+          }
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setCompressingEvidence(false);
+      }
     }
   };
 
@@ -844,13 +858,16 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
               {/* Upload input + Presets */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <label className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[44px] shadow-xs">
+                <label className={`px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[44px] shadow-xs ${
+                  compressingEvidence ? 'opacity-60 pointer-events-none' : ''
+                }`}>
                   <Camera className="w-4 h-4 text-indigo-600" />
-                  <span>Upload from Device</span>
+                  <span>{compressingEvidence ? 'Optimizing Photo...' : 'Upload from Device'}</span>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFileUpload}
+                    disabled={compressingEvidence}
                     className="hidden"
                   />
                 </label>
@@ -891,6 +908,19 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
               </button>
             </div>
 
+            {/* Offline Alert Indicator if disconnected */}
+            {!isOnline && (
+              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-2xl flex items-center gap-2.5 text-xs text-amber-900 shadow-2xs">
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-ping shrink-0" />
+                <div>
+                  <strong className="block font-bold">Offline Emergency Filing Active</strong>
+                  <span className="text-[11px] text-amber-800">
+                    Your report will be immediately registered and securely cached on your device. Once connection returns, it automatically transmits to 911 dispatch.
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="pt-2">
               <button
@@ -898,7 +928,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 className="w-full py-4 bg-gradient-to-r from-red-600 via-rose-600 to-indigo-600 hover:from-red-700 hover:to-indigo-700 text-white rounded-xl text-sm font-extrabold flex items-center justify-center gap-2 shadow-xl shadow-rose-500/20 active:scale-[0.99] transition cursor-pointer min-h-[48px]"
               >
                 <Send className="w-4 h-4" />
-                <span>{t.submitReportBtn}</span>
+                <span>{isOnline ? t.submitReportBtn : 'Submit Emergency Report Offline'}</span>
               </button>
             </div>
           </div>

@@ -9,7 +9,8 @@ import {
 } from '../../constants/orientalMindoroData';
 import { OFFICIAL_AGENCY_ACCOUNTS, AGENCY_DETAILS } from '../../constants/incidentData';
 import { AgencyScope, AgencyUser, UserProfile } from '../../types';
-import { compressImage } from '../../utils/imageUtils';
+import { compressImage, compressAvatarImage } from '../../utils/imageUtils';
+import { persistUserAvatar, retrieveUserAvatar } from '../../services/offlineStorage';
 import {
   auth,
   db,
@@ -63,6 +64,7 @@ export const ResidentAuthModal: React.FC<Props> = ({
 }) => {
   const {
     language,
+    residentUser,
     setResidentUser,
     setPortalMode,
     setActiveRole,
@@ -135,9 +137,11 @@ export const ResidentAuthModal: React.FC<Props> = ({
     try {
       setLoading(true);
       setErrorMsg(null);
-      const compressedDataUrl = await compressImage(file, 500, 500, 0.85);
+      const compressedDataUrl = await compressAvatarImage(file);
       setAvatarUrl(compressedDataUrl);
-      setSuccessMsg('Profile photo processed successfully!');
+      // Immediately cache avatar
+      await persistUserAvatar('current', email.trim().toLowerCase(), compressedDataUrl);
+      setSuccessMsg('Profile photo processed & secured successfully!');
       setTimeout(() => setSuccessMsg(null), 2500);
     } catch (err: any) {
       console.error('Photo upload error:', err);
@@ -175,6 +179,11 @@ export const ResidentAuthModal: React.FC<Props> = ({
       // Check if user document exists in Firestore
       const userDocRef = doc(db, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef).catch(() => null);
+      const existingData = userDocSnap && userDocSnap.exists() ? userDocSnap.data() : null;
+
+      // Look up cached permanent avatar before falling back
+      const savedAvatar = (await retrieveUserAvatar(user.uid, user.email || '')) || avatarUrl;
+      const finalAvatar = existingData?.avatarUrl || savedAvatar || user.photoURL || avatarUrl;
 
       let profileData = {
         id: user.uid,
@@ -186,7 +195,7 @@ export const ResidentAuthModal: React.FC<Props> = ({
         municipality: 'Calapan City',
         barangay: 'Ibaba East',
         address: 'Poblacion',
-        avatarUrl: user.photoURL || avatarUrl,
+        avatarUrl: finalAvatar,
         role: 'resident' as const,
         termsAccepted: true,
         termsAcceptedAt: new Date().toISOString(),
@@ -195,11 +204,11 @@ export const ResidentAuthModal: React.FC<Props> = ({
         updatedAt: new Date().toISOString(),
       };
 
-      if (userDocSnap && userDocSnap.exists()) {
-        const existingData = userDocSnap.data();
+      if (existingData) {
         profileData = {
           ...profileData,
           ...existingData,
+          avatarUrl: finalAvatar,
           id: user.uid,
           uid: user.uid,
         };
@@ -211,6 +220,8 @@ export const ResidentAuthModal: React.FC<Props> = ({
           console.warn('Could not write user to Firestore:', err);
         });
       }
+
+      await persistUserAvatar(user.uid, user.email || '', profileData.avatarUrl);
 
       try {
         localStorage.removeItem('nexus_agency_user_v2');
@@ -363,6 +374,10 @@ export const ResidentAuthModal: React.FC<Props> = ({
         localStorage.removeItem('nexus_agency_user_v2');
       } catch {}
 
+      // Look up cached permanent avatar before falling back to default
+      const savedAvatar = (await retrieveUserAvatar(authUser.uid, cleanEmail)) || residentUser.avatarUrl || avatarUrl;
+      const finalAvatar = docData?.avatarUrl || authUser.photoURL || savedAvatar;
+
       const citizenProfile: UserProfile = {
         id: authUser.uid,
         uid: authUser.uid,
@@ -373,13 +388,15 @@ export const ResidentAuthModal: React.FC<Props> = ({
         municipality: docData?.municipality || 'Calapan City',
         barangay: docData?.barangay || 'Ibaba East',
         address: docData?.address || 'Poblacion',
-        avatarUrl: docData?.avatarUrl || authUser.photoURL || avatarUrl,
+        avatarUrl: finalAvatar,
         role: 'resident',
         termsAccepted: true,
         termsAcceptedAt: docData?.termsAcceptedAt || new Date().toISOString(),
         isVerifiedIdentity: true,
         authProvider: 'password',
       };
+
+      await persistUserAvatar(authUser.uid, cleanEmail, finalAvatar);
 
       setResidentUser(citizenProfile);
       setPortalMode('resident');
@@ -458,6 +475,9 @@ export const ResidentAuthModal: React.FC<Props> = ({
       try {
         localStorage.removeItem('nexus_agency_user_v2');
       } catch {}
+
+      // Permanently store avatar in IndexedDB and LocalStorage
+      await persistUserAvatar(user.uid, email.trim(), avatarUrl);
 
       // Store in Firestore
       const userDocRef = doc(db, 'users', user.uid);

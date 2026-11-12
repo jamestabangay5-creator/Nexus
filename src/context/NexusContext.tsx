@@ -44,6 +44,15 @@ import {
   sanitizeForFirestore,
   type FirebaseUser
 } from '../lib/firebase';
+import {
+  persistUserAvatar,
+  retrieveUserAvatar,
+  enqueueOfflineAction,
+  getOfflineQueue,
+  removeOfflineAction,
+  cacheReportsOffline,
+  getCachedReportsOffline
+} from '../services/offlineStorage';
 
 interface IncomingAlertData {
   report: IncidentReport;
@@ -131,6 +140,11 @@ interface NexusContextType {
   deleteMedicalUnit: (unitId: string) => void;
   evacuationCenters: EvacuationCenter[];
   updateEvacuationOccupancy: (centerId: string, occupants: number, status?: EvacuationCenter['status']) => void;
+
+  // Offline & Online Network State
+  isOnline: boolean;
+  queuedSyncCount: number;
+  syncOfflineQueue: () => Promise<void>;
 
   // Actions
   submitIncidentReport: (newReport: Omit<IncidentReport, 'id' | 'trackingCode' | 'status' | 'history' | 'assistanceRequests' | 'isUnreadForAgencies' | 'createdAt' | 'updatedAt'>) => IncidentReport;
@@ -640,6 +654,95 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   });
 
+  // Offline / Online Network State & Resilient Synchronization
+  const [isOnline, setIsOnline] = useState<boolean>(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
+  const [queuedSyncCount, setQueuedSyncCount] = useState<number>(0);
+
+  // Sync all queued offline reports and status updates with Cloud Firestore
+  const syncOfflineQueue = async () => {
+    if (!navigator.onLine) return;
+    try {
+      const queue = await getOfflineQueue();
+      setQueuedSyncCount(queue.length);
+      if (queue.length === 0) return;
+
+      for (const action of queue) {
+        try {
+          if (action.type === 'submit_report') {
+            const report = action.payload as IncidentReport;
+            await setDoc(doc(db, 'reports', report.id), sanitizeForFirestore(report));
+            await removeOfflineAction(action.id);
+          } else if (action.type === 'update_status' || action.type === 'reject_report') {
+            const { reportId, data } = action.payload;
+            await updateDoc(doc(db, 'reports', reportId), sanitizeForFirestore(data));
+            await removeOfflineAction(action.id);
+          }
+        } catch (itemErr) {
+          console.warn('Queued action sync retry failed, will retry on next connection event:', itemErr);
+        }
+      }
+
+      const remaining = await getOfflineQueue();
+      setQueuedSyncCount(remaining.length);
+    } catch (err) {
+      console.warn('Offline queue synchronization notice:', err);
+    }
+  };
+
+  // Restore avatar and reports from permanent IndexedDB offline cache on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const uid = residentUser.uid || residentUser.id;
+        const savedAvatar = await retrieveUserAvatar(uid, residentUser.email);
+        if (savedAvatar && savedAvatar !== residentUser.avatarUrl) {
+          setResidentUser((prev) => ({ ...prev, avatarUrl: savedAvatar }));
+        }
+
+        // Restore any offline-cached reports if state is empty
+        const cachedReports = await getCachedReportsOffline();
+        if (cachedReports.length > 0) {
+          setReports((prev) => {
+            const map = new Map<string, IncidentReport>();
+            prev.forEach((r) => map.set(r.id, r));
+            cachedReports
+              .filter((r) => !MOCK_SEED_IDS.has(r.id) && !r.id.startsWith('rep-00'))
+              .forEach((r) => {
+                if (!map.has(r.id)) map.set(r.id, r);
+              });
+            const merged = Array.from(map.values());
+            merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn('Permanent avatar/cache hydration notice:', err);
+      }
+    })();
+  }, []);
+
+  // Real-time network connectivity listeners
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      syncOfflineQueue();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial check on mount
+    syncOfflineQueue();
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   // Listen to Firebase Auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -743,8 +846,11 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const docSnap = await getDoc(userDocRef);
+          const savedAvatar = await retrieveUserAvatar(user.uid, user.email || '');
+
           if (docSnap.exists()) {
             const data = docSnap.data() as any;
+            const finalAvatar = data.avatarUrl || savedAvatar || user.photoURL || residentUser.avatarUrl;
             setResidentUser((prev) => ({
               ...prev,
               id: user.uid,
@@ -756,14 +862,18 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               municipality: data.municipality || 'Calapan City',
               barangay: data.barangay || prev.barangay,
               address: data.address || prev.address,
-              avatarUrl: data.avatarUrl || user.photoURL || prev.avatarUrl,
+              avatarUrl: finalAvatar,
               role: 'resident',
               termsAccepted: data.termsAccepted ?? true,
               termsAcceptedAt: data.termsAcceptedAt || new Date().toISOString(),
               isVerifiedIdentity: true,
               authProvider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'password',
             }));
+            if (finalAvatar) {
+              persistUserAvatar(user.uid, user.email || '', finalAvatar);
+            }
           } else {
+            const finalAvatar = savedAvatar || user.photoURL || residentUser.avatarUrl;
             const newProfile: UserProfile = {
               id: user.uid,
               uid: user.uid,
@@ -774,7 +884,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               municipality: 'Calapan City',
               barangay: 'Ibaba East',
               address: 'Poblacion',
-              avatarUrl: user.photoURL || residentUser.avatarUrl,
+              avatarUrl: finalAvatar,
               role: 'resident',
               termsAccepted: true,
               termsAcceptedAt: new Date().toISOString(),
@@ -783,6 +893,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             };
             await setDoc(userDocRef, { ...sanitizeForFirestore(newProfile), createdAt: serverTimestamp() }).catch(() => null);
             setResidentUser(newProfile);
+            if (finalAvatar) {
+              persistUserAvatar(user.uid, user.email || '', finalAvatar);
+            }
           }
           setPortalMode('resident');
           setActiveRole('resident');
@@ -878,7 +991,13 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [residentUser]);
 
   const updateResidentUser = (updates: Partial<UserProfile>) => {
-    setResidentUser((prev) => ({ ...prev, ...updates }));
+    setResidentUser((prev) => {
+      const next = { ...prev, ...updates };
+      if (updates.avatarUrl) {
+        persistUserAvatar(next.uid || next.id, next.email, updates.avatarUrl);
+      }
+      return next;
+    });
   };
 
   const acceptTerms = () => {
@@ -937,17 +1056,35 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const next = [report, ...prev.filter((r) => r.id !== report.id)];
       next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      cacheReportsOffline(next);
       return next;
     });
 
-    // Save to Cloud Firestore
-    try {
-      const cleanData = sanitizeForFirestore(report);
-      setDoc(doc(db, 'reports', report.id), cleanData).catch((err) => {
-        console.warn('Could not write report to Firestore:', err);
+    // Save to Cloud Firestore or Enqueue for offline sync
+    if (!navigator.onLine) {
+      enqueueOfflineAction({
+        id: `offline-sub-${report.id}`,
+        type: 'submit_report',
+        payload: report,
+      }).then(() => {
+        setQueuedSyncCount((prev) => prev + 1);
       });
-    } catch (err) {
-      console.warn('Could not sanitize report for Firestore:', err);
+    } else {
+      try {
+        const cleanData = sanitizeForFirestore(report);
+        setDoc(doc(db, 'reports', report.id), cleanData).catch((err) => {
+          console.warn('Network issue writing report to Firestore, queuing for offline sync:', err);
+          enqueueOfflineAction({
+            id: `offline-sub-${report.id}`,
+            type: 'submit_report',
+            payload: report,
+          }).then(() => {
+            setQueuedSyncCount((prev) => prev + 1);
+          });
+        });
+      } catch (err) {
+        console.warn('Could not sanitize report for Firestore:', err);
+      }
     }
 
     // Trigger visual flashing notification and siren alert
@@ -1010,18 +1147,50 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           history: [auditEntry, ...rep.history],
         };
 
-        // Write to Firestore
-        updateDoc(doc(db, 'reports', reportId), {
-          status: newStatus,
-          resolution: updated.resolution || null,
-          updatedAt: now,
-          history: updated.history,
-        }).catch((err) => console.warn('Could not update report in Firestore:', err));
+        // Write to Firestore or enqueue for offline sync
+        if (!navigator.onLine) {
+          enqueueOfflineAction({
+            id: `offline-stat-${reportId}-${Date.now()}`,
+            type: 'update_status',
+            payload: {
+              reportId,
+              data: {
+                status: newStatus,
+                resolution: updated.resolution || null,
+                updatedAt: now,
+                history: updated.history,
+              },
+            },
+          }).then(() => setQueuedSyncCount((prev) => prev + 1));
+        } else {
+          updateDoc(doc(db, 'reports', reportId), {
+            status: newStatus,
+            resolution: updated.resolution || null,
+            updatedAt: now,
+            history: updated.history,
+          }).catch((err) => {
+            console.warn('Network issue updating report in Firestore, queuing for offline sync:', err);
+            enqueueOfflineAction({
+              id: `offline-stat-${reportId}-${Date.now()}`,
+              type: 'update_status',
+              payload: {
+                reportId,
+                data: {
+                  status: newStatus,
+                  resolution: updated.resolution || null,
+                  updatedAt: now,
+                  history: updated.history,
+                },
+              },
+            }).then(() => setQueuedSyncCount((prev) => prev + 1));
+          });
+        }
 
         return updated;
       });
       next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      cacheReportsOffline(next);
       return next;
     });
 
@@ -1065,18 +1234,50 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           history: [auditEntry, ...rep.history],
         };
 
-        // Write to Firestore
-        updateDoc(doc(db, 'reports', reportId), {
-          status: 'Rejected',
-          rejection: updated.rejection,
-          updatedAt: now,
-          history: updated.history,
-        }).catch((err) => console.warn('Could not update rejected report in Firestore:', err));
+        // Write to Firestore or enqueue for offline sync
+        if (!navigator.onLine) {
+          enqueueOfflineAction({
+            id: `offline-rej-${reportId}-${Date.now()}`,
+            type: 'reject_report',
+            payload: {
+              reportId,
+              data: {
+                status: 'Rejected',
+                rejection: updated.rejection,
+                updatedAt: now,
+                history: updated.history,
+              },
+            },
+          }).then(() => setQueuedSyncCount((prev) => prev + 1));
+        } else {
+          updateDoc(doc(db, 'reports', reportId), {
+            status: 'Rejected',
+            rejection: updated.rejection,
+            updatedAt: now,
+            history: updated.history,
+          }).catch((err) => {
+            console.warn('Network issue updating rejected report in Firestore, queuing for offline sync:', err);
+            enqueueOfflineAction({
+              id: `offline-rej-${reportId}-${Date.now()}`,
+              type: 'reject_report',
+              payload: {
+                reportId,
+                data: {
+                  status: 'Rejected',
+                  rejection: updated.rejection,
+                  updatedAt: now,
+                  history: updated.history,
+                },
+              },
+            }).then(() => setQueuedSyncCount((prev) => prev + 1));
+          });
+        }
 
         return updated;
       });
       next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      cacheReportsOffline(next);
       return next;
     });
   };
@@ -1388,6 +1589,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <NexusContext.Provider
       value={{
         reports,
+        isOnline,
+        queuedSyncCount,
+        syncOfflineQueue,
         activeRole,
         setActiveRole,
         portalMode,
