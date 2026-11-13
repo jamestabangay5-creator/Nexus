@@ -51,6 +51,7 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
     setLanguage,
     setActiveRole,
     firebaseUser,
+    triggerSuccessModal,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
@@ -193,6 +194,13 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
     }
 
     setSavedSuccess(true);
+    triggerSuccessModal({
+      title: 'Citizen Profile Updated!',
+      message: 'Your personal information, address, and contact details have been successfully saved.',
+      statusBadge: 'Profile Saved',
+      actionType: 'save',
+      details: `Registered location: ${formData.barangay}, ${formData.municipality}, Oriental Mindoro.`
+    });
     setTimeout(() => {
       setSavedSuccess(false);
       setActiveTab('profile');
@@ -216,7 +224,7 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
       <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-lg w-full p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 max-h-[90vh] overflow-y-auto overflow-x-hidden">
         {/* Relevant Ambient Citizen Glow and Avatar Badge Watermark Background */}
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-indigo-500/10 via-blue-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />

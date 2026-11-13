@@ -67,6 +67,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     residentActiveTab,
     setResidentActiveTab,
     reportFormScrollTrigger,
+    triggerSuccessModal,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
@@ -314,6 +315,17 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
     setSubmittedReport(newReport);
     setActiveTab('tracking');
+
+    // Trigger visual success modal feedback per user requirement
+    triggerSuccessModal({
+      title: 'Emergency Report Successfully Submitted!',
+      message: `Your incident report ${newReport.trackingCode} has been officially registered and broadcast to ${newReport.selectedAgency}.`,
+      trackingCode: newReport.trackingCode,
+      agency: newReport.selectedAgency,
+      statusBadge: 'Submitted & Dispatched',
+      actionType: 'submit',
+      details: `Location: ${barangay}, ${selectedMunicipality}. Responders and dispatch administrators have received your report.`
+    });
 
     // Reset form fields
     setSelectedAgency(null);
@@ -1061,10 +1073,10 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                         <button
                           onClick={() => setSelectedReportId(report.id)}
                           className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
-                          title="Inspect Full Incident Dossier & Audit Log"
+                          title="Inspect Full Incident Details & Audit Log"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>Inspect Dossier</span>
+                          <span>View Full Report</span>
                         </button>
                       </div>
                     </div>

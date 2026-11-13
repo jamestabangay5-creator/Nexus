@@ -103,7 +103,7 @@ export const QuickHotlinesModal: React.FC = () => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
       <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 max-h-[85vh] overflow-y-auto overflow-x-hidden">
         {/* Ambient Emergency Radar Glow & Dispatch Beacon Watermark Background */}
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />

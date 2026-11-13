@@ -45,7 +45,8 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
     updateAgencyProfile,
     agencyUser,
     language,
-    firebaseUser
+    firebaseUser,
+    triggerSuccessModal
   } = useNexus();
 
   const t = TRANSLATIONS[language];
@@ -125,6 +126,14 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
       });
 
       setSuccessMsg('Department profile & operational settings saved successfully!');
+      triggerSuccessModal({
+        title: 'Department Profile & Settings Saved!',
+        message: `${currentAgency} officer credentials and dispatch settings have been updated.`,
+        agency: currentAgency,
+        statusBadge: `${currentAgency} Settings Applied`,
+        actionType: 'save',
+        details: `Duty Officer: ${officerName.trim()}, Badge: ${badgeNumber.trim() || 'N/A'}. Emergency Hotline: ${hotline.trim()}.`
+      });
       setTimeout(() => {
         setSuccessMsg(null);
       }, 3500);
@@ -165,6 +174,13 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
         setNewPassword('');
         setConfirmPassword('');
       }
+      triggerSuccessModal({
+        title: 'Security Password Updated!',
+        message: 'Your official agency account password was successfully updated.',
+        agency: currentAgency,
+        statusBadge: 'Password Changed',
+        actionType: 'save'
+      });
     } catch (err: any) {
       console.error('Change Password Error:', err);
       if (err.code === 'auth/requires-recent-login') {
@@ -198,7 +214,7 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
       <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-2xl w-full shadow-2xl relative text-slate-100 my-auto overflow-hidden">
         {/* Ambient Department Glow & Official Agency Seal Background Watermark */}
         <div className="absolute -top-24 -right-24 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />

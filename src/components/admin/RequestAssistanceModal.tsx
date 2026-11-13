@@ -23,7 +23,7 @@ interface Props {
 }
 
 export const RequestAssistanceModal: React.FC<Props> = ({ report, isOpen, onClose }) => {
-  const { activeRole, sendAssistanceRequest, adminProfiles, language } = useNexus();
+  const { activeRole, sendAssistanceRequest, adminProfiles, language, triggerSuccessModal } = useNexus();
   const t = TRANSLATIONS[language];
 
   const currentAgency: Agency = activeRole === 'resident' ? 'PNP' : (activeRole as Agency);
@@ -54,22 +54,34 @@ export const RequestAssistanceModal: React.FC<Props> = ({ report, isOpen, onClos
 
     setIsSubmitting(true);
     const adminName = adminProfiles[currentAgency]?.name || `${currentAgency} Officer`;
+    const targetNames = [...selectedTargetAgencies];
+    const mutualAidNote = note || `Mutual aid requested by ${currentAgency} for incident at ${report.barangay}.`;
 
     sendAssistanceRequest(
       report.id,
       currentAgency,
-      selectedTargetAgencies,
+      targetNames,
       urgency,
-      note || `Mutual aid requested by ${currentAgency} for incident at ${report.barangay}.`,
+      mutualAidNote,
       adminName
     );
 
     setIsSubmitting(false);
     onClose();
+
+    triggerSuccessModal({
+      title: 'Mutual Aid Request Dispatched Successfully!',
+      message: `Assistance request for incident ${report.trackingCode} was dispatched to ${targetNames.join(', ')}.`,
+      trackingCode: report.trackingCode,
+      agency: currentAgency,
+      statusBadge: `${urgency} Mutual Aid Sent`,
+      actionType: 'assistance',
+      details: `Field units of ${targetNames.join(' and ')} have been summoned to support operations. Note: "${mutualAidNote}".`
+    });
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
       <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative text-slate-800 overflow-hidden">
         {/* Relevant Ambient Glow & Inter-Agency Watermark Background */}
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-indigo-500/10 via-blue-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />

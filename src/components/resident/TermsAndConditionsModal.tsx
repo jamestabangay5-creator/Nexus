@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const TermsAndConditionsModal: React.FC<Props> = ({ isOpen, onClose, onAccepted }) => {
-  const { acceptTerms, residentUser, language } = useNexus();
+  const { acceptTerms, residentUser, language, triggerSuccessModal } = useNexus();
   const t = TRANSLATIONS[language];
 
   const [hasAgreed, setHasAgreed] = useState(residentUser.termsAccepted);
@@ -32,11 +32,17 @@ export const TermsAndConditionsModal: React.FC<Props> = ({ isOpen, onClose, onAc
       acceptTerms();
       if (onAccepted) onAccepted();
       onClose();
+      triggerSuccessModal({
+        title: 'Emergency Terms & Conditions Accepted',
+        message: 'You have verified compliance with RA 10173 and official public safety emergency protocols.',
+        statusBadge: 'Citizen Verified',
+        actionType: 'save'
+      });
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
       <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-2xl w-full p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 flex flex-col max-h-[85vh] overflow-hidden">
         {/* Ambient Glow & Legal Shield Watermark Background */}
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />

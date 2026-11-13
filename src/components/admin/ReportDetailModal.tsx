@@ -47,6 +47,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
     restoreRejectedReport,
     adminProfiles,
     language,
+    triggerSuccessModal,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
@@ -109,6 +110,32 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
       customNote || customActionNote || undefined
     );
     setCustomActionNote('');
+
+    const isResolve = status === 'Resolved';
+    const isOngoing = status === 'Ongoing';
+    const isAccept = status === 'Accepted';
+
+    triggerSuccessModal({
+      title: isResolve
+        ? 'Incident Marked as Resolved!'
+        : isOngoing
+        ? 'Response Team Deployed (Ongoing)!'
+        : isAccept
+        ? 'Report Accepted for Dispatch!'
+        : 'Status Updated Successfully!',
+      message: isResolve
+        ? `Incident report ${report.trackingCode} has been officially verified and marked as Resolved.`
+        : isOngoing
+        ? `Field units are actively deployed for incident ${report.trackingCode}.`
+        : isAccept
+        ? `Incident report ${report.trackingCode} was officially accepted by ${report.selectedAgency}.`
+        : `Incident status updated to ${status}.`,
+      trackingCode: report.trackingCode,
+      agency: report.selectedAgency,
+      statusBadge: status,
+      actionType: isResolve ? 'resolve' : 'status',
+      details: `Action confirmed by ${currentAdmin?.name || 'Authorized Officer'} (${currentAgency}). Audit trail updated.`
+    });
   };
 
   const handleRestoreFromArchive = () => {
@@ -118,26 +145,47 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
       currentAgency
     );
     onClose();
+
+    triggerSuccessModal({
+      title: 'Report Restored to Active Registry!',
+      message: `Incident ${report.trackingCode} was restored to the pending dispatch queue.`,
+      trackingCode: report.trackingCode,
+      agency: report.selectedAgency,
+      statusBadge: 'Restored & Pending',
+      actionType: 'restore',
+      details: 'Incident re-enabled on live dispatch map and active incident tables.'
+    });
   };
 
   const handleConfirmReject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!rejectReason.trim()) return;
 
+    const savedReason = rejectReason.trim();
     rejectIncidentReport(
       report.id,
-      rejectReason.trim(),
+      savedReason,
       currentAdmin?.name || `${currentAgency} Admin`,
       currentAgency
     );
     setIsRejectOpen(false);
     setRejectReason('');
     onClose();
+
+    triggerSuccessModal({
+      title: 'Incident Successfully Rejected & Archived',
+      message: `Report ${report.trackingCode} has been moved to the Emergency Archive.`,
+      trackingCode: report.trackingCode,
+      agency: currentAgency,
+      statusBadge: 'Archived / Rejected',
+      actionType: 'reject',
+      details: `Justification: "${savedReason}". Recorded in immutable agency log.`
+    });
   };
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl overflow-y-auto animate-in fade-in">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl overflow-y-auto animate-in fade-in">
         <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl relative text-slate-800 my-8 max-h-[90vh] flex flex-col justify-between overflow-hidden">
           {/* Relevant Official Agency Seal Watermark & Ambient Command Glow Background */}
           <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />

@@ -198,7 +198,7 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
                             onClick={() => onSelectReport(report.id)}
                             className="text-[11px] text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 cursor-pointer"
                           >
-                            <span>Inspect Incident Dossier</span>
+                            <span>Inspect Full Report Details</span>
                             <ExternalLink className="w-3 h-3" />
                           </button>
                         )}

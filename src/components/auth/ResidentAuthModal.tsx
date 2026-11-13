@@ -69,7 +69,8 @@ export const ResidentAuthModal: React.FC<Props> = ({
     setPortalMode,
     setActiveRole,
     agencyLogin,
-    adminProfiles
+    adminProfiles,
+    triggerSuccessModal,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
@@ -349,6 +350,13 @@ export const ResidentAuthModal: React.FC<Props> = ({
 
         agencyLogin(newAgencyUser);
         setSuccessMsg(`Welcome, ${newAgencyUser.name}! Opening ${adminScope} Command Dashboard...`);
+        triggerSuccessModal({
+          title: 'Command Access Authenticated!',
+          message: `Welcome, ${newAgencyUser.name}! Official session established for ${newAgencyUser.agency} command console.`,
+          agency: newAgencyUser.agency,
+          statusBadge: 'Officer Verified',
+          actionType: 'auth'
+        });
         setTimeout(() => {
           onClose();
         }, 700);
@@ -388,6 +396,12 @@ export const ResidentAuthModal: React.FC<Props> = ({
       setPortalMode('resident');
       setActiveRole('resident');
       setSuccessMsg(`Welcome, ${citizenProfile.name}! Opening Resident Citizen Portal...`);
+      triggerSuccessModal({
+        title: 'Welcome Back, Citizen!',
+        message: `Signed in as ${citizenProfile.name}. Resident emergency portal is ready.`,
+        statusBadge: 'Citizen Verified',
+        actionType: 'auth'
+      });
       setTimeout(() => {
         onClose();
       }, 700);
@@ -478,6 +492,13 @@ export const ResidentAuthModal: React.FC<Props> = ({
       setPortalMode('resident');
       setActiveRole('resident');
       setSuccessMsg('Citizen account registered successfully! Opening Resident Portal...');
+      triggerSuccessModal({
+        title: 'Citizen Account Registered Successfully!',
+        message: `Welcome, ${profileData.name}! Your verified citizen profile is ready.`,
+        statusBadge: 'Citizen Registered',
+        actionType: 'auth',
+        details: `Registered location: ${barangay}, ${municipality}, Oriental Mindoro.`
+      });
       setTimeout(() => {
         onClose();
       }, 800);
@@ -521,7 +542,7 @@ export const ResidentAuthModal: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in overflow-y-auto">
       <div className="glass-card border border-white/95 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative text-slate-800 my-auto overflow-hidden">
         {/* Relevant Ambient Emergency Glow & Secure Shield Emblem Watermark Background */}
         <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />

@@ -241,3 +241,14 @@ export interface EvacuationCenter {
   reliefStockStatus: 'Adequate' | 'Replenishment Needed' | 'Critical';
 }
 
+export interface SuccessModalData {
+  title: string;
+  message: string;
+  trackingCode?: string;
+  agency?: AgencyScope;
+  statusBadge?: string;
+  actionType?: 'submit' | 'resolve' | 'reject' | 'assistance' | 'status' | 'restore' | 'save' | 'auth' | 'general';
+  details?: string;
+  autoCloseMs?: number;
+}
+

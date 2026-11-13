@@ -37,6 +37,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
     adminProfiles,
     language,
     agencyUser,
+    triggerSuccessModal,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
@@ -115,27 +116,69 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
   const handleQuickStatus = (e: React.MouseEvent, reportId: string, newStatus: IncidentStatus) => {
     e.stopPropagation();
+    const rep = reports.find((r) => r.id === reportId);
     updateIncidentStatus(
       reportId,
       newStatus,
       agencyUser?.name || currentAdmin?.name || `${currentScope} Admin`,
       currentScope
     );
+
+    if (rep) {
+      const isResolve = newStatus === 'Resolved';
+      const isOngoing = newStatus === 'Ongoing';
+      const isAccept = newStatus === 'Accepted';
+
+      triggerSuccessModal({
+        title: isResolve
+          ? 'Incident Marked as Resolved!'
+          : isOngoing
+          ? 'Response Team Deployed (Ongoing)!'
+          : isAccept
+          ? 'Report Accepted for Dispatch!'
+          : 'Status Updated Successfully!',
+        message: isResolve
+          ? `Incident report ${rep.trackingCode} is now officially resolved.`
+          : isOngoing
+          ? `Field responders are actively engaged for ${rep.trackingCode}.`
+          : isAccept
+          ? `Report ${rep.trackingCode} has been accepted for response.`
+          : `Incident status updated to ${newStatus}.`,
+        trackingCode: rep.trackingCode,
+        agency: rep.selectedAgency,
+        statusBadge: newStatus,
+        actionType: isResolve ? 'resolve' : 'status',
+        details: `Confirmed by ${agencyUser?.name || currentAdmin?.name || 'Authorized Officer'} (${currentScope}).`
+      });
+    }
   };
 
   const handleConfirmReject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!rejectingReport || !rejectReason.trim()) return;
 
+    const savedReason = rejectReason.trim();
+    const rep = rejectingReport;
+
     rejectIncidentReport(
-      rejectingReport.id,
-      rejectReason.trim(),
+      rep.id,
+      savedReason,
       agencyUser?.name || currentAdmin?.name || `${currentScope} Admin`,
       currentScope
     );
 
     setRejectingReport(null);
     setRejectReason('');
+
+    triggerSuccessModal({
+      title: 'Incident Successfully Rejected & Archived',
+      message: `Report ${rep.trackingCode} has been moved to the Emergency Archive.`,
+      trackingCode: rep.trackingCode,
+      agency: currentScope,
+      statusBadge: 'Archived / Rejected',
+      actionType: 'reject',
+      details: `Justification: "${savedReason}". Removed from active dispatch.`
+    });
   };
 
   return (
@@ -746,10 +789,10 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                             </span>
                           )}
 
-                          {/* Open Dossier */}
+                          {/* Open Full Report */}
                           <button
                             onClick={() => onSelectReport(report.id)}
-                            title="View Full Report"
+                            title="View Full Report Details"
                             className="p-1.5 text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer"
                           >
                             <ChevronRight className="w-3.5 h-3.5" />
@@ -767,7 +810,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
       {/* Reject Modal with documented justification requirement */}
       {rejectingReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in">
           <div className="glass-card bg-white/95 backdrop-blur-2xl border border-rose-200 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative text-slate-800 overflow-hidden">
             {/* Visual background ambient glow & watermark */}
             <div className="absolute -top-16 -right-16 w-48 h-48 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />

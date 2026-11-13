@@ -15,6 +15,7 @@ import {
   MedicalUnit,
   EvacuationCenter,
   AgencyProfileSettings,
+  SuccessModalData,
 } from '../types';
 import {
   INITIAL_INCIDENT_REPORTS,
@@ -122,6 +123,11 @@ interface NexusContextType {
   incomingAlert: IncomingAlertData | null;
   clearIncomingAlert: () => void;
   triggerEmergencySound: () => void;
+
+  // Global Action Success / Feedback Modal
+  successModal: SuccessModalData | null;
+  triggerSuccessModal: (data: SuccessModalData) => void;
+  closeSuccessModal: () => void;
 
   // Agency-specific Operational State & Dispatch Resources (Customizable & Editable)
   patrolUnits: PatrolUnit[];
@@ -307,6 +313,18 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const closeAgencyAuthModal = () => {
     setIsAgencyAuthModalOpen(false);
     setIsAuthModalOpen(false);
+  };
+
+  // Global Action Success / Feedback Modal State
+  const [successModal, setSuccessModal] = useState<SuccessModalData | null>(null);
+
+  const triggerSuccessModal = (data: SuccessModalData) => {
+    setSuccessModal(data);
+    playSuccessChime(soundMuted);
+  };
+
+  const closeSuccessModal = () => {
+    setSuccessModal(null);
   };
 
   const [agencyDetails, setAgencyDetails] = useState<typeof AGENCY_DETAILS>(() => {
@@ -1658,6 +1676,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         incomingAlert,
         clearIncomingAlert,
         triggerEmergencySound,
+        successModal,
+        triggerSuccessModal,
+        closeSuccessModal,
         submitIncidentReport,
         updateIncidentStatus,
         rejectIncidentReport,

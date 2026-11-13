@@ -40,6 +40,7 @@ export const ResourceEditModal: React.FC<Props> = ({
     deleteFireApparatus,
     saveMedicalUnit,
     deleteMedicalUnit,
+    triggerSuccessModal,
   } = useNexus();
 
   const isEditing = !!unitToEdit;
@@ -210,21 +211,40 @@ export const ResourceEditModal: React.FC<Props> = ({
       saveMedicalUnit(unit);
     }
 
+    const targetCallSign = callSign.trim() || 'Unit';
     onClose();
+
+    triggerSuccessModal({
+      title: isEditing ? 'Resource Equipment Updated!' : 'New Resource Deployed!',
+      message: `${targetCallSign} has been successfully saved to the active ${agencyType} fleet registry.`,
+      agency: agencyType,
+      statusBadge: `${agencyType} Fleet Active`,
+      actionType: 'save',
+      details: `Division / Station: ${divisionOrStation || 'Standard Station'}. Personnel on duty: ${officerInCharge || 'Assigned Officer'}.`
+    });
   };
 
   const handleDelete = () => {
     if (!unitToEdit) return;
     if (confirm(`Are you sure you want to retire or delete ${unitToEdit.callSign}?`)) {
+      const retiredName = unitToEdit.callSign;
       if (agencyType === 'PNP') deletePatrolUnit(unitToEdit.id);
       else if (agencyType === 'BFP') deleteFireApparatus(unitToEdit.id);
       else if (agencyType === 'MDRRMO') deleteMedicalUnit(unitToEdit.id);
       onClose();
+
+      triggerSuccessModal({
+        title: 'Resource Unit Retired / Removed',
+        message: `${retiredName} has been removed from the active ${agencyType} resource fleet.`,
+        agency: agencyType,
+        statusBadge: 'Unit Decommissioned',
+        actionType: 'reject',
+      });
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in overflow-y-auto">
       <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl shadow-slate-300/60 relative text-slate-800 my-auto overflow-hidden">
         {/* Relevant Ambient Glow and Resource Equipment Watermark */}
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />

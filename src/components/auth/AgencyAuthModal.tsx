@@ -34,7 +34,7 @@ interface Props {
 }
 
 export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { language, agencyLogin } = useNexus();
+  const { language, agencyLogin, triggerSuccessModal } = useNexus();
   const t = TRANSLATIONS[language];
 
   const [selectedAgency, setSelectedAgency] = useState<AgencyScope>('CENTRAL');
@@ -68,6 +68,13 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
     };
 
     setSuccessMsg(`Authenticated as ${cred.name}! Opening ${AGENCY_DETAILS[agency].badge}...`);
+    triggerSuccessModal({
+      title: 'Command Access Authenticated!',
+      message: `Welcome, ${newAgencyUser.name}! Official session established for ${newAgencyUser.agency} command console.`,
+      agency: newAgencyUser.agency,
+      statusBadge: 'Officer Verified',
+      actionType: 'auth'
+    });
     setTimeout(() => {
       agencyLogin(newAgencyUser);
       onClose();
@@ -125,6 +132,13 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
       };
 
       setSuccessMsg(`Welcome, ${newAgencyUser.name}! Opening ${detectedAgency} Dashboard...`);
+      triggerSuccessModal({
+        title: 'Command Access Authenticated!',
+        message: `Welcome, ${newAgencyUser.name}! Official session established for ${newAgencyUser.agency} command console.`,
+        agency: newAgencyUser.agency,
+        statusBadge: 'Officer Verified',
+        actionType: 'auth'
+      });
       setTimeout(() => {
         agencyLogin(newAgencyUser);
         onClose();
@@ -140,7 +154,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const currentCred = OFFICIAL_AGENCY_ACCOUNTS[selectedAgency];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in">
       <div
         className="relative w-full max-w-lg glass-card border border-white/95 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] text-slate-800"
         onClick={(e) => e.stopPropagation()}

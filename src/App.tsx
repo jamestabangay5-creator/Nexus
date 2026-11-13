@@ -13,6 +13,7 @@ import { AgencyProfileModal } from './components/admin/AgencyProfileModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { MobileBottomNav } from './components/navigation/MobileBottomNav';
 import { QuickHotlinesModal } from './components/resident/QuickHotlinesModal';
+import { ActionSuccessModal } from './components/common/ActionSuccessModal';
 import { AGENCY_DETAILS } from './constants/incidentData';
 import { AgencyLogo } from './components/common/AgencyLogo';
 import { TRANSLATIONS } from './constants/translations';
@@ -264,6 +265,9 @@ const AppContent: React.FC = () => {
 
       {/* 1-Tap Mobile Hotlines Sheet */}
       <QuickHotlinesModal />
+
+      {/* Global Action Success / Feedback Modal */}
+      <ActionSuccessModal />
 
       {/* Fixed Ergonomic Mobile Bottom Navigation Bar */}
       <MobileBottomNav
