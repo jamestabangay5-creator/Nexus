@@ -188,3 +188,75 @@
     touch-action: manipulation;
   }
 }
+
+/* ==========================================================================
+   Senior-Friendly & High-Readability Accessible Typography Layer
+   Ensures emergency alerts, hotlines, forms, and dossiers are clearly readable 
+   by all users, especially elderly citizens and duty officers (WCAG 2.1 AA/AAA)
+   ========================================================================== */
+html {
+  font-size: 16.5px;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 17.5px;
+  }
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  color: #1e293b;
+}
+
+/* Elevate ultra-small text instances across the application */
+.text-\[9px\],
+.text-\[9\.5px\] {
+  font-size: 0.75rem !important; /* ~12.5px */
+  line-height: 1.3 !important;
+}
+
+.text-\[10px\] {
+  font-size: 0.8125rem !important; /* ~13.5px */
+  line-height: 1.35 !important;
+}
+
+.text-\[11px\] {
+  font-size: 0.875rem !important; /* ~14.5px */
+  line-height: 1.4 !important;
+}
+
+.text-xs {
+  font-size: 0.875rem !important; /* ~14.5px instead of 12px */
+  line-height: 1.45 !important;
+}
+
+.text-sm {
+  font-size: 0.975rem !important; /* ~16px instead of 14px */
+  line-height: 1.5 !important;
+}
+
+.text-base {
+  font-size: 1.075rem !important; /* ~17.5px */
+  line-height: 1.55 !important;
+}
+
+/* Ensure inputs, selects, and textareas are effortlessly readable and prevents mobile iOS zoom */
+input,
+select,
+textarea {
+  font-size: 0.95rem !important;
+}
+
+/* High-contrast text tones to help visually impaired & elderly citizens */
+.text-slate-400 {
+  color: #64748b !important; /* High-contrast Slate 500 */
+}
+
+.text-slate-500 {
+  color: #334155 !important; /* High-contrast Slate 700 */
+}
+

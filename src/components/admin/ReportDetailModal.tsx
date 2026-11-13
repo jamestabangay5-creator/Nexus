@@ -302,65 +302,65 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
             )}
 
             {/* Core Details Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+              <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3.5">
                 <div className="flex items-start gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-red-100 text-red-600 shrink-0 mt-0.5">
-                    <MapPin className="w-4 h-4" />
+                  <div className="p-2 rounded-xl bg-red-100 text-red-600 shrink-0 mt-0.5">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                    <span className="text-xs uppercase font-bold text-slate-500 block tracking-wider">
                       Incident Location
                     </span>
-                    <strong className="text-slate-900 block text-sm mt-0.5">{report.barangay}</strong>
-                    <span className="text-slate-600 leading-snug block mt-0.5">{report.locationDetails}</span>
-                    <span className="block font-mono text-[10px] text-slate-400 mt-1">
+                    <strong className="text-slate-900 block text-base font-black mt-0.5">{report.barangay}</strong>
+                    <span className="text-slate-700 leading-normal block mt-0.5 text-sm font-medium">{report.locationDetails}</span>
+                    <span className="block font-mono text-xs text-slate-500 mt-1">
                       GPS: {report.coordinates.lat.toFixed(5)}, {report.coordinates.lng.toFixed(5)}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 pt-2 border-t border-slate-200/80">
-                  <div className="p-1.5 rounded-lg bg-amber-100 text-amber-600 shrink-0">
-                    <Calendar className="w-4 h-4" />
+                <div className="flex items-center gap-2.5 pt-2.5 border-t border-slate-200/80">
+                  <div className="p-2 rounded-xl bg-amber-100 text-amber-600 shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                    <span className="text-xs uppercase font-bold text-slate-500 block tracking-wider">
                       Occurrence Date & Time
                     </span>
-                    <span className="text-slate-800 font-semibold">
+                    <span className="text-slate-900 font-bold text-sm block mt-0.5">
                       {new Date(report.dateTime).toLocaleString()}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+              <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3.5">
                 <div className="flex items-start gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-purple-100 text-purple-600 shrink-0 mt-0.5">
-                    <User className="w-4 h-4" />
+                  <div className="p-2 rounded-xl bg-purple-100 text-purple-600 shrink-0 mt-0.5">
+                    <User className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                    <span className="text-xs uppercase font-bold text-slate-500 block tracking-wider">
                       Reporting Resident
                     </span>
-                    <strong className="text-slate-900 block text-sm mt-0.5">{report.residentName}</strong>
-                    <span className="text-slate-600 flex items-center gap-1.5 font-medium mt-0.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                    <strong className="text-slate-900 block text-base font-black mt-0.5">{report.residentName}</strong>
+                    <span className="text-slate-700 flex items-center gap-1.5 font-semibold text-sm mt-0.5">
+                      <Phone className="w-4 h-4 text-slate-500" />
                       {report.residentPhone}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 pt-2 border-t border-slate-200/80">
-                  <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
-                    <AgencyLogo agency={report.selectedAgency} className="w-6 h-6 object-contain" />
+                <div className="flex items-center gap-2.5 pt-2.5 border-t border-slate-200/80">
+                  <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/80 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
+                    <AgencyLogo agency={report.selectedAgency} className="w-7 h-7 object-contain" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                    <span className="text-xs uppercase font-bold text-slate-500 block tracking-wider">
                       Selected Agency
                     </span>
-                    <span className="text-slate-900 font-bold">
+                    <span className="text-slate-900 font-black text-sm sm:text-base block mt-0.5">
                       {report.selectedAgency} ({agencyInfo?.fullNameEn})
                     </span>
                   </div>
@@ -370,20 +370,20 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
             {/* Resolution Banner (for Resolved Cases) */}
             {report.status === 'Resolved' && (
-              <div className="p-4 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-xs space-y-1.5 animate-in fade-in text-emerald-950">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold">
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-4 sm:p-5 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-xs sm:text-sm space-y-2 animate-in fade-in text-emerald-950">
+                <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm sm:text-base">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
                   <span>Case Resolved & Logged in Provincial History</span>
                 </div>
-                <p className="text-slate-700 pl-6 text-xs leading-relaxed">
+                <p className="text-slate-800 pl-7 text-xs sm:text-sm leading-relaxed font-medium">
                   {report.resolution?.notes || 'Incident successfully cleared and verified resolved.'}
                 </p>
-                <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pl-6 pt-1 border-t border-emerald-200/80">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 pl-7 pt-1.5 border-t border-emerald-200/80">
                   <span>
-                    Resolved by: <strong className="text-slate-800">{report.resolution?.resolvedByAdmin || 'Command Officer'}</strong> ({report.resolution?.agency || report.selectedAgency})
+                    Resolved by: <strong className="text-slate-900">{report.resolution?.resolvedByAdmin || 'Command Officer'}</strong> ({report.resolution?.agency || report.selectedAgency})
                   </span>
                   <span>
-                    Closed at: <strong className="text-slate-800">{new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleString()}</strong>
+                    Closed at: <strong className="text-slate-900">{new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleString()}</strong>
                   </span>
                 </div>
               </div>
@@ -391,57 +391,57 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
             {/* Archived / Rejection Banner (for Rejected Cases) */}
             {report.status === 'Rejected' && (
-              <div className="p-4 bg-rose-50/90 border border-rose-200 rounded-2xl text-xs space-y-1.5 animate-in fade-in text-rose-950">
-                <div className="flex items-center gap-2 text-rose-800 font-bold">
-                  <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0" />
+              <div className="p-4 sm:p-5 bg-rose-50/90 border border-rose-200 rounded-2xl text-xs sm:text-sm space-y-2 animate-in fade-in text-rose-950">
+                <div className="flex items-center gap-2 text-rose-800 font-bold text-sm sm:text-base">
+                  <AlertOctagon className="w-5 h-5 text-rose-600 shrink-0" />
                   <span>Case Archived / Discarded</span>
                 </div>
-                <p className="text-rose-900 pl-6 text-xs font-medium leading-relaxed">
+                <p className="text-rose-950 pl-7 text-xs sm:text-sm font-semibold leading-relaxed">
                   "{report.rejection?.reason || 'Case marked as rejected / unverified.'}"
                 </p>
-                <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pl-6 pt-1 border-t border-rose-200/80">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 pl-7 pt-1.5 border-t border-rose-200/80">
                   <span>
-                    Archived by: <strong className="text-slate-800">{report.rejection?.rejectedByAdmin || 'Command Officer'}</strong> ({report.rejection?.agency || report.selectedAgency})
+                    Archived by: <strong className="text-slate-900">{report.rejection?.rejectedByAdmin || 'Command Officer'}</strong> ({report.rejection?.agency || report.selectedAgency})
                   </span>
                   <span>
-                    Archived at: <strong className="text-slate-800">{new Date(report.rejection?.rejectedAt || report.updatedAt).toLocaleString()}</strong>
+                    Archived at: <strong className="text-slate-900">{new Date(report.rejection?.rejectedAt || report.updatedAt).toLocaleString()}</strong>
                   </span>
                 </div>
               </div>
             )}
 
             {/* Description Narrative */}
-            <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+            <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs sm:text-sm">
+              <span className="block text-xs uppercase font-bold tracking-wider text-slate-500 mb-1.5">
                 Resident Narrative / Description:
               </span>
-              <p className="text-slate-700 leading-relaxed font-medium">{report.description}</p>
+              <p className="text-slate-900 leading-relaxed font-semibold text-sm sm:text-base">{report.description}</p>
             </div>
 
             {/* Action History / Audit Log Timeline */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600">
-                <History className="w-4 h-4 text-blue-600" />
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700">
+                <History className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                 <span>{t.auditHistory} (Immutable Audit Log)</span>
               </div>
 
-              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-3.5 max-h-44 overflow-y-auto space-y-2.5">
+              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-4 max-h-52 overflow-y-auto space-y-3">
                 {report.history.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-start gap-3 text-xs pb-2 border-b border-slate-200/80 last:border-0 last:pb-0"
+                    className="flex items-start gap-3 text-xs sm:text-sm pb-2.5 border-b border-slate-200/80 last:border-0 last:pb-0"
                   >
-                    <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0 mt-1.5" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0 mt-1.5" />
                     <div className="flex-1">
-                      <div className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
                         <span className="font-bold text-slate-900">
-                          {item.action} — <span className="text-blue-700">{item.adminName}</span> ({item.agency})
+                          {item.action} — <span className="text-blue-700 font-black">{item.adminName}</span> ({item.agency})
                         </span>
-                        <span className="font-mono text-slate-400 text-[10px]">
+                        <span className="font-mono text-slate-500 text-xs shrink-0">
                           {new Date(item.timestamp).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-slate-600 text-[11px] mt-0.5">{item.details}</p>
+                      <p className="text-slate-700 text-xs sm:text-sm mt-1 leading-normal font-medium">{item.details}</p>
                     </div>
                   </div>
                 ))}
@@ -542,14 +542,14 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
                 {/* CASE 3: Active Ongoing / Pending Cases -> Request Assistance & Reject allowed */}
                 {report.status !== 'Rejected' && report.status !== 'Resolved' && (
-                  <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
                       {/* Request Assistance Button */}
                       <button
                         onClick={() => setIsAssistanceModalOpen(true)}
-                        className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                        className="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer min-h-[42px] shadow-xs"
                       >
-                        <Users className="w-3.5 h-3.5 text-indigo-600" />
+                        <Users className="w-4 h-4 text-indigo-600" />
                         <span>{t.requestAssistance}</span>
                       </button>
                     </div>
@@ -559,9 +559,9 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                       {report.status === 'Pending Verification' && (
                         <button
                           onClick={() => handleStatusChange('Accepted')}
-                          className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 shadow-md transition cursor-pointer min-h-[42px]"
                         >
-                          <CheckCircle className="w-3.5 h-3.5" />
+                          <CheckCircle className="w-4 h-4" />
                           <span>{t.accept}</span>
                         </button>
                       )}
@@ -569,9 +569,9 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                       {(report.status === 'Accepted' || report.status === 'Pending Verification') && (
                         <button
                           onClick={() => handleStatusChange('Ongoing')}
-                          className="px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                          className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 shadow-md transition cursor-pointer min-h-[42px]"
                         >
-                          <Clock className="w-3.5 h-3.5" />
+                          <Clock className="w-4 h-4" />
                           <span>{t.setOngoing}</span>
                         </button>
                       )}
@@ -579,18 +579,18 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                       {report.status === 'Ongoing' && (
                         <button
                           onClick={() => handleStatusChange('Resolved')}
-                          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 shadow-md transition cursor-pointer min-h-[42px]"
                         >
-                          <CheckCircle className="w-3.5 h-3.5" />
+                          <CheckCircle className="w-4 h-4" />
                           <span>{t.resolve}</span>
                         </button>
                       )}
 
                       <button
                         onClick={() => setIsRejectOpen(true)}
-                        className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                        className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer min-h-[42px] shadow-xs"
                       >
-                        <AlertOctagon className="w-3.5 h-3.5" />
+                        <AlertOctagon className="w-4 h-4" />
                         <span>{t.reject}</span>
                       </button>
                     </div>
@@ -600,26 +600,26 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
             ) : (
               /* Case 4: Viewing as Unselected Agency (or Partner Unit with Mutual Aid Request) */
               <div className="pt-4 mt-4 border-t border-slate-200/80">
-                <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
+                <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
                   <div className="flex items-start gap-3">
                     <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 shrink-0 mt-0.5">
                       <Lock className="w-5 h-5 text-slate-500" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-slate-800 text-xs sm:text-sm">
+                        <span className="font-bold text-slate-900 text-sm sm:text-base">
                           Designated Primary Authority: {report.selectedAgency} ({AGENCY_DETAILS[report.selectedAgency]?.name || report.selectedAgency})
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
                           Jurisdiction Restricted
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-slate-700 mt-1 leading-relaxed font-medium">
                         This incident was reported directly to <strong>{report.selectedAgency}</strong>. Operational command (Accept, Deploy, Mark Resolved, Reject, or Mutual Aid) is reserved for the designated lead agency.
                       </p>
                       {isRequestedPartner && (
-                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-semibold">
-                          <Users className="w-3.5 h-3.5 text-indigo-600" />
+                        <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs sm:text-sm font-semibold">
+                          <Users className="w-4 h-4 text-indigo-600" />
                           <span>Mutual Aid Assistance Requested: Your agency has been summoned to support field operations.</span>
                         </div>
                       )}
@@ -627,7 +627,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                   </div>
 
                   <div className="self-end sm:self-center shrink-0">
-                    <span className={`px-3 py-1.5 rounded-xl text-xs font-bold border inline-flex items-center gap-1.5 ${
+                    <span className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black border inline-flex items-center gap-2 shadow-xs ${
                       report.status === 'Resolved'
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : report.status === 'Ongoing'
@@ -638,7 +638,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                         ? 'bg-rose-50 text-rose-700 border-rose-200'
                         : 'bg-amber-50 text-amber-700 border-amber-200'
                     }`}>
-                      <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-current animate-pulse" />
                       <span>Report Status: {report.status}</span>
                     </span>
                   </div>
@@ -728,7 +728,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                 </div>
 
                 {/* Explanatory Message for Citizen */}
-                <p className="text-xs leading-relaxed font-medium mt-2.5 pt-2.5 border-t border-slate-200/60">
+                <p className="text-xs sm:text-sm leading-relaxed font-semibold text-slate-800 mt-2.5 pt-2.5 border-t border-slate-200/60">
                   {report.status === 'Pending Verification' &&
                     (language === 'fil'
                       ? 'Natanggap na ng central 911 dispatch queue ang iyong ulat. Sinusuri ng duty officer ang iyong lokasyon para sa pagtatalaga ng pinakamalapit na patrol o emergency responder.'
@@ -754,25 +754,25 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                 {/* 4-Stage Dispatch Pipeline Visualizer (if not rejected) */}
                 {report.status !== 'Rejected' && (
                   <div className="pt-3 mt-3 border-t border-slate-200/60">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">
                       {language === 'fil' ? 'Progreso ng Operasyon' : 'Dispatch Response Pipeline'}
                     </span>
-                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-bold text-center">
+                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-center">
                       {/* Step 1: Submitted */}
-                      <div className="p-2 rounded-xl bg-white border border-slate-200 text-emerald-700 flex flex-col items-center gap-0.5 shadow-2xs">
-                        <span className="text-[9px] text-emerald-600 font-mono">1. Sent</span>
+                      <div className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 text-emerald-700 flex flex-col items-center gap-0.5 shadow-2xs">
+                        <span className="text-[10px] sm:text-xs text-emerald-600 font-mono">1. Sent</span>
                         <span className="truncate">✓ {language === 'fil' ? 'Naipadala' : 'Submitted'}</span>
                       </div>
 
                       {/* Step 2: Accepted */}
                       <div
-                        className={`p-2 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
+                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
                           report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved'
                             ? 'bg-white border-blue-200 text-blue-700'
                             : 'bg-slate-100/60 border-slate-200 text-slate-400'
                         }`}
                       >
-                        <span className="text-[9px] font-mono opacity-75">2. Verified</span>
+                        <span className="text-[10px] sm:text-xs font-mono opacity-75">2. Verified</span>
                         <span className="truncate">
                           {report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved' ? '✓ ' : ''}
                           {language === 'fil' ? 'Tinanggap' : 'Accepted'}
@@ -781,13 +781,13 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
                       {/* Step 3: Ongoing */}
                       <div
-                        className={`p-2 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
+                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
                           report.status === 'Ongoing' || report.status === 'Resolved'
                             ? 'bg-white border-orange-200 text-orange-700'
                             : 'bg-slate-100/60 border-slate-200 text-slate-400'
                         }`}
                       >
-                        <span className="text-[9px] font-mono opacity-75">3. En Route</span>
+                        <span className="text-[10px] sm:text-xs font-mono opacity-75">3. En Route</span>
                         <span className="truncate">
                           {report.status === 'Ongoing' || report.status === 'Resolved' ? '✓ ' : ''}
                           {language === 'fil' ? 'Rumeresponde' : 'Ongoing'}
@@ -796,13 +796,13 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
                       {/* Step 4: Resolved */}
                       <div
-                        className={`p-2 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
+                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
                           report.status === 'Resolved'
                             ? 'bg-white border-emerald-200 text-emerald-700'
                             : 'bg-slate-100/60 border-slate-200 text-slate-400'
                         }`}
                       >
-                        <span className="text-[9px] font-mono opacity-75">4. Cleared</span>
+                        <span className="text-[10px] sm:text-xs font-mono opacity-75">4. Cleared</span>
                         <span className="truncate">
                           {report.status === 'Resolved' ? '✓ ' : ''}
                           {language === 'fil' ? 'Naresolba' : 'Resolved'}
@@ -815,8 +815,8 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
               {/* Citizen Hotline Speed Dial & Close Action */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-                <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-                  <AgencyLogo agency={report.selectedAgency} className="w-4 h-4 object-contain shrink-0" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-700 font-semibold">
+                  <AgencyLogo agency={report.selectedAgency} className="w-5 h-5 object-contain shrink-0" />
                   <span>
                     {language === 'fil'
                       ? `Nakatakdang Ahensya: ${report.selectedAgency} (${agencyInfo?.fullNameFil})`
@@ -828,17 +828,17 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                   {agencyInfo?.hotline && (
                     <a
                       href={`tel:${agencyInfo.hotline.replace(/[^\d+]/g, '') || '911'}`}
-                      className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold flex items-center gap-1.5 transition shadow-2xs"
+                      className="px-4 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs sm:text-sm font-bold flex items-center gap-2 transition shadow-2xs min-h-[40px]"
                       title={`Direct call ${report.selectedAgency} emergency hotline`}
                     >
-                      <Phone className="w-3.5 h-3.5" />
+                      <Phone className="w-4 h-4" />
                       <span>Call {report.selectedAgency} Hotline</span>
                     </a>
                   )}
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer min-h-[40px]"
                   >
                     {language === 'fil' ? 'Isara' : 'Close Details'}
                   </button>

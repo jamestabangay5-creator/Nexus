@@ -355,7 +355,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
           <div>
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className={`text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border ${
+              <span className={`text-xs uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border ${
                 firebaseUser
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   : 'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -363,46 +363,46 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 {firebaseUser ? 'Firebase Verified Resident' : 'Resident Citizen Portal'}
               </span>
               {residentUser.termsAccepted && (
-                <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="hidden xs:inline">{t.termsAcceptedBadge}</span>
                 </span>
               )}
             </div>
-            <h1 className="text-base sm:text-xl font-black text-slate-900 mt-1">
+            <h1 className="text-lg sm:text-2xl font-black text-slate-900 mt-1">
               {residentUser.name}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              📍 {residentUser.barangay}, {residentUser.municipality || 'Calapan City'}, Oriental Mindoro · <span className="font-mono text-slate-600">{residentUser.phone}</span>
+            <p className="text-sm text-slate-600 font-medium mt-0.5">
+              📍 {residentUser.barangay}, {residentUser.municipality || 'Calapan City'}, Oriental Mindoro · <span className="font-mono text-slate-700 font-semibold">{residentUser.phone}</span>
             </p>
           </div>
         </div>
 
         {/* Quick Profile & Auth Actions */}
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end text-xs">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end text-xs sm:text-sm">
           {!firebaseUser && (
             <button
               onClick={() => openAuthModal('login')}
-              className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition cursor-pointer min-h-[40px]"
+              className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-2 transition cursor-pointer min-h-[42px]"
             >
-              <LogIn className="w-3.5 h-3.5" />
+              <LogIn className="w-4 h-4" />
               <span>Sign In / Register</span>
             </button>
           )}
 
           <button
             onClick={() => setIsProfileOpen(true)}
-            className="flex-1 sm:flex-initial px-4 py-2.5 bg-white/90 hover:bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 font-bold transition shadow-xs cursor-pointer min-h-[40px] text-center"
+            className="flex-1 sm:flex-initial px-4 py-2.5 bg-white/90 hover:bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 font-bold transition shadow-xs cursor-pointer min-h-[42px] text-center"
           >
             {t.residentProfile} & Photo
           </button>
 
           <button
             onClick={() => setIsTermsOpen(true)}
-            className="px-4 py-2.5 bg-white/90 hover:bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 font-bold transition shadow-xs cursor-pointer min-h-[40px] flex items-center justify-center"
+            className="px-4 py-2.5 bg-white/90 hover:bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 font-bold transition shadow-xs cursor-pointer min-h-[42px] flex items-center justify-center"
           >
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
               <span>Terms</span>
             </span>
           </button>
@@ -453,7 +453,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
         <div className="glass-card-subtle bg-white/70 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 flex items-center gap-1.5 min-w-max shadow-sm">
           <button
             onClick={() => setActiveTab('report')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[44px] ${
               activeTab === 'report'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -465,7 +465,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
           <button
             onClick={() => setActiveTab('tracking')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[44px] ${
               activeTab === 'tracking'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -473,14 +473,14 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
           >
             <Clock className="w-4 h-4 text-blue-600" />
             <span>{t.tabMyReports}</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-50 text-blue-700 border border-blue-200/60 font-mono font-bold">
+            <span className="px-2.5 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 border border-blue-200/60 font-mono font-bold">
               {myReports.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab('map')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[44px] ${
               activeTab === 'map'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -496,29 +496,29 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       {activeTab === 'report' && (
         <form ref={reportFormRef} onSubmit={handleFormSubmit} className="space-y-6">
           {/* Requirement 10: Three Box Buttons for Agency Selection */}
-          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-200/50 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs border border-blue-200">
+                <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2.5">
+                  <span className="h-7 w-7 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm border border-blue-200">
                     1
                   </span>
                   <span>{t.step1Agency} (Required)</span>
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
                   Select the primary emergency response agency for your concern.
                 </p>
               </div>
 
               {/* Requirement 10: Centralized visibility note */}
-              <span className="text-[11px] text-blue-700 bg-blue-50/90 border border-blue-200 px-3 py-1.5 rounded-xl font-medium max-w-sm self-start sm:self-auto shadow-xs">
+              <span className="text-xs sm:text-sm text-blue-800 bg-blue-50/90 border border-blue-200 px-3.5 py-2 rounded-xl font-semibold max-w-md self-start sm:self-auto shadow-xs">
                 ℹ️ {t.agencyNotice}
               </span>
             </div>
 
             {showAgencyRequiredError && !selectedAgency && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2 animate-bounce shadow-xs">
-                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs sm:text-sm flex items-center gap-2 animate-bounce shadow-xs">
+                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
                 <span className="font-bold">Please select one of the three agencies below before continuing.</span>
               </div>
             )}
@@ -532,33 +532,33 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   setSelectedAgency('PNP');
                   setShowAgencyRequiredError(false);
                 }}
-                className={`p-4 sm:p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between relative min-h-[165px] ${
+                className={`p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between relative min-h-[175px] ${
                   selectedAgency === 'PNP'
                     ? 'bg-blue-50/90 border-blue-600 shadow-xl shadow-blue-500/15 ring-2 ring-blue-500/30 transform -translate-y-0.5'
                     : 'bg-white/80 border-slate-200/90 text-slate-700 hover:border-blue-300 hover:bg-white shadow-xs'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 p-1.5 rounded-xl bg-white text-blue-600 border border-blue-200/80 shadow-xs flex items-center justify-center shrink-0">
-                    <AgencyLogo agency="PNP" className="w-8 h-8 sm:w-9 sm:h-9 object-contain" />
+                  <div className="w-12 h-12 p-1.5 rounded-xl bg-white text-blue-600 border border-blue-200/80 shadow-xs flex items-center justify-center shrink-0">
+                    <AgencyLogo agency="PNP" className="w-9 h-9 object-contain" />
                   </div>
-                  <span className="font-mono text-lg sm:text-xl font-black text-slate-900">PNP</span>
+                  <span className="font-mono text-xl font-black text-slate-900">PNP</span>
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-slate-900 mb-1">
+                  <h4 className="text-base font-black text-slate-900 mb-1">
                     Philippine National Police
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium line-clamp-2">
                     Crimes, armed threats, assaults, theft, disturbances, and personal security.
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                  <span className="font-mono text-blue-700 font-bold">Hotline: 911</span>
+                <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs sm:text-sm">
+                  <span className="font-mono text-blue-700 font-black">Hotline: 911</span>
                   <span
-                    className={`font-black px-2.5 py-1 rounded-lg text-[10px] uppercase transition ${
+                    className={`font-black px-3 py-1 rounded-lg text-xs uppercase transition ${
                       selectedAgency === 'PNP'
                         ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600'
+                        : 'bg-slate-100 text-slate-700'
                     }`}
                   >
                     {selectedAgency === 'PNP' ? '✓ Selected' : 'Select PNP'}
@@ -573,33 +573,33 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   setSelectedAgency('BFP');
                   setShowAgencyRequiredError(false);
                 }}
-                className={`p-4 sm:p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between relative min-h-[165px] ${
+                className={`p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between relative min-h-[175px] ${
                   selectedAgency === 'BFP'
                     ? 'bg-orange-50/90 border-orange-600 shadow-xl shadow-orange-500/15 ring-2 ring-orange-500/30 transform -translate-y-0.5'
                     : 'bg-white/80 border-slate-200/90 text-slate-700 hover:border-orange-300 hover:bg-white shadow-xs'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 p-1.5 rounded-xl bg-white text-orange-600 border border-orange-200/80 shadow-xs flex items-center justify-center shrink-0">
-                    <AgencyLogo agency="BFP" className="w-8 h-8 sm:w-9 sm:h-9 object-contain" />
+                  <div className="w-12 h-12 p-1.5 rounded-xl bg-white text-orange-600 border border-orange-200/80 shadow-xs flex items-center justify-center shrink-0">
+                    <AgencyLogo agency="BFP" className="w-9 h-9 object-contain" />
                   </div>
-                  <span className="font-mono text-lg sm:text-xl font-black text-slate-900">BFP</span>
+                  <span className="font-mono text-xl font-black text-slate-900">BFP</span>
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-slate-900 mb-1">
+                  <h4 className="text-base font-black text-slate-900 mb-1">
                     Bureau of Fire Protection
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium line-clamp-2">
                     Fire alarms, structural blazes, gas leaks, electrical fires, and hazardous rescue.
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                  <span className="font-mono text-orange-700 font-bold">Hotline: 160</span>
+                <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs sm:text-sm">
+                  <span className="font-mono text-orange-700 font-black">Hotline: 160</span>
                   <span
-                    className={`font-black px-2.5 py-1 rounded-lg text-[10px] uppercase transition ${
+                    className={`font-black px-3 py-1 rounded-lg text-xs uppercase transition ${
                       selectedAgency === 'BFP'
                         ? 'bg-orange-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600'
+                        : 'bg-slate-100 text-slate-700'
                     }`}
                   >
                     {selectedAgency === 'BFP' ? '✓ Selected' : 'Select BFP'}
@@ -614,33 +614,33 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   setSelectedAgency('MDRRMO');
                   setShowAgencyRequiredError(false);
                 }}
-                className={`p-4 sm:p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between relative min-h-[165px] ${
+                className={`p-5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between relative min-h-[175px] ${
                   selectedAgency === 'MDRRMO'
                     ? 'bg-emerald-50/90 border-emerald-600 shadow-xl shadow-emerald-500/15 ring-2 ring-emerald-500/30 transform -translate-y-0.5'
                     : 'bg-white/80 border-slate-200/90 text-slate-700 hover:border-emerald-300 hover:bg-white shadow-xs'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 p-1.5 rounded-xl bg-white text-emerald-600 border border-emerald-200/80 shadow-xs flex items-center justify-center shrink-0">
-                    <AgencyLogo agency="MDRRMO" className="w-8 h-8 sm:w-9 sm:h-9 object-contain" />
+                  <div className="w-12 h-12 p-1.5 rounded-xl bg-white text-emerald-600 border border-emerald-200/80 shadow-xs flex items-center justify-center shrink-0">
+                    <AgencyLogo agency="MDRRMO" className="w-9 h-9 object-contain" />
                   </div>
-                  <span className="font-mono text-lg sm:text-xl font-black text-slate-900">MDRRMO</span>
+                  <span className="font-mono text-xl font-black text-slate-900">MDRRMO</span>
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-slate-900 mb-1">
+                  <h4 className="text-base font-black text-slate-900 mb-1">
                     Disaster Risk Reduction & Management
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium line-clamp-2">
                     Floods, landslides, severe typhoons, medical traumas, and mass evacuation.
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                  <span className="font-mono text-emerald-700 font-bold">Hotline: 122</span>
+                <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs sm:text-sm">
+                  <span className="font-mono text-emerald-700 font-black">Hotline: 122</span>
                   <span
-                    className={`font-black px-2.5 py-1 rounded-lg text-[10px] uppercase transition ${
+                    className={`font-black px-3 py-1 rounded-lg text-xs uppercase transition ${
                       selectedAgency === 'MDRRMO'
                         ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600'
+                        : 'bg-slate-100 text-slate-700'
                     }`}
                   >
                     {selectedAgency === 'MDRRMO' ? '✓ Selected' : 'Select MDRRMO'}
@@ -651,32 +651,32 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
           </div>
 
           {/* Incident Details Section */}
-          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-5">
+          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-200/50 space-y-5">
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <span className="h-6 w-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-xs border border-indigo-200">
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2.5">
+                <span className="h-7 w-7 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-sm border border-indigo-200">
                   2
                 </span>
                 <span>{t.step2Details}</span>
               </h3>
 
               {/* Requirement 11: Note about initial report */}
-              <div className="mt-2.5 p-3 bg-amber-50/90 border border-amber-200/80 rounded-xl text-xs text-amber-900 flex items-start gap-2 shadow-xs">
-                <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="mt-2.5 p-3.5 bg-amber-50/90 border border-amber-200/80 rounded-xl text-xs sm:text-sm text-amber-950 font-medium flex items-start gap-2 shadow-xs">
+                <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 shrink-0 mt-0.5" />
                 <span>{t.initialReportNotice}</span>
               </div>
             </div>
 
             {/* Dropdown Options 1 to 24 - Requirement 11 */}
             <div>
-              <label className="block text-xs font-black text-slate-800 mb-1.5">
+              <label className="block text-sm sm:text-base font-black text-slate-900 mb-2">
                 {t.incidentTypeLabel} <span className="text-red-500">*</span>
               </label>
               <select
                 value={selectedIncidentType}
                 onChange={(e) => setSelectedIncidentType(e.target.value as IncidentTypeId)}
                 required
-                className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[44px] shadow-xs"
+                className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] shadow-xs"
               >
                 <option value="">{t.selectIncidentPlaceholder}</option>
                 {INCIDENT_TYPES.map((type) => (
@@ -690,8 +690,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             {/* Date Time & Oriental Mindoro Administrative Location */}
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-black text-slate-800 mb-1.5 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                <label className="block text-sm sm:text-base font-black text-slate-900 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-amber-600" />
                   <span>{t.incidentDateTime} <span className="text-red-500">*</span></span>
                 </label>
                 <input
@@ -699,33 +699,33 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   value={dateTime}
                   onChange={(e) => setDateTime(e.target.value)}
                   required
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-2.5 text-xs font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[44px] shadow-xs"
+                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm font-mono font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] shadow-xs"
                 />
               </div>
 
               {/* Oriental Mindoro Administrative Area Selector */}
-              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+              <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-sm font-black text-slate-900 flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-indigo-600" />
                     <span>Oriental Mindoro Incident Location</span>
                   </span>
-                  <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
+                  <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
                     Province: Oriental Mindoro (Region IV-B)
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                      <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-blue-600" />
                       <span>Select Municipality / City <span className="text-red-500">*</span></span>
                     </label>
                     <select
                       value={selectedMunicipality}
                       onChange={(e) => handleMunicipalityChange(e.target.value as OrientalMindoroMunicipality)}
                       required
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[44px] font-bold shadow-xs"
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs"
                     >
                       {ORIENTAL_MINDORO_MUNICIPALITIES.map((muni) => (
                         <option key={muni} value={muni}>
@@ -736,8 +736,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-red-600" />
+                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-red-600" />
                       <span>{t.barangayLabel} ({getBarangaysForMunicipality(selectedMunicipality).length} in {selectedMunicipality}) <span className="text-red-500">*</span></span>
                     </label>
                     <select
@@ -750,7 +750,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                         }
                       }}
                       required
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[44px] font-bold shadow-xs"
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs"
                     >
                       {getBarangaysForMunicipality(selectedMunicipality).map((brgy, idx) => (
                         <option key={`rp-brgy-${selectedMunicipality}-${brgy}-${idx}`} value={brgy}>
@@ -763,7 +763,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
                 {/* Specific Landmark / Street */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
                     {t.specificLocationLabel} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -772,13 +772,13 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     onChange={(e) => setLocationDetails(e.target.value)}
                     required
                     placeholder="e.g. Purok 5, across Jollibee, near basketball court..."
-                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-xs placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[44px] shadow-xs"
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] shadow-xs font-medium"
                   />
                 </div>
 
                 {/* Live Dispatch Address Banner */}
-                <div className="p-2.5 bg-indigo-50/90 border border-indigo-200 rounded-xl text-[11px] text-indigo-900 flex items-center gap-2 shadow-xs">
-                  <MapPin className="w-4 h-4 text-indigo-600 shrink-0" />
+                <div className="p-3 bg-indigo-50/90 border border-indigo-200 rounded-xl text-xs sm:text-sm text-indigo-950 font-medium flex items-center gap-2 shadow-xs">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
                   <span className="truncate">
                     Dispatch Destination: <strong className="text-slate-900">{locationDetails || 'Specific Landmark'}, {barangay}, {selectedMunicipality}, Oriental Mindoro</strong>
                   </span>
@@ -787,15 +787,15 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             </div>
 
             {/* Coordinates / Map Pin Picker with GPS Detection */}
-            <div className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+            <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs sm:text-sm space-y-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <MapPin className="w-5 h-5 text-blue-600 shrink-0" />
                   <div>
-                    <span className="font-bold text-slate-800 block">
+                    <span className="font-bold text-slate-900 block text-xs sm:text-sm">
                       GPS Dispatch Coordinates:
                     </span>
-                    <span className="font-mono text-slate-600 text-[11px]">
+                    <span className="font-mono text-slate-700 font-bold text-xs sm:text-sm">
                       Latitude: {coords.lat.toFixed(5)}, Longitude: {coords.lng.toFixed(5)}
                     </span>
                   </div>
@@ -805,20 +805,20 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   type="button"
                   onClick={handleDetectGPS}
                   disabled={isLocating}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer self-start sm:self-center shadow-xs"
+                  className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer self-start sm:self-center shadow-xs min-h-[40px]"
                 >
-                  <Navigation className={`w-3.5 h-3.5 text-blue-600 ${isLocating ? 'animate-spin' : ''}`} />
+                  <Navigation className={`w-4 h-4 text-blue-600 ${isLocating ? 'animate-spin' : ''}`} />
                   <span>{isLocating ? 'Acquiring GPS...' : locationSuccess ? 'GPS Updated!' : 'Detect My Exact GPS'}</span>
                 </button>
               </div>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-xs text-slate-600 font-medium">
                 Responders use these exact coordinates for real-time dispatch navigation and map plotting.
               </p>
             </div>
 
             {/* Incident Narrative / Description */}
             <div>
-              <label className="block text-xs font-black text-slate-800 mb-1.5">
+              <label className="block text-sm sm:text-base font-black text-slate-900 mb-2">
                 {t.descriptionLabel} <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -827,7 +827,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 required
                 rows={4}
                 placeholder="Describe what happened, any casualties, weapons, number of suspects or victims involved..."
-                className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-xs placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none leading-relaxed shadow-xs"
+                className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm sm:text-base placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none leading-relaxed shadow-xs font-medium"
               />
             </div>
 
@@ -871,7 +871,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
               {/* Upload input + Presets */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <label className={`px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[44px] shadow-xs ${
+                <label className={`px-5 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[46px] shadow-xs ${
                   compressingEvidence ? 'opacity-60 pointer-events-none' : ''
                 }`}>
                   <Camera className="w-4 h-4 text-indigo-600" />
@@ -886,8 +886,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 </label>
 
                 <div className="flex-1">
-                  <span className="text-slate-500 text-[11px] block mb-1.5 font-medium">or quick sample presets:</span>
-                  <div className="flex flex-wrap gap-1.5">
+                  <span className="text-slate-600 text-xs block mb-1.5 font-semibold">or quick sample presets:</span>
+                  <div className="flex flex-wrap gap-2">
                     {samplePhotoPresets.map((preset, idx) => (
                       <button
                         key={idx}
@@ -896,7 +896,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                           setPhotoUrl(preset.url);
                           setPhotoCaption(preset.title);
                         }}
-                        className="px-2.5 py-1 text-[11px] bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg text-slate-700 transition cursor-pointer font-medium shadow-2xs"
+                        className="px-3 py-1.5 text-xs bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg text-slate-800 transition cursor-pointer font-bold shadow-2xs"
                       >
                         {preset.title}
                       </button>
@@ -907,15 +907,15 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             </div>
 
             {/* Terms reminder notice */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="flex items-center gap-2 font-medium">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>R.A. 10173 Protected Emergency System</span>
               </span>
               <button
                 type="button"
                 onClick={() => setIsTermsOpen(true)}
-                className="text-blue-600 hover:underline cursor-pointer text-left sm:text-right font-bold"
+                className="text-blue-700 hover:underline cursor-pointer text-left sm:text-right font-bold"
               >
                 Review Terms & Conditions
               </button>
@@ -923,11 +923,11 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
             {/* Offline Alert Indicator if disconnected */}
             {!isOnline && (
-              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-2xl flex items-center gap-2.5 text-xs text-amber-900 shadow-2xs">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-ping shrink-0" />
+              <div className="p-4 bg-amber-50 border border-amber-200/80 rounded-2xl flex items-center gap-3 text-xs sm:text-sm text-amber-950 shadow-2xs">
+                <span className="h-3 w-3 rounded-full bg-amber-500 animate-ping shrink-0" />
                 <div>
                   <strong className="block font-bold">Offline Emergency Filing Active</strong>
-                  <span className="text-[11px] text-amber-800">
+                  <span className="text-xs sm:text-sm text-amber-900 font-medium">
                     Your report will be immediately registered and securely cached on your device. Once connection returns, it automatically transmits to 911 dispatch.
                   </span>
                 </div>
@@ -938,9 +938,9 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-4 bg-gradient-to-r from-red-600 via-rose-600 to-indigo-600 hover:from-red-700 hover:to-indigo-700 text-white rounded-xl text-sm font-extrabold flex items-center justify-center gap-2 shadow-xl shadow-rose-500/20 active:scale-[0.99] transition cursor-pointer min-h-[48px]"
+                className="w-full py-4.5 sm:py-5 bg-gradient-to-r from-red-600 via-rose-600 to-indigo-600 hover:from-red-700 hover:to-indigo-700 text-white rounded-2xl text-base sm:text-lg font-black flex items-center justify-center gap-2.5 shadow-xl shadow-rose-500/25 active:scale-[0.99] transition cursor-pointer min-h-[54px]"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
                 <span>{isOnline ? t.submitReportBtn : 'Submit Emergency Report Offline'}</span>
               </button>
             </div>
@@ -951,16 +951,16 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       {/* TAB 2: RESIDENT REPORT STATUS TRACKING */}
       {activeTab === 'tracking' && (
         <div className="space-y-4">
-          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-black text-slate-900">
+              <h3 className="text-base sm:text-lg font-black text-slate-900">
                 Live Incident Status Tracker (Requirement 13)
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
                 Track status updates, verification milestones, and responder communications.
               </p>
             </div>
-            <span className="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-xl self-start sm:self-center">
+            <span className="text-xs sm:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-1.5 rounded-xl self-start sm:self-center">
               {myReports.length} Submitted by You
             </span>
           </div>
@@ -979,15 +979,15 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {(['ALL', 'Pending Verification', 'Accepted', 'Ongoing', 'Resolved'] as const).map((st) => (
                   <button
                     key={st}
                     onClick={() => setTrackingStatusFilter(st)}
-                    className={`px-3 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer min-h-[36px] ${
                       trackingStatusFilter === st
                         ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:border-slate-300'
                     }`}
                   >
                     {st === 'ALL' ? 'All' : st}
@@ -998,26 +998,26 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
           )}
 
           {/* Reports List */}
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {myReports.length === 0 ? (
-              <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-10 sm:p-14 text-center text-slate-500 text-xs shadow-lg">
-                <Clock className="w-10 h-10 text-slate-400 mx-auto mb-2 stroke-1" />
-                <p className="text-sm font-bold text-slate-800">
+              <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-10 sm:p-14 text-center text-slate-600 text-sm shadow-lg">
+                <Clock className="w-12 h-12 text-slate-400 mx-auto mb-2 stroke-1" />
+                <p className="text-base font-bold text-slate-900">
                   No reports filed yet.
                 </p>
-                <p className="text-slate-500 mt-1 max-w-sm mx-auto">
+                <p className="text-slate-600 font-medium mt-1 max-w-sm mx-auto text-xs sm:text-sm">
                   When you submit an emergency or public safety report, real-time progress and verification updates appear here.
                 </p>
                 <button
                   onClick={() => setActiveTab('report')}
-                  className="mt-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition cursor-pointer min-h-[40px] shadow-md shadow-blue-500/20"
+                  className="mt-4 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer min-h-[42px] shadow-md shadow-blue-500/20"
                 >
                   File First Report
                 </button>
               </div>
             ) : filteredMyReports.length === 0 ? (
-              <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-8 text-center text-slate-500 text-xs shadow-sm">
-                <p className="font-medium">No reports match your search criteria.</p>
+              <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-8 text-center text-slate-600 text-sm shadow-sm">
+                <p className="font-semibold">No reports match your search criteria.</p>
               </div>
             ) : (
               filteredMyReports.map((report) => {
@@ -1031,14 +1031,14 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-4 hover:shadow-2xl transition"
                   >
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs sm:text-sm font-black text-blue-700">
                             {report.trackingCode}
                           </span>
                           <span
-                            className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                            className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider"
                             style={{
                               backgroundColor: `${typeDef?.colorHex}18`,
                               color: typeDef?.colorHex,
@@ -1048,7 +1048,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                             {report.category}
                           </span>
                         </div>
-                        <h4 className="text-sm sm:text-base font-black text-slate-900 mt-1">
+                        <h4 className="text-base sm:text-lg font-black text-slate-900 mt-1">
                           {language === 'fil' ? typeDef?.fil : typeDef?.en}
                         </h4>
                       </div>
@@ -1056,7 +1056,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                       {/* Status Badge & Inspect Dossier */}
                       <div className="flex items-center gap-2 self-start sm:self-center">
                         <span
-                          className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                          className={`text-xs sm:text-sm font-bold px-3 py-1 rounded-full border ${
                             report.status === 'Resolved'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                               : report.status === 'Ongoing'
@@ -1072,10 +1072,10 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                         </span>
                         <button
                           onClick={() => setSelectedReportId(report.id)}
-                          className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                          className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs min-h-[40px]"
                           title="Inspect Full Incident Details & Audit Log"
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                          <Eye className="w-4 h-4" />
                           <span>View Full Report</span>
                         </button>
                       </div>
@@ -1083,13 +1083,13 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
                     {/* Rejection Notice if rejected */}
                     {report.status === 'Rejected' && report.rejection && (
-                      <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs space-y-1.5 text-rose-900">
-                        <div className="flex items-center gap-1.5 font-bold text-rose-700">
-                          <AlertOctagon className="w-4 h-4" />
+                      <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs sm:text-sm space-y-1.5 text-rose-950">
+                        <div className="flex items-center gap-2 font-bold text-rose-800">
+                          <AlertOctagon className="w-4 h-4 text-rose-600" />
                           <span>Report Rejected by {report.rejection.agency}:</span>
                         </div>
-                        <p className="italic pl-5 text-slate-800">"{report.rejection.reason}"</p>
-                        <span className="block text-[10px] text-slate-500 pl-5">
+                        <p className="italic pl-6 text-slate-900 font-medium">"{report.rejection.reason}"</p>
+                        <span className="block text-xs text-slate-600 pl-6">
                           Reviewed by {report.rejection.rejectedByAdmin} on{' '}
                           {new Date(report.rejection.rejectedAt).toLocaleString()}
                         </span>
@@ -1097,12 +1097,12 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     )}
 
                     {/* Progress Pipeline - Fully Responsive 2x2 on Mobile, 4-col on Tablet/Desktop */}
-                    <div className="bg-slate-50/80 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80">
-                      <div className="flex items-center justify-between text-[11px] mb-2 text-slate-500">
-                        <span className="font-bold text-slate-700">Dispatch Pipeline:</span>
+                    <div className="bg-slate-50/80 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80">
+                      <div className="flex items-center justify-between text-xs mb-2.5 text-slate-600 font-semibold">
+                        <span className="font-bold text-slate-800">Dispatch Pipeline:</span>
                         <span className="font-mono text-indigo-700 font-bold">Agency: {report.selectedAgency}</span>
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-[10px] font-bold">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-bold">
                         <div
                           className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
                             report.status !== 'Rejected'
@@ -1110,7 +1110,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                               : 'bg-white border-slate-200 text-slate-400'
                           }`}
                         >
-                          <Check className="w-3 h-3 text-blue-600" />
+                          <Check className="w-3.5 h-3.5 text-blue-600" />
                           <span>1. Submitted</span>
                         </div>
 
@@ -1122,7 +1122,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                           }`}
                         >
                           {(report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved') && (
-                            <Check className="w-3 h-3 text-blue-600" />
+                            <Check className="w-3.5 h-3.5 text-blue-600" />
                           )}
                           <span>2. Accepted</span>
                         </div>
@@ -1135,7 +1135,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                           }`}
                         >
                           {(report.status === 'Ongoing' || report.status === 'Resolved') && (
-                            <Check className="w-3 h-3 text-orange-600" />
+                            <Check className="w-3.5 h-3.5 text-orange-600" />
                           )}
                           <span>3. Ongoing</span>
                         </div>
@@ -1148,7 +1148,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                           }`}
                         >
                           {report.status === 'Resolved' && (
-                            <Check className="w-3 h-3 text-emerald-600" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
                           )}
                           <span>4. Resolved</span>
                         </div>
@@ -1156,17 +1156,17 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     </div>
 
                     {/* Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-500 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-slate-600 pt-1 font-medium">
                       <div className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                        <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-slate-900 block font-bold">{report.barangay}, {report.municipality || 'Calapan City'}</strong>
-                          <span className="text-slate-600">{report.locationDetails}</span>
+                          <span className="text-slate-700">{report.locationDetails}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
+                        <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
                         <span>Submitted on {new Date(report.createdAt).toLocaleString()}</span>
                       </div>
                     </div>

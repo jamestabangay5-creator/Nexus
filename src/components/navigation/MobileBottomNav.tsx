@@ -96,7 +96,7 @@ export const MobileBottomNav: React.FC<Props> = ({
                 </span>
               )}
             </div>
-            <span className={`text-[10px] leading-tight ${residentActiveTab === 'tracking' ? 'font-black' : 'font-medium'}`}>
+            <span className={`text-xs leading-tight ${residentActiveTab === 'tracking' ? 'font-black' : 'font-bold'}`}>
               Tracking
             </span>
           </button>
@@ -114,7 +114,7 @@ export const MobileBottomNav: React.FC<Props> = ({
               <span className="w-5 h-1 rounded-full bg-emerald-600 -mt-0.5 mb-0.5 shadow-xs" />
             )}
             <MapPin className={`w-5 h-5 ${residentActiveTab === 'map' ? 'text-emerald-600 scale-105' : 'text-slate-500'} transition-transform`} />
-            <span className={`text-[10px] leading-tight ${residentActiveTab === 'map' ? 'font-black' : 'font-medium'}`}>
+            <span className={`text-xs leading-tight ${residentActiveTab === 'map' ? 'font-black' : 'font-bold'}`}>
               Live Map
             </span>
           </button>
@@ -136,7 +136,7 @@ export const MobileBottomNav: React.FC<Props> = ({
                 <AlertTriangle className="w-5 h-5 text-rose-600" />
               </div>
             )}
-            <span className={`text-[10px] mt-0.5 uppercase tracking-tight ${
+            <span className={`text-xs mt-0.5 uppercase tracking-tight ${
               residentActiveTab === 'report' ? 'font-black text-rose-600' : 'font-bold text-rose-600/90'
             }`}>
               Report 911
@@ -149,7 +149,7 @@ export const MobileBottomNav: React.FC<Props> = ({
             className="flex flex-col items-center justify-center gap-0.5 w-full py-1 text-center text-slate-500 hover:text-rose-600 hover:bg-slate-50/60 rounded-2xl min-h-[46px] transition cursor-pointer"
           >
             <Phone className="w-5 h-5 text-rose-500" />
-            <span className="text-[10px] leading-tight font-medium">Hotlines</span>
+            <span className="text-xs leading-tight font-bold">Hotlines</span>
           </button>
 
           {/* 5. My Profile */}
@@ -158,7 +158,7 @@ export const MobileBottomNav: React.FC<Props> = ({
             className="flex flex-col items-center justify-center gap-0.5 w-full py-1 text-center text-slate-500 hover:text-slate-900 hover:bg-slate-50/60 rounded-2xl min-h-[46px] transition cursor-pointer"
           >
             <User className="w-5 h-5 text-slate-600" />
-            <span className="text-[10px] leading-tight font-medium">Profile</span>
+            <span className="text-xs leading-tight font-bold">Profile</span>
           </button>
         </div>
       )}
@@ -179,7 +179,7 @@ export const MobileBottomNav: React.FC<Props> = ({
               <span className="w-5 h-1 rounded-full bg-blue-600 -mt-0.5 mb-0.5 shadow-xs" />
             )}
             <AgencyLogo agency={currentAgency} className="w-5 h-5 object-contain" animate={agencyActiveTab === 'command'} />
-            <span className={`text-[9.5px] leading-tight truncate max-w-full ${agencyActiveTab === 'command' ? 'font-black' : 'font-medium'}`}>
+            <span className={`text-[11px] leading-tight truncate max-w-full ${agencyActiveTab === 'command' ? 'font-black' : 'font-bold'}`}>
               Command
             </span>
           </button>
@@ -204,7 +204,7 @@ export const MobileBottomNav: React.FC<Props> = ({
                 </span>
               )}
             </div>
-            <span className={`text-[9.5px] leading-tight truncate max-w-full ${agencyActiveTab === 'reports' ? 'font-black' : 'font-medium'}`}>
+            <span className={`text-[11px] leading-tight truncate max-w-full ${agencyActiveTab === 'reports' ? 'font-black' : 'font-bold'}`}>
               Queue
             </span>
           </button>
@@ -230,7 +230,7 @@ export const MobileBottomNav: React.FC<Props> = ({
                 </span>
               )}
             </div>
-            <span className={`text-[9.5px] leading-tight truncate max-w-full ${agencyActiveTab === 'coordination' ? 'font-black text-indigo-700' : 'font-medium text-slate-500'}`}>
+            <span className={`text-[11px] leading-tight truncate max-w-full ${agencyActiveTab === 'coordination' ? 'font-black text-indigo-700' : 'font-bold text-slate-600'}`}>
               Mutual Aid
             </span>
           </button>
@@ -248,7 +248,7 @@ export const MobileBottomNav: React.FC<Props> = ({
               <span className="w-5 h-1 rounded-full bg-emerald-600 -mt-0.5 mb-0.5 shadow-xs" />
             )}
             <Map className={`w-5 h-5 ${agencyActiveTab === 'map' ? 'text-emerald-600 scale-105' : 'text-slate-500'} transition-transform`} />
-            <span className={`text-[9.5px] leading-tight truncate max-w-full ${agencyActiveTab === 'map' ? 'font-black' : 'font-medium'}`}>
+            <span className={`text-[11px] leading-tight truncate max-w-full ${agencyActiveTab === 'map' ? 'font-black' : 'font-bold'}`}>
               GIS Map
             </span>
           </button>
@@ -266,7 +266,7 @@ export const MobileBottomNav: React.FC<Props> = ({
               <span className="w-5 h-1 rounded-full bg-rose-600 -mt-0.5 mb-0.5 shadow-xs" />
             )}
             <Archive className={`w-5 h-5 ${agencyActiveTab === 'archive' ? 'text-rose-600 scale-105' : 'text-slate-500'} transition-transform`} />
-            <span className={`text-[9.5px] leading-tight truncate max-w-full ${agencyActiveTab === 'archive' ? 'font-black' : 'font-medium'}`}>
+            <span className={`text-[11px] leading-tight truncate max-w-full ${agencyActiveTab === 'archive' ? 'font-black' : 'font-bold'}`}>
               Archive
             </span>
           </button>
@@ -281,7 +281,7 @@ export const MobileBottomNav: React.FC<Props> = ({
             }`}
           >
             <Settings className="w-5 h-5 text-blue-600" />
-            <span className="text-[9.5px] leading-tight truncate max-w-full font-medium">
+            <span className="text-[11px] leading-tight truncate max-w-full font-bold">
               Settings
             </span>
           </button>

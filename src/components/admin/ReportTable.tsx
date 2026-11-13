@@ -249,18 +249,18 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
         {/* Quick Status & Resolved History Quick-Pills */}
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-          <span className="text-[11px] text-slate-500 font-bold">Incident State:</span>
+          <span className="text-xs text-slate-600 font-bold">Incident State:</span>
           <button
             type="button"
             onClick={() => setStatusFilter('ALL')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-1.5 min-h-[36px] ${
               statusFilter === 'ALL'
                 ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
+                : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
             }`}
           >
             <span>All Incidents</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-700 font-mono font-bold">
+            <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-800 font-mono font-bold">
               {activeReports.filter((r) => agencyFilter === 'ALL' || r.selectedAgency === agencyFilter).length}
             </span>
           </button>
@@ -268,15 +268,15 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <button
             type="button"
             onClick={() => setStatusFilter('Pending Verification')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-1.5 min-h-[36px] ${
               statusFilter === 'Pending Verification'
                 ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
+                : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
             }`}
           >
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
+            <Clock className="w-4 h-4 text-amber-500" />
             <span>Pending Triage</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-50 text-amber-700 font-mono font-bold border border-amber-200">
+            <span className="px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-800 font-mono font-bold border border-amber-200">
               {activeReports.filter((r) => (agencyFilter === 'ALL' || r.selectedAgency === agencyFilter) && r.status === 'Pending Verification').length}
             </span>
           </button>
@@ -284,15 +284,15 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <button
             type="button"
             onClick={() => setStatusFilter('Ongoing')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-1.5 min-h-[36px] ${
               statusFilter === 'Ongoing'
                 ? 'bg-orange-600 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
+                : 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
             }`}
           >
-            <Clock className="w-3.5 h-3.5 text-orange-500" />
+            <Clock className="w-4 h-4 text-orange-500" />
             <span>Ongoing Response</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-orange-50 text-orange-700 font-mono font-bold border border-orange-200">
+            <span className="px-2 py-0.5 rounded-full text-xs bg-orange-50 text-orange-800 font-mono font-bold border border-orange-200">
               {activeReports.filter((r) => (agencyFilter === 'ALL' || r.selectedAgency === agencyFilter) && (r.status === 'Ongoing' || r.status === 'Accepted')).length}
             </span>
           </button>
@@ -300,27 +300,27 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <button
             type="button"
             onClick={() => setStatusFilter('Resolved')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-1.5 min-h-[36px] ${
               statusFilter === 'Resolved'
                 ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-200'
+                : 'bg-white text-emerald-800 hover:bg-emerald-50 border border-emerald-200 font-bold'
             }`}
           >
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+            <CheckCircle className="w-4 h-4 text-emerald-600" />
             <span>Resolved History</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-50 text-emerald-700 font-mono font-bold border border-emerald-200">
+            <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-800 font-mono font-bold border border-emerald-200">
               {activeReports.filter((r) => (agencyFilter === 'ALL' || r.selectedAgency === agencyFilter) && r.status === 'Resolved').length}
             </span>
           </button>
         </div>
 
         {/* Filter Dropdowns Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs sm:text-sm">
           {/* Status Filter */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[42px] shadow-2xs font-semibold"
           >
             <option value="ALL">All Statuses</option>
             <option value="Pending Verification">Pending Verification</option>
@@ -333,7 +333,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <select
             value={barangayFilter}
             onChange={(e) => setBarangayFilter(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[42px] shadow-2xs font-semibold"
           >
             <option value="ALL">All Barangays</option>
             {ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS.map((b, idx) => (
@@ -347,7 +347,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[42px] shadow-2xs font-semibold"
           >
             <option value="ALL">All Categories</option>
             <option value="RED">RED — Critical Safety</option>
@@ -362,7 +362,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           <select
             value={agencyFilter}
             onChange={(e) => setAgencyFilter(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-2.5 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[38px] shadow-2xs font-medium"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[42px] shadow-2xs font-semibold"
           >
             <option value="ALL">All Primary Agencies</option>
             <option value="PNP">PNP Filed</option>
@@ -431,7 +431,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
                   <div className="flex items-center gap-1.5">
                     <span
-                      className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full"
+                      className="text-xs font-black uppercase px-2.5 py-0.5 rounded-full"
                       style={{
                         color: typeDef?.colorHex,
                         backgroundColor: `${typeDef?.colorHex}15`,
@@ -442,7 +442,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                     </span>
 
                     <span
-                      className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border ${
+                      className={`text-xs font-bold px-3 py-1 rounded-full border ${
                         isResolved
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : isOngoing
@@ -459,26 +459,26 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
                 {/* Title & Description */}
                 <div>
-                  <h4 className="text-sm font-black text-slate-900">
+                  <h4 className="text-base font-black text-slate-900">
                     {language === 'fil' ? typeDef?.fil : typeDef?.en}
                   </h4>
-                  <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-700 mt-1 line-clamp-2 leading-relaxed font-medium">
                     {report.description}
                   </p>
                 </div>
 
                 {/* Location & Agency & Time */}
-                <div className="bg-slate-50/80 p-2.5 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2 text-[11px] text-slate-500">
-                  <div className="flex items-center gap-1 truncate">
-                    <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                    <span className="truncate text-slate-800 font-medium">{report.barangay}</span>
+                <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2 text-xs sm:text-sm text-slate-600">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <MapPin className="w-4 h-4 text-red-500 shrink-0" />
+                    <span className="truncate text-slate-900 font-bold">{report.barangay}</span>
                   </div>
-                  <div className="flex items-center gap-1 justify-end">
-                    <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span className="font-bold text-slate-900 uppercase">{report.selectedAgency}</span>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <Building2 className="w-4 h-4 text-blue-600 shrink-0" />
+                    <span className="font-black text-slate-900 uppercase">{report.selectedAgency}</span>
                   </div>
-                  <div className="flex items-center gap-1 col-span-2 text-[10px] text-slate-400">
-                    <Calendar className="w-3 h-3 shrink-0" />
+                  <div className="flex items-center gap-1.5 col-span-2 text-xs text-slate-500 font-medium">
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
                     <span>{new Date(report.dateTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>
@@ -579,22 +579,22 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
       {/* 2. DESKTOP TABLE VIEW (Visible on screens >= 768px) - Reference Image Table Styling */}
       <div className="hidden md:block glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/90 text-slate-500 uppercase font-black text-[10px] tracking-wider border-b border-slate-200/80">
+          <table className="w-full text-left text-xs sm:text-sm">
+            <thead className="bg-slate-50/90 text-slate-600 uppercase font-black text-xs tracking-wider border-b border-slate-200/80">
               <tr>
-                <th className="py-3.5 px-4 font-bold">{t.trackingCode}</th>
-                <th className="py-3.5 px-4 font-bold">{t.incidentType}</th>
-                <th className="py-3.5 px-4 font-bold">{t.location}</th>
-                <th className="py-3.5 px-4 font-bold">{t.agency}</th>
-                <th className="py-3.5 px-4 font-bold">{t.dateTime}</th>
-                <th className="py-3.5 px-4 font-bold">{t.status}</th>
-                <th className="py-3.5 px-4 text-right font-bold">{t.actions}</th>
+                <th className="py-4 px-4 font-black">{t.trackingCode}</th>
+                <th className="py-4 px-4 font-black">{t.incidentType}</th>
+                <th className="py-4 px-4 font-black">{t.location}</th>
+                <th className="py-4 px-4 font-black">{t.agency}</th>
+                <th className="py-4 px-4 font-black">{t.dateTime}</th>
+                <th className="py-4 px-4 font-black">{t.status}</th>
+                <th className="py-4 px-4 text-right font-black">{t.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-slate-100 text-slate-800">
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400 text-xs font-medium">
+                  <td colSpan={7} className="py-12 text-center text-slate-500 text-sm font-semibold">
                     No active incident reports match the selected filters.
                   </td>
                 </tr>
@@ -617,7 +617,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                       onClick={() => onSelectReport(report.id)}
                     >
                       {/* Tracking Code */}
-                      <td className="py-3.5 px-4 font-mono font-black text-blue-700 whitespace-nowrap">
+                      <td className="py-4 px-4 font-mono font-black text-blue-700 whitespace-nowrap text-sm">
                         <div className="flex items-center gap-1.5">
                           <span>{report.trackingCode}</span>
                           <button
@@ -625,24 +625,24 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                             className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-700 transition"
                             title="Copy Tracking Code"
                           >
-                            {copiedId === report.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                            {copiedId === report.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
                         </div>
                       </td>
 
                       {/* Incident Type & Color Category */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
+                            className="w-3 h-3 rounded-full shrink-0 shadow-xs"
                             style={{ backgroundColor: typeDef?.colorHex }}
                           />
                           <div>
-                            <span className="font-bold text-slate-900 block">
+                            <span className="font-bold text-slate-900 block text-xs sm:text-sm">
                               {language === 'fil' ? typeDef?.fil : typeDef?.en}
                             </span>
                             <span
-                              className="text-[9px] font-bold uppercase inline-block px-1.5 py-0.2 rounded-full"
+                              className="text-xs font-bold uppercase inline-block px-2 py-0.5 rounded-full mt-0.5"
                               style={{
                                 color: typeDef?.colorHex,
                                 backgroundColor: `${typeDef?.colorHex}15`,
@@ -656,24 +656,24 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                       </td>
 
                       {/* Location */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold text-slate-800 block">
+                      <td className="py-4 px-4">
+                        <span className="font-bold text-slate-900 block text-xs sm:text-sm">
                           {report.barangay}
                         </span>
-                        <span className="text-[11px] text-slate-500 truncate block max-w-[180px]">
+                        <span className="text-xs text-slate-600 truncate block max-w-[200px] font-medium">
                           {report.locationDetails}
                         </span>
                       </td>
 
                       {/* Selected Agency */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-black text-slate-800 uppercase text-[11px] px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200">
+                      <td className="py-4 px-4">
+                        <span className="font-black text-slate-900 uppercase text-xs px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">
                           {report.selectedAgency}
                         </span>
                       </td>
 
                       {/* Date & Time */}
-                      <td className="py-3.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+                      <td className="py-4 px-4 text-slate-600 text-xs sm:text-sm font-medium whitespace-nowrap">
                         {new Date(report.dateTime).toLocaleString([], {
                           month: 'short',
                           day: 'numeric',
@@ -683,9 +683,9 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                       </td>
 
                       {/* Status matching Reference Image (Recent Campaigns dot + pill) */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                          className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border ${
                             isResolved
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : isOngoing
@@ -695,7 +695,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                               : 'bg-amber-50 text-amber-700 border-amber-200'
                           }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${
+                          <span className={`w-2 h-2 rounded-full ${
                             isResolved ? 'bg-emerald-500' : isOngoing ? 'bg-orange-500' : isAccepted ? 'bg-blue-500' : 'bg-amber-500'
                           }`} />
                           <span>{t[report.status] || report.status}</span>
