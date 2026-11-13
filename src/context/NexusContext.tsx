@@ -161,6 +161,7 @@ interface NexusContextType {
   acknowledgeAssistanceRequest: (reportId: string, requestId: string, agency: Agency, acknowledgedBy: string, actionNote?: string) => void;
   markAgencyReportsAsRead: (agency: AgencyScope) => void;
   simulateIncomingIncident: () => void;
+  purgeAllSimulatedReports: () => Promise<void>;
   restoreRejectedReport: (reportId: string, adminName: string, agency: AgencyScope) => void;
 }
 
@@ -170,19 +171,37 @@ const STORAGE_KEY = 'nexus_emergency_reports_v3';
 const RESIDENT_STORAGE_KEY = 'nexus_resident_user_v2';
 const AGENCY_STORAGE_KEY = 'nexus_agency_user_v2';
 
-const MOCK_SEED_IDS = new Set(['rep-001', 'rep-002', 'rep-003', 'rep-004', 'rep-005', 'rep-006', 'rep-007', 'rep-008']);
+const MOCK_SEED_IDS = new Set(['rep-001', 'rep-002', 'rep-003', 'rep-004', 'rep-005', 'rep-006', 'rep-007', 'rep-008', 'res-sim']);
+
+/**
+ * Filter to strictly identify and purge simulated, test, or legacy mockup reports
+ */
+export const isSimulatedReport = (r: Partial<IncidentReport> | null | undefined): boolean => {
+  if (!r) return false;
+  if (r.id && (MOCK_SEED_IDS.has(r.id) || r.id.startsWith('rep-00') || r.id === 'res-sim')) return true;
+  if (r.residentId === 'res-sim' || r.residentName === 'Test Citizen Alert') return true;
+  const desc = (r.description || '').toLowerCase();
+  if (
+    desc.includes('[urgent simulated alert]') ||
+    desc.includes('simulated alert') ||
+    desc.includes('simulated incident') ||
+    desc.includes('satellite / citizen capture')
+  ) {
+    return true;
+  }
+  if ((r.photoCaption || '').toLowerCase().includes('satellite / citizen capture')) return true;
+  return false;
+};
 
 export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load reports from LocalStorage - clean 0-report slate for production deployment
+  // Load reports from LocalStorage - strictly purges simulated reports for real-feature testing
   const [reports, setReports] = useState<IncidentReport[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('nexus_emergency_reports_v2');
       if (saved) {
         const parsed: IncidentReport[] = JSON.parse(saved);
-        // Purge any lingering mockup incidents
-        const realReports = parsed.filter(
-          (r) => !MOCK_SEED_IDS.has(r.id) && !r.id.startsWith('rep-00')
-        );
+        // Cleanly purge all simulated reports
+        const realReports = parsed.filter((r) => !isSimulatedReport(r));
         realReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(realReports)); } catch {}
         return realReports;
@@ -734,14 +753,14 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setResidentUser((prev) => ({ ...prev, avatarUrl: savedAvatar }));
         }
 
-        // Restore any offline-cached reports if state is empty
+        // Restore any offline-cached reports if state is empty, excluding simulated alerts
         const cachedReports = await getCachedReportsOffline();
         if (cachedReports.length > 0) {
           setReports((prev) => {
             const map = new Map<string, IncidentReport>();
-            prev.forEach((r) => map.set(r.id, r));
+            prev.filter((r) => !isSimulatedReport(r)).forEach((r) => map.set(r.id, r));
             cachedReports
-              .filter((r) => !MOCK_SEED_IDS.has(r.id) && !r.id.startsWith('rep-00'))
+              .filter((r) => !isSimulatedReport(r))
               .forEach((r) => {
                 if (!map.has(r.id)) map.set(r.id, r);
               });
@@ -750,6 +769,8 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             return merged;
           });
         }
+        // Cleanse any lingering simulated alerts on mount
+        purgeAllSimulatedReports().catch(() => null);
       } catch (err) {
         console.warn('Permanent avatar/cache hydration notice:', err);
       }
@@ -888,57 +909,53 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         try {
           const userDocRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(userDocRef);
-          const savedAvatar = await retrieveUserAvatar(user.uid, user.email || '');
+          let existingData: any = null;
+          try {
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap && docSnap.exists()) {
+              existingData = docSnap.data();
+            }
+          } catch (fetchErr) {
+            console.info('Firestore getDoc check notice (new registration or restricted rules):', fetchErr);
+          }
 
-          if (docSnap.exists()) {
-            const data = docSnap.data() as any;
-            const finalAvatar = data.avatarUrl || savedAvatar || user.photoURL || residentUser.avatarUrl;
-            setResidentUser((prev) => ({
-              ...prev,
-              id: user.uid,
-              uid: user.uid,
-              name: data.name || user.displayName || prev.name,
-              email: user.email || data.email || prev.email,
-              phone: data.phone || prev.phone,
-              province: data.province || 'Oriental Mindoro',
-              municipality: data.municipality || 'Calapan City',
-              barangay: data.barangay || prev.barangay,
-              address: data.address || prev.address,
-              avatarUrl: finalAvatar,
-              role: 'resident',
-              termsAccepted: data.termsAccepted ?? true,
-              termsAcceptedAt: data.termsAcceptedAt || new Date().toISOString(),
-              isVerifiedIdentity: true,
-              authProvider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'password',
-            }));
-            if (finalAvatar) {
-              persistUserAvatar(user.uid, user.email || '', finalAvatar);
-            }
-          } else {
-            const finalAvatar = savedAvatar || user.photoURL || residentUser.avatarUrl;
-            const newProfile: UserProfile = {
-              id: user.uid,
-              uid: user.uid,
-              name: user.displayName || 'Resident Citizen',
-              email: user.email || '',
-              phone: user.phoneNumber || '0917-000-0000',
-              province: 'Oriental Mindoro',
-              municipality: 'Calapan City',
-              barangay: 'Ibaba East',
-              address: 'Poblacion',
-              avatarUrl: finalAvatar,
-              role: 'resident',
-              termsAccepted: true,
-              termsAcceptedAt: new Date().toISOString(),
-              isVerifiedIdentity: true,
-              authProvider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'password',
-            };
-            await setDoc(userDocRef, { ...sanitizeForFirestore(newProfile), createdAt: serverTimestamp() }).catch(() => null);
-            setResidentUser(newProfile);
-            if (finalAvatar) {
-              persistUserAvatar(user.uid, user.email || '', finalAvatar);
-            }
+          const savedAvatar = await retrieveUserAvatar(user.uid, user.email || '');
+          const isGoogleAuth = user.providerData.some((p) => p.providerId === 'google.com');
+          const finalAvatar = existingData?.avatarUrl || savedAvatar || user.photoURL || residentUser.avatarUrl;
+          const citizenName = existingData?.name || user.displayName || user.email?.split('@')[0] || residentUser.name || 'Resident Citizen';
+
+          const profileData: UserProfile = {
+            id: user.uid,
+            uid: user.uid,
+            name: citizenName,
+            email: user.email || existingData?.email || '',
+            phone: existingData?.phone || user.phoneNumber || residentUser.phone || '0917-000-0000',
+            province: existingData?.province || residentUser.province || 'Oriental Mindoro',
+            municipality: existingData?.municipality || residentUser.municipality || 'Calapan City',
+            barangay: existingData?.barangay || residentUser.barangay || 'Ibaba East',
+            address: existingData?.address || residentUser.address || 'Poblacion',
+            avatarUrl: finalAvatar,
+            role: 'resident',
+            termsAccepted: existingData?.termsAccepted ?? true,
+            termsAcceptedAt: existingData?.termsAcceptedAt || new Date().toISOString(),
+            isVerifiedIdentity: true,
+            authProvider: isGoogleAuth ? 'google' : (existingData?.authProvider || 'password'),
+            createdAt: existingData?.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          // Always ensure the citizen profile record is saved/merged into Cloud Firestore
+          try {
+            const cleanUser = sanitizeForFirestore(profileData);
+            await setDoc(userDocRef, cleanUser, { merge: true });
+            console.log('Firebase user record secured in Firestore /users/' + user.uid);
+          } catch (writeErr: any) {
+            console.warn('Firestore user registration notice:', writeErr?.message || writeErr);
+          }
+
+          setResidentUser(profileData);
+          if (finalAvatar) {
+            persistUserAvatar(user.uid, user.email || '', finalAvatar);
           }
         } catch (err) {
           console.warn('Firebase user profile retrieval warning:', err);
@@ -968,8 +985,8 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const firestoreReports: IncidentReport[] = [];
             snapshot.forEach((docSnap) => {
               const data = docSnap.data() as IncidentReport;
-              // Cleanly purge any legacy mockup demo items from Firestore
-              if (MOCK_SEED_IDS.has(data.id) || data.id.startsWith('rep-00')) {
+              // Cleanly purge any simulated, mockup, or demo items from Firestore
+              if (isSimulatedReport(data)) {
                 deleteDoc(docSnap.ref).catch(() => null);
               } else {
                 firestoreReports.push(data);
@@ -978,9 +995,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             // Safely merge Firestore reports with offline-first local reports so local state is never wiped
             setReports((prevLocal) => {
               const mergedMap = new Map<string, IncidentReport>();
-              // Keep all local real reports (excluding mockup data)
+              // Keep all local real reports (excluding simulated data)
               prevLocal
-                .filter((r) => !MOCK_SEED_IDS.has(r.id) && !r.id.startsWith('rep-00'))
+                .filter((r) => !isSimulatedReport(r))
                 .forEach((r) => mergedMap.set(r.id, r));
               // Merge remote reports, updating if Firestore has newer information
               firestoreReports.forEach((fr) => {
@@ -1608,49 +1625,32 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     );
   };
 
-  // Simulated emergency report for testing and demonstration
+  // Simulated emergency report - disabled to ensure only 100% genuine real incident reports are processed
   const simulateIncomingIncident = () => {
-    const sampleTypes: IncidentTypeId[] = [
-      'fire_incident',
-      'road_accident',
-      'theft_robbery',
-      'medical_emergency',
-      'flooding_landslide',
-      'armed_threat',
-    ];
-    const sampleAgencies: Agency[] = ['PNP', 'BFP', 'MDRRMO'];
-    const sampleBarangays = [
-      'Barangay Poblacion (Center)',
-      'Barangay San Isidro',
-      'Barangay Santa Cruz',
-      'Barangay Riverside',
-    ];
+    console.info('Simulation is disabled: system operates in genuine real-incident mode.');
+  };
 
-    const randomType = sampleTypes[Math.floor(Math.random() * sampleTypes.length)];
-    const typeDef = INCIDENT_TYPES.find((t) => t.id === randomType)!;
-    const randomAgency = sampleAgencies[Math.floor(Math.random() * sampleAgencies.length)];
-    const randomBarangay = sampleBarangays[Math.floor(Math.random() * sampleBarangays.length)];
-
-    const coords = {
-      lat: 14.59 + (Math.random() - 0.5) * 0.04,
-      lng: 120.98 + (Math.random() - 0.5) * 0.04,
-    };
-
-    submitIncidentReport({
-      residentId: 'res-sim',
-      residentName: 'Test Citizen Alert',
-      residentPhone: '0917-888-0000',
-      selectedAgency: randomAgency,
-      initialTypeId: randomType,
-      category: typeDef.category,
-      dateTime: new Date().toISOString().slice(0, 16),
-      barangay: randomBarangay,
-      locationDetails: `Emergency near Commercial Plaza, ${randomBarangay}`,
-      coordinates: coords,
-      description: `[URGENT SIMULATED ALERT] Live 911 broadcast for ${typeDef.en} (${typeDef.fil}). Citizens requesting immediate unit dispatch.`,
-      photoUrl: 'https://images.unsplash.com/photo-1542385151-efd9000785a0?auto=format&fit=crop&w=800&q=80',
-      photoCaption: 'Automated dispatch satellite / citizen capture',
+  // Permanently purge any simulated reports from memory, localStorage, and Firestore
+  const purgeAllSimulatedReports = async () => {
+    setReports((prev) => {
+      const filtered = prev.filter((r) => !isSimulatedReport(r));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      } catch {}
+      return filtered;
     });
+    try {
+      const reportsCol = collection(db, 'reports');
+      const snap = await getDocs(reportsCol);
+      snap.forEach((docSnap) => {
+        const data = docSnap.data() as IncidentReport;
+        if (isSimulatedReport(data)) {
+          deleteDoc(docSnap.ref).catch(() => null);
+        }
+      });
+    } catch (e) {
+      console.warn('Firestore purge notice:', e);
+    }
   };
 
   return (
@@ -1713,6 +1713,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         acknowledgeAssistanceRequest,
         markAgencyReportsAsRead,
         simulateIncomingIncident,
+        purgeAllSimulatedReports,
         restoreRejectedReport,
         patrolUnits,
         updatePatrolStatus,

@@ -172,41 +172,35 @@ export const ResidentAuthModal: React.FC<Props> = ({
       // Look up cached permanent avatar before falling back
       const savedAvatar = (await retrieveUserAvatar(user.uid, user.email || '')) || avatarUrl;
       const finalAvatar = existingData?.avatarUrl || savedAvatar || user.photoURL || avatarUrl;
+      const citizenName = existingData?.name || user.displayName || user.email?.split('@')[0] || 'Resident Citizen';
 
-      let profileData = {
+      const profileData: UserProfile = {
         id: user.uid,
         uid: user.uid,
-        name: user.displayName || 'Resident Citizen',
-        email: user.email || '',
-        phone: user.phoneNumber || '0917-000-0000',
-        province: PROVINCE_NAME,
-        municipality: 'Calapan City',
-        barangay: 'Ibaba East',
-        address: 'Poblacion',
+        name: citizenName,
+        email: user.email || existingData?.email || '',
+        phone: existingData?.phone || user.phoneNumber || '0917-000-0000',
+        province: existingData?.province || PROVINCE_NAME,
+        municipality: existingData?.municipality || 'Calapan City',
+        barangay: existingData?.barangay || 'Ibaba East',
+        address: existingData?.address || 'Poblacion',
         avatarUrl: finalAvatar,
-        role: 'resident' as const,
+        role: 'resident',
         termsAccepted: true,
-        termsAcceptedAt: new Date().toISOString(),
+        termsAcceptedAt: existingData?.termsAcceptedAt || new Date().toISOString(),
         isVerifiedIdentity: true,
-        authProvider: 'google' as const,
+        authProvider: 'google',
+        createdAt: existingData?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      if (existingData) {
-        profileData = {
-          ...profileData,
-          ...existingData,
-          avatarUrl: finalAvatar,
-          id: user.uid,
-          uid: user.uid,
-        };
-      } else {
-        await setDoc(userDocRef, {
-          ...sanitizeForFirestore(profileData),
-          createdAt: serverTimestamp(),
-        }).catch((err) => {
-          console.warn('Could not write user to Firestore:', err);
-        });
+      // Ensure citizen record is reliably stored/merged into Cloud Firestore /users/{uid}
+      try {
+        const cleanPayload = sanitizeForFirestore(profileData);
+        await setDoc(userDocRef, cleanPayload, { merge: true });
+        console.log('Google user profile saved to Firestore:', user.uid);
+      } catch (firestoreErr: any) {
+        console.error('Firestore User Profile Write Notice:', firestoreErr);
       }
 
       await persistUserAvatar(user.uid, user.email || '', profileData.avatarUrl);

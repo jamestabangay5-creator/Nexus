@@ -73,6 +73,10 @@ export function sanitizeForFirestore<T>(data: T): T {
     return data.map((item) => sanitizeForFirestore(item)) as any;
   }
   if (typeof data === 'object' && !(data instanceof Date)) {
+    // Preserve Firestore FieldValue sentinels (serverTimestamp, deleteField, etc.)
+    if ('_methodName' in data || (data as any)?.constructor?.name === 'FieldValueImpl' || (data as any)?.constructor?.name === 'ServerTimestamp') {
+      return data;
+    }
     const clean: Record<string, any> = {};
     for (const [key, value] of Object.entries(data as Record<string, any>)) {
       if (value !== undefined) {
