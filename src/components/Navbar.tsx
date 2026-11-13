@@ -27,7 +27,8 @@ import {
   LogOut,
   Lock,
   Home,
-  Settings
+  Settings,
+  MapPin
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -375,33 +376,65 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
+            {/* Mobile backdrop to isolate notification dropdown and prevent background bleed-through */}
             {notificationsOpen && (
-              <div className="fixed sm:absolute inset-x-3 sm:inset-x-auto sm:right-0 top-16 mt-1 sm:w-96 glass-card rounded-2xl shadow-2xl p-3.5 z-50 animate-in fade-in slide-in-from-top-2 border border-white/90">
-                <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-amber-500" />
-                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      {portalMode === 'resident'
-                        ? 'Resident Updates'
-                        : `${activeRole} Dispatch Alerts`}
-                    </span>
+              <div
+                className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-40 sm:hidden"
+                onClick={() => setNotificationsOpen(false)}
+                aria-hidden="true"
+              />
+            )}
+
+            {notificationsOpen && (
+              <div className="fixed sm:absolute inset-x-3 sm:inset-x-auto sm:right-0 top-16 mt-2 sm:w-[420px] bg-white rounded-3xl shadow-2xl shadow-slate-900/30 p-4 sm:p-5 z-50 border border-slate-200 ring-1 ring-slate-900/5 animate-in fade-in slide-in-from-top-2 text-slate-800">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/70 shadow-xs">
+                      <Bell className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wider block">
+                        {portalMode === 'resident'
+                          ? 'Resident Updates'
+                          : `${activeRole} Dispatch Alerts`}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-medium block">
+                        {unreadCount > 0 ? `${unreadCount} unread update${unreadCount > 1 ? 's' : ''}` : 'All caught up'}
+                      </span>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      if (activeRole !== 'resident') {
-                        markAgencyReportsAsRead(activeRole);
-                      }
-                      setNotificationsOpen(false);
-                    }}
-                    className="text-[11px] text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-semibold"
-                  >
-                    Mark as read
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        if (activeRole !== 'resident') {
+                          markAgencyReportsAsRead(activeRole);
+                        }
+                        setNotificationsOpen(false);
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition"
+                    >
+                      Mark as read
+                    </button>
+                    <button
+                      onClick={() => setNotificationsOpen(false)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                      title="Close notifications"
+                      aria-label="Close notifications"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="max-h-80 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100">
+                <div className="max-h-84 overflow-y-auto space-y-2 pr-1">
                   {reports.length === 0 ? (
-                    <p className="text-xs text-slate-500 text-center py-4">No recent dispatches</p>
+                    <div className="py-8 text-center text-slate-500 space-y-1.5">
+                      <div className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+                        <Bell className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">No Recent Updates</p>
+                      <p className="text-[11px] text-slate-400">Emergency reports and dispatch updates will appear here.</p>
+                    </div>
                   ) : (
                     reports.slice(0, 8).map((rep) => {
                       const isMyReport = rep.residentId === residentUser.id || rep.residentName === residentUser.name;
@@ -420,45 +453,70 @@ export const Navbar: React.FC<NavbarProps> = ({
                             }
                             onSelectReport?.(rep.id);
                           }}
-                          className="pt-2 first:pt-0 p-2.5 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition cursor-pointer group border border-transparent hover:border-slate-200/60"
+                          className="p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-300 transition-all cursor-pointer group shadow-xs space-y-1.5"
                           title="Click to view full incident details and response timeline"
                         >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-[10px] text-blue-600 font-bold group-hover:text-blue-700">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-mono text-xs text-blue-700 font-black group-hover:text-blue-800">
                                 {rep.trackingCode}
                               </span>
                               {isMyReport && (
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 bg-purple-50 text-purple-700 border border-purple-200 rounded">
+                                <span className="text-[9px] font-black px-2 py-0.5 bg-purple-100 text-purple-800 border border-purple-200 rounded-full">
                                   Your Report
                                 </span>
                               )}
                             </div>
                             <span
-                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                              className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border shadow-xs ${
                                 rep.status === 'Resolved'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                                   : rep.status === 'Ongoing'
-                                  ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                                  ? 'bg-orange-100 text-orange-800 border-orange-300'
                                   : rep.status === 'Rejected'
-                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                  : 'bg-amber-100 text-amber-800 border-amber-300'
                               }`}
                             >
                               {t[rep.status] || rep.status}
                             </span>
                           </div>
-                          <p className="text-xs font-semibold text-slate-800 mt-1 line-clamp-1 group-hover:text-blue-600">
+                          <p className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-blue-700">
                             {rep.description}
                           </p>
-                          <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1">
-                            <span className="text-slate-600 group-hover:text-slate-800 font-medium">{rep.barangay}</span>
-                            <span className="font-mono text-slate-400">{new Date(rep.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1.5 border-t border-slate-200/60 font-medium">
+                            <span className="text-slate-700 font-semibold flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-red-500 inline shrink-0" />
+                              <span>{rep.barangay}, {rep.municipality || 'Bongabong'}</span>
+                            </span>
+                            <span className="font-mono text-slate-500 text-[10px]">
+                              {new Date(rep.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                           </div>
                         </div>
                       );
                     })
                   )}
+                </div>
+
+                <div className="pt-2.5 mt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400 font-medium">
+                    Showing recent reports
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      if (portalMode === 'resident') {
+                        setActiveRole('resident');
+                        setResidentActiveTab('tracking');
+                      }
+                    }}
+                    className="text-blue-600 hover:text-blue-800 font-bold hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span>View All Incidents</span>
+                    <span>→</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -478,7 +536,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden glass-card border-t border-slate-200/80 px-4 py-4 space-y-4 shadow-2xl animate-in fade-in slide-in-from-top-3">
+        <div className="md:hidden bg-white/98 backdrop-blur-2xl border-t border-slate-200/90 px-4 py-5 space-y-4 shadow-2xl animate-in fade-in slide-in-from-top-3">
           {/* Agency Sub-Consoles (If in agency mode) */}
           {portalMode === 'agency' && (
             <div className="space-y-3">
