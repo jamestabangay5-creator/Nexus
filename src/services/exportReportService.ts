@@ -136,6 +136,30 @@ const formatDateTime = (isoString: string): string => {
 };
 
 /**
+ * Security & Data Privacy (RA 10173 Philippine Data Privacy Act):
+ * When reports are exported in resident mode, mask other citizens' names and contact numbers.
+ * The resident only sees their own full information.
+ * Authorized agency officers (PNP, BFP, MDRRMO, CENTRAL) receive unmasked reporter info for emergency dispatch.
+ */
+const getMaskedReporterData = (rep: IncidentReport, options: ExportReportOptions) => {
+  const isAgencyDownload = options.agencyScope !== 'RESIDENT';
+  const isOwner = Boolean(
+    options.officerName &&
+    rep.residentName.trim().toLowerCase() === options.officerName.trim().toLowerCase()
+  );
+  if (isAgencyDownload || isOwner) {
+    return {
+      name: rep.residentName,
+      phone: rep.residentPhone,
+    };
+  }
+  return {
+    name: 'Verified Citizen (Identity Protected)',
+    phone: '•••••••••••• (Confidential)',
+  };
+};
+
+/**
  * Generate PDF Report via browser print dialogue with clean letterhead and formatted table
  */
 export const exportReportToPdf = async (options: ExportReportOptions): Promise<void> => {
@@ -467,6 +491,7 @@ export const exportReportToPdf = async (options: ExportReportOptions): Promise<v
                       (t) => t.id === (rep.verifiedTypeId || rep.initialTypeId)
                     );
                     const statusClass = rep.status.startsWith('Pending') ? 'stat-Pending' : `stat-${rep.status}`;
+                    const reporter = getMaskedReporterData(rep, options);
                     return `
                       <tr>
                         <td style="font-family: monospace; font-weight: 800; color: #1d4ed8;">${rep.trackingCode}</td>
@@ -482,8 +507,8 @@ export const exportReportToPdf = async (options: ExportReportOptions): Promise<v
                           <div style="font-size: 8.5px; color: #64748b;">${rep.locationDetails || ''}</div>
                         </td>
                         <td>
-                          <strong>${rep.residentName}</strong>
-                          <div style="font-size: 8.5px; color: #64748b;">${rep.residentPhone}</div>
+                          <strong>${reporter.name}</strong>
+                          <div style="font-size: 8.5px; color: #64748b;">${reporter.phone}</div>
                         </td>
                         <td style="font-weight: 800; color: #0f172a; text-align: center;">${rep.selectedAgency}</td>
                         <td>
@@ -636,6 +661,7 @@ export const exportReportToExcel = async (options: ExportReportOptions): Promise
         ${reports
           .map((rep) => {
             const typeDef = INCIDENT_TYPES.find((t) => t.id === (rep.verifiedTypeId || rep.initialTypeId));
+            const reporter = getMaskedReporterData(rep, options);
             return `
               <tr>
                 <td class="td-cell td-code">${rep.trackingCode}</td>
@@ -644,8 +670,8 @@ export const exportReportToExcel = async (options: ExportReportOptions): Promise
                 <td class="td-cell">${formatDateTime(rep.dateTime)}</td>
                 <td class="td-cell">${rep.barangay}</td>
                 <td class="td-cell">${rep.municipality || 'Bongabong'}</td>
-                <td class="td-cell">${rep.residentName}</td>
-                <td class="td-cell">${rep.residentPhone}</td>
+                <td class="td-cell">${reporter.name}</td>
+                <td class="td-cell">${reporter.phone}</td>
                 <td class="td-cell"><b>${rep.status}</b></td>
                 <td class="td-cell">${rep.description}</td>
               </tr>
@@ -762,13 +788,14 @@ export const exportReportToWord = async (options: ExportReportOptions): Promise<
             ${reports
               .map((rep) => {
                 const typeDef = INCIDENT_TYPES.find((t) => t.id === (rep.verifiedTypeId || rep.initialTypeId));
+                const reporter = getMaskedReporterData(rep, options);
                 return `
                   <tr>
                     <td class="code">${rep.trackingCode}</td>
                     <td><b>[${rep.category}]</b> ${typeDef?.en || rep.verifiedTypeId || rep.initialTypeId}</td>
                     <td>${formatDateTime(rep.dateTime)}</td>
                     <td><b>${rep.barangay}</b>, ${rep.municipality || 'Bongabong'}</td>
-                    <td>${rep.residentName} (${rep.residentPhone})</td>
+                    <td>${reporter.name} (${reporter.phone})</td>
                     <td style="text-align: center;"><b>${rep.selectedAgency}</b></td>
                     <td><b>${rep.status}</b></td>
                     <td>${rep.description}</td>
@@ -853,6 +880,7 @@ export const exportReportToCsv = (options: ExportReportOptions): void => {
   // Rows
   reports.forEach((r) => {
     const typeDef = INCIDENT_TYPES.find((t) => t.id === (r.verifiedTypeId || r.initialTypeId));
+    const reporter = getMaskedReporterData(r, options);
     lines.push([
       r.trackingCode,
       r.category,
@@ -861,8 +889,8 @@ export const exportReportToCsv = (options: ExportReportOptions): void => {
       r.barangay,
       r.municipality || 'Bongabong',
       (r.locationDetails || '').replace(/"/g, '""'),
-      r.residentName,
-      r.residentPhone,
+      reporter.name,
+      reporter.phone,
       r.selectedAgency,
       r.status,
       (r.description || '').replace(/"/g, '""'),
@@ -881,3 +909,4 @@ export const exportReportToCsv = (options: ExportReportOptions): void => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
+

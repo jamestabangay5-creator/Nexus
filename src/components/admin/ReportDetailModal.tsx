@@ -29,7 +29,8 @@ import {
   Lock,
   ExternalLink,
   Maximize2,
-  Check
+  Check,
+  ShieldCheck
 } from 'lucide-react';
 
 interface Props {
@@ -45,6 +46,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
     portalMode,
     isAgencyAuthenticated,
     agencyUser,
+    residentUser,
     updateIncidentStatus,
     rejectIncidentReport,
     restoreRejectedReport,
@@ -103,6 +105,19 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
     (t) => t.id === (report.verifiedTypeId || report.initialTypeId)
   );
   const agencyInfo = AGENCY_DETAILS[report.selectedAgency];
+
+  // Citizen & Informant Security Guard (RA 10173 Philippine Data Privacy Act):
+  // True reporter credentials (name, phone number, contact details) are strictly confidential:
+  // Visible ONLY to:
+  // 1. Authorized dispatch agency officers & central command (who must contact informant for response)
+  // 2. The account owner who submitted the report
+  // Hidden & shielded from other residents and public viewers to avoid credential exposure.
+  const isReportOwner = Boolean(
+    (residentUser?.id && report.residentId === residentUser.id) ||
+    (residentUser?.name && report.residentName.toLowerCase() === residentUser.name.toLowerCase()) ||
+    (residentUser?.email && report.residentEmail && report.residentEmail.toLowerCase() === residentUser.email.toLowerCase())
+  );
+  const canViewReporterPII = isAgencyAdmin || isReportOwner;
 
   const handleStatusChange = (status: IncidentStatus, customNote?: string) => {
     updateIncidentStatus(
@@ -409,8 +424,8 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                       : `${report.selectedAgency} has verified and accepted your report. The designated emergency response team is preparing for rapid deployment to your location.`)}
                   {report.status === 'Ongoing' &&
                     (language === 'fil'
-                      ? `Kasalukuyang rumeresponde ang mga tauhan ng ${report.selectedAgency} sa iniulat na lokasyon sa ${report.barangay}. Mangyaring manatili sa ligtas na lugar at panatilihing bukas ang inyong telepono (${report.residentPhone}).`
-                      : `Emergency personnel and vehicles from ${report.selectedAgency} are actively responding on scene at ${report.barangay}. Please remain in a safe location and keep your phone line (${report.residentPhone}) reachable.`)}
+                      ? `Kasalukuyang rumeresponde ang mga tauhan ng ${report.selectedAgency} sa iniulat na lokasyon sa ${report.barangay}. Mangyaring manatili sa ligtas na lugar ${canViewReporterPII ? `at panatilihing bukas ang inyong telepono (${report.residentPhone})` : 'at iwasan ang pagpunta sa lugar ng insidente'}.`
+                      : `Emergency personnel and vehicles from ${report.selectedAgency} are actively responding on scene at ${report.barangay}. Please remain in a safe location ${canViewReporterPII ? `and keep your phone line (${report.residentPhone}) reachable` : 'and avoid converging at the incident scene'}.`)}
                   {report.status === 'Resolved' &&
                     (language === 'fil'
                       ? `Matagumpay na naresolba ng mga rumespondeng tauhan ang insidenteng ito noong ${new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Maraming salamat sa iyong pagiging mapagmatyag na mamamayan.`
@@ -529,20 +544,57 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
 
               <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3.5">
                 <div className="flex items-start gap-2.5">
-                  <div className="p-2 rounded-xl bg-purple-100 text-purple-600 shrink-0 mt-0.5">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${canViewReporterPII ? 'bg-purple-100 text-purple-600' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {canViewReporterPII ? (
+                      <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                    ) : (
+                      <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+                    )}
                   </div>
-                  <div>
-                    <span className="text-xs uppercase font-bold text-slate-500 block tracking-wider">
-                      Reporting Resident
-                    </span>
-                    <strong className="text-slate-900 block text-base font-black mt-0.5">{report.residentName}</strong>
-                    <span className="text-slate-700 flex items-center gap-1.5 font-semibold text-sm mt-0.5">
-                      <Phone className="w-4 h-4 text-slate-500" />
-                      {report.residentPhone}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                      <span className="text-xs uppercase font-bold text-slate-500 block tracking-wider">
+                        {canViewReporterPII ? 'Reporting Resident' : 'Informant Privacy Shield'}
+                      </span>
+                      {isReportOwner && (
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                          Your Report
+                        </span>
+                      )}
+                      {!canViewReporterPII && (
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          RA 10173 Protected
+                        </span>
+                      )}
+                    </div>
+
+                    {canViewReporterPII ? (
+                      <>
+                        <strong className="text-slate-900 block text-base font-black mt-0.5 truncate">{report.residentName}</strong>
+                        <span className="text-slate-700 flex items-center gap-1.5 font-semibold text-sm mt-0.5">
+                          <Phone className="w-4 h-4 text-slate-500 shrink-0" />
+                          <span>{report.residentPhone}</span>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <strong className="text-slate-900 block text-sm sm:text-base font-black mt-0.5">
+                          Verified Citizen (Identity Protected)
+                        </strong>
+                        <span className="text-slate-500 flex items-center gap-1.5 font-medium text-xs sm:text-sm mt-0.5">
+                          <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>Confidential Contact · Agency Dispatch Eyes Only</span>
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
+
+                {!canViewReporterPII && (
+                  <p className="text-[11px] text-slate-500 pt-2 border-t border-slate-200/80 leading-snug">
+                    🛡️ <strong>Citizen Confidentiality:</strong> Reporter credentials and personal phone lines are encrypted to safeguard community informants from public exposure under Republic Act 10173.
+                  </p>
+                )}
 
                 <div className="flex items-center gap-2.5 pt-2.5 border-t border-slate-200/80">
                   <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/80 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">

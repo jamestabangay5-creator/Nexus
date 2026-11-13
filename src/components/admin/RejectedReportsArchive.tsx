@@ -35,7 +35,15 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
     adminProfiles,
     language,
     agencyUser,
+    residentUser,
+    portalMode,
+    isAgencyAuthenticated,
   } = useNexus();
+
+  const isAgencyAdmin =
+    portalMode === 'agency' &&
+    activeRole !== 'resident' &&
+    (isAgencyAuthenticated || agencyUser !== null);
 
   const t = TRANSLATIONS[language];
   const currentScope: AgencyScope = activeRole === 'resident' ? 'CENTRAL' : activeRole;
@@ -458,8 +466,28 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-slate-400 shrink-0" />
                     <div>
-                      <span className="text-slate-900 font-bold">Citizen: {report.residentName}</span>
-                      <span className="block text-[11px] text-slate-500">{report.residentPhone}</span>
+                      {(() => {
+                        const isOwner = Boolean(
+                          (residentUser?.id && report.residentId === residentUser.id) ||
+                          (residentUser?.name && report.residentName.toLowerCase() === residentUser.name.toLowerCase()) ||
+                          (residentUser?.email && report.residentEmail && report.residentEmail.toLowerCase() === residentUser.email.toLowerCase())
+                        );
+                        const canViewReporter = isAgencyAdmin || isOwner;
+                        if (canViewReporter) {
+                          return (
+                            <>
+                              <span className="text-slate-900 font-bold block">Citizen: {report.residentName}</span>
+                              <span className="block text-[11px] text-slate-500">{report.residentPhone}</span>
+                            </>
+                          );
+                        }
+                        return (
+                          <>
+                            <span className="text-slate-900 font-bold block">Citizen: Verified Informant (Protected)</span>
+                            <span className="block text-[11px] text-slate-400">•••••••••••• (Confidential Contact)</span>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

@@ -42,7 +42,9 @@ import {
   VolumeX,
   X,
   Radio,
-  Camera
+  Camera,
+  ShieldCheck,
+  Lock
 } from 'lucide-react';
 import { startContinuousCriticalAlarm, stopContinuousCriticalAlarm } from '../../services/soundService';
 import { ReportDetailModal } from '../admin/ReportDetailModal';
@@ -64,7 +66,16 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
     updateIncidentStatus,
     adminProfiles,
     soundMuted,
+    portalMode,
+    residentUser,
+    isAgencyAuthenticated,
+    agencyUser,
   } = useNexus();
+
+  const isAgencyViewer =
+    portalMode === 'agency' &&
+    activeRole !== 'resident' &&
+    (isAgencyAuthenticated || agencyUser !== null);
 
   const t = TRANSLATIONS[language];
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -187,14 +198,20 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
         if (dateFilter === '30d' && diffHours > 24 * 30) return false;
       }
 
-      // Search query
+      // Search query - Privacy Shield (RA 10173):
+      // Only authorized agency dispatchers or the citizen who filed the report can query by citizen name
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchCode = r.trackingCode.toLowerCase().includes(q);
         const matchDesc = r.description.toLowerCase().includes(q);
         const matchMuni = (r.municipality || '').toLowerCase().includes(q);
         const matchBrgy = r.barangay.toLowerCase().includes(q);
-        const matchCitizen = r.residentName.toLowerCase().includes(q);
+        const isMyReport = Boolean(
+          (residentUser?.id && r.residentId === residentUser.id) ||
+          (residentUser?.name && r.residentName.toLowerCase() === residentUser.name.toLowerCase()) ||
+          (residentUser?.email && r.residentEmail && r.residentEmail.toLowerCase() === residentUser.email.toLowerCase())
+        );
+        const matchCitizen = (isAgencyViewer || isMyReport) && r.residentName.toLowerCase().includes(q);
         if (!matchCode && !matchDesc && !matchMuni && !matchBrgy && !matchCitizen) return false;
       }
 
@@ -1436,12 +1453,50 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                       <span>{new Date(selectedReport.dateTime).toLocaleString()}</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-purple-500 shrink-0" />
-                      <span>
-                        Resident: <strong className="text-slate-800">{selectedReport.residentName}</strong> ({selectedReport.residentPhone})
-                      </span>
-                    </div>
+                    {/* Citizen Informant Security Guard (RA 10173 Compliance) */}
+                    {(() => {
+                      const isOwner = Boolean(
+                        (residentUser?.id && selectedReport.residentId === residentUser.id) ||
+                        (residentUser?.name && selectedReport.residentName.toLowerCase() === residentUser.name.toLowerCase()) ||
+                        (residentUser?.email && selectedReport.residentEmail && selectedReport.residentEmail.toLowerCase() === residentUser.email.toLowerCase())
+                      );
+                      const canViewReporterDetails = isAgencyViewer || isOwner;
+
+                      if (canViewReporterDetails) {
+                        return (
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/80">
+                            <div className="flex items-center gap-2 text-slate-700 min-w-0">
+                              <User className="w-4 h-4 text-purple-600 shrink-0" />
+                              <span className="truncate">
+                                Resident: <strong className="text-slate-900 font-bold">{selectedReport.residentName}</strong> ({selectedReport.residentPhone})
+                              </span>
+                            </div>
+                            {isOwner && (
+                              <span className="text-[10px] bg-purple-100 text-purple-800 font-black px-2 py-0.5 rounded-full border border-purple-200 shrink-0">
+                                Your Report
+                              </span>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="flex items-start gap-2 bg-slate-100/90 border border-slate-200/90 rounded-xl p-2.5 pt-2 text-xs text-slate-600 mt-2">
+                          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-slate-900">Reporter Identity Protected</span>
+                              <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                RA 10173 Shield
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-snug">
+                              Contact credentials confidential. Restricted to designated 911 dispatch authorities and report author.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     <p className="text-xs text-slate-700 pt-2 border-t border-slate-200/80 leading-relaxed italic">
                       "{selectedReport.description}"
