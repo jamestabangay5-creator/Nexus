@@ -82,32 +82,33 @@ export const AnalyticsView: React.FC = () => {
     return filteredReports;
   }, [filteredReports, verifiedOnlyBasis]);
 
-  // Overall KPI counts
+  // Overall KPI counts from genuine reports
   const totalSubmitted = filteredReports.length;
   const verifiedCount = filteredReports.filter(
     (r) => r.status === 'Accepted' || r.status === 'Ongoing' || r.status === 'Resolved'
   ).length;
   const pendingCount = filteredReports.filter((r) => r.status === 'Pending Verification').length;
-  const ongoingCount = filteredReports.filter((r) => r.status === 'Ongoing' || r.status === 'Accepted').length;
+  const ongoingCount = filteredReports.filter((r) => r.status === 'Ongoing').length;
+  const acceptedCount = filteredReports.filter((r) => r.status === 'Accepted').length;
   const resolvedCount = filteredReports.filter((r) => r.status === 'Resolved').length;
   const rejectedCount = filteredReports.filter((r) => r.status === 'Rejected').length;
 
-  const verificationRate = totalSubmitted > 0 ? Math.round((verifiedCount / totalSubmitted) * 100) : 75;
-  const resolutionRate = verifiedCount > 0 ? Math.round((resolvedCount / verifiedCount) * 100) : 63;
+  const verificationRate = totalSubmitted > 0 ? Math.round((verifiedCount / totalSubmitted) * 100) : 0;
+  const resolutionRate = verifiedCount > 0 ? Math.round((resolvedCount / verifiedCount) * 100) : 0;
   const interAgencyAssistanceCount = filteredReports.reduce((acc, r) => acc + (r.assistanceRequests?.length || 0), 0);
-  const interAgencyRate = verifiedCount > 0 ? Math.min(100, Math.round((interAgencyAssistanceCount / verifiedCount) * 100) || 45) : 45;
+  const interAgencyRate = verifiedCount > 0 ? Math.min(100, Math.round((interAgencyAssistanceCount / verifiedCount) * 100)) : 0;
 
   // Agency distribution
   const pnpCount = baselineReports.filter((r) => r.selectedAgency === 'PNP').length;
   const bfpCount = baselineReports.filter((r) => r.selectedAgency === 'BFP').length;
   const mdrrmoCount = baselineReports.filter((r) => r.selectedAgency === 'MDRRMO').length;
-  const baseCountTotal = baselineReports.length || 1;
+  const baseCountTotal = baselineReports.length;
 
-  const pnpPct = Math.round((pnpCount / baseCountTotal) * 100) || 68;
-  const bfpPct = Math.round((bfpCount / baseCountTotal) * 100) || 45;
-  const mdrrmoPct = Math.round((mdrrmoCount / baseCountTotal) * 100) || 82;
+  const pnpPct = baseCountTotal > 0 ? Math.round((pnpCount / baseCountTotal) * 100) : 0;
+  const bfpPct = baseCountTotal > 0 ? Math.round((bfpCount / baseCountTotal) * 100) : 0;
+  const mdrrmoPct = baseCountTotal > 0 ? Math.round((mdrrmoCount / baseCountTotal) * 100) : 0;
 
-  // Day of Week Distribution (Monday - Sunday)
+  // Day of Week Distribution (Monday - Sunday) from genuine reports
   const dayOfWeekCounts = useMemo(() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const counts = [0, 0, 0, 0, 0, 0, 0];
@@ -116,63 +117,103 @@ export const AnalyticsView: React.FC = () => {
       try {
         const d = new Date(r.dateTime || r.createdAt);
         const dayIdx = (d.getDay() + 6) % 7; // Convert Sun=0 to Mon=0
-        counts[dayIdx] += 1;
+        if (dayIdx >= 0 && dayIdx < 7) {
+          counts[dayIdx] += 1;
+        }
       } catch {}
     });
 
-    // Provide default proportional heights if data set is sparse
-    const maxVal = Math.max(...counts, 1);
+    const maxVal = Math.max(...counts, 0);
     return days.map((day, idx) => ({
       day,
-      count: counts[idx] || (idx % 2 === 0 ? 3 : 2),
-      heightPct: Math.max(15, Math.round(((counts[idx] || (idx % 2 === 0 ? 3 : 2)) / Math.max(maxVal, 4)) * 100)),
+      count: counts[idx],
+      heightPct: maxVal > 0 && counts[idx] > 0 ? Math.max(15, Math.round((counts[idx] / maxVal) * 100)) : 0,
     }));
   }, [filteredReports]);
 
-  // Top Municipalities Leaderboard (Interfaces Rank in reference)
+  // Top Municipalities Leaderboard from genuine reports
   const topMunicipalities = useMemo(() => {
     const countsMap: Record<string, number> = {};
-    ORIENTAL_MINDORO_MUNICIPALITIES.forEach((m) => {
-      countsMap[m] = 0;
-    });
 
     filteredReports.forEach((r) => {
-      const muni = r.municipality || 'Calapan City';
+      const muni = r.municipality || 'Bongabong';
       countsMap[muni] = (countsMap[muni] || 0) + 1;
     });
 
-    const sorted = Object.entries(countsMap)
-      .map(([muni, count]) => ({
-        name: muni,
-        count: count > 0 ? count : (muni === 'Calapan City' ? 4 : muni === 'Naujan' ? 3 : muni === 'Puerto Galera' ? 2 : 1),
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+    const entries = Object.entries(countsMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
 
-    const maxCount = Math.max(...sorted.map((s) => s.count), 1);
-    return sorted.map((item) => ({
+    // If fewer than 5 have reports, populate remaining from official list with 0
+    if (entries.length < 5) {
+      ORIENTAL_MINDORO_MUNICIPALITIES.forEach((muni) => {
+        if (!countsMap[muni] && entries.length < 5) {
+          entries.push({ name: muni, count: 0 });
+        }
+      });
+    }
+
+    const top5 = entries.slice(0, 5);
+    const maxCount = Math.max(...top5.map((s) => s.count), 1);
+    return top5.map((item) => ({
       ...item,
-      percentage: Math.round((item.count / maxCount) * 100),
+      percentage: item.count > 0 ? Math.round((item.count / maxCount) * 100) : 0,
     }));
   }, [filteredReports]);
 
-  // Timeline Wave Flow (Monthly Inflow vs Outflow Resolution)
+  // Timeline Wave Flow (Monthly Inflow vs Outflow Resolution) from genuine reports
   const waveTimelineData = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    // Realistic multi-wave curves matching Image 2
-    const inflowBase = [320, 480, 410, 390, 460, 310, 220, 260, 350, 440, 470, 380];
-    const resolvedBase = [180, 340, 430, 420, 350, 270, 190, 210, 290, 380, 410, 320];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyInflow = new Array(12).fill(0);
+    const monthlyResolved = new Array(12).fill(0);
 
-    // Scale with actual reports count if active
-    const scale = Math.max(1, filteredReports.length / 4);
+    filteredReports.forEach((r) => {
+      try {
+        const d = new Date(r.createdAt || r.dateTime);
+        const m = d.getMonth();
+        if (m >= 0 && m < 12) {
+          monthlyInflow[m] += 1;
+          if (r.status === 'Resolved') {
+            monthlyResolved[m] += 1;
+          }
+        }
+      } catch {}
+    });
 
-    return months.map((month, idx) => ({
+    return monthNames.map((month, idx) => ({
       month,
       index: idx + 1,
-      inflow: Math.round(inflowBase[idx] * (scale > 1 ? 1 + (scale - 1) * 0.15 : 1)),
-      resolved: Math.round(resolvedBase[idx] * (scale > 1 ? 1 + (scale - 1) * 0.15 : 1)),
+      inflow: monthlyInflow[idx],
+      resolved: monthlyResolved[idx],
     }));
   }, [filteredReports]);
+
+  const maxTimelineVal = useMemo(() => {
+    const maxVal = Math.max(...waveTimelineData.map((d) => Math.max(d.inflow, d.resolved)), 0);
+    return Math.max(maxVal, 5); // Clean baseline for grid scaling
+  }, [waveTimelineData]);
+
+  // Top Peak Months from genuine data
+  const topMonths = useMemo(() => {
+    return [...waveTimelineData]
+      .sort((a, b) => b.inflow - a.inflow)
+      .slice(0, 5)
+      .map((item, idx) => ({
+        rank: `No.${idx + 1}`,
+        val: item.inflow.toString(),
+        label: `${item.month} Reports`,
+        color:
+          idx === 0
+            ? 'text-blue-600'
+            : idx === 1
+            ? 'text-cyan-600'
+            : idx === 2
+            ? 'text-indigo-600'
+            : idx === 3
+            ? 'text-amber-600'
+            : 'text-slate-600',
+      }));
+  }, [waveTimelineData]);
 
   // Generate Smooth Cubic Bézier SVG Path
   const generateSmoothAreaPath = (values: number[], maxY: number, width: number, height: number): string => {
@@ -223,15 +264,39 @@ export const AnalyticsView: React.FC = () => {
     return d;
   };
 
-  // Radar / Spider Chart Geometry (6 Axes)
-  const radarAxes = [
-    { label: 'Response Speed', value: 85 },
-    { label: 'Personnel Ready', value: 78 },
-    { label: 'Case Resolution', value: 92 },
-    { label: 'Inter-Agency Link', value: 88 },
-    { label: 'Territory Cover', value: 95 },
-    { label: 'Critical Triage', value: 90 },
-  ];
+  // Real Radar Axes Computed from Live Operational Reports
+  const radarAxes = useMemo(() => {
+    const criticalReports = filteredReports.filter((r) => r.category === 'RED' || r.category === 'ORANGE');
+    const criticalTriaged = criticalReports.filter((r) => r.status !== 'Pending Verification').length;
+    const criticalTriageRate =
+      criticalReports.length > 0
+        ? Math.round((criticalTriaged / criticalReports.length) * 100)
+        : totalSubmitted > 0
+        ? 100
+        : 0;
+
+    const distinctMunicipalities = new Set(filteredReports.map((r) => r.municipality || 'Bongabong')).size;
+    const territoryCoverageRate = Math.min(100, Math.round((distinctMunicipalities / 15) * 100));
+
+    const activeAgencies = new Set(filteredReports.map((r) => r.selectedAgency)).size;
+    const personnelReadyRate =
+      activeAgencies > 0 ? Math.min(100, Math.round((activeAgencies / 3) * 100)) : totalSubmitted > 0 ? 100 : 0;
+
+    return [
+      { label: 'Incident Intake', value: Math.min(100, totalSubmitted > 0 ? 100 : 0) },
+      { label: 'Verification Rate', value: verificationRate },
+      { label: 'Case Resolution', value: resolutionRate },
+      { label: 'Inter-Agency Link', value: interAgencyRate },
+      { label: 'Territory Cover', value: territoryCoverageRate },
+      { label: 'Critical Triage', value: criticalTriageRate },
+    ];
+  }, [filteredReports, totalSubmitted, verificationRate, resolutionRate, interAgencyRate]);
+
+  const overallReadinessIndex = useMemo(() => {
+    if (totalSubmitted === 0) return 0;
+    const sum = radarAxes.reduce((acc, ax) => acc + ax.value, 0);
+    return Math.round(sum / radarAxes.length);
+  }, [radarAxes, totalSubmitted]);
 
   const radarPoints = useMemo(() => {
     const cx = 95;
@@ -242,23 +307,37 @@ export const AnalyticsView: React.FC = () => {
       const r = (axis.value / 100) * maxR;
       const x = cx + r * Math.cos(angle);
       const y = cy + r * Math.sin(angle);
-      return { x, y, labelX: cx + (maxR + 18) * Math.cos(angle), labelY: cy + (maxR + 14) * Math.sin(angle), label: axis.label };
+      return {
+        x,
+        y,
+        labelX: cx + (maxR + 18) * Math.cos(angle),
+        labelY: cy + (maxR + 14) * Math.sin(angle),
+        label: axis.label,
+      };
     });
-  }, []);
+  }, [radarAxes]);
 
   const radarPolygonPath = useMemo(() => {
     return radarPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ') + ' Z';
   }, [radarPoints]);
 
-  // Status Distribution for Right Donut with Callouts
+  // Status Distribution for Donut Chart from genuine reports
   const statusStats = useMemo(() => {
     const statuses: { label: string; count: number; color: string }[] = [
-      { label: 'Resolved', count: resolvedCount || 2, color: '#38bdf8' },
-      { label: 'Ongoing', count: ongoingCount || 1, color: '#2563eb' },
-      { label: 'Accepted', count: Math.max(1, verifiedCount - resolvedCount), color: '#10b981' },
-      { label: 'Pending', count: pendingCount || 1, color: '#f59e0b' },
+      { label: 'Resolved', count: resolvedCount, color: '#10b981' },
+      { label: 'Ongoing', count: ongoingCount, color: '#f97316' },
+      { label: 'Accepted', count: acceptedCount, color: '#3b82f6' },
+      { label: 'Pending', count: pendingCount, color: '#f59e0b' },
     ];
-    const total = statuses.reduce((acc, s) => acc + s.count, 0) || 1;
+    const total = statuses.reduce((acc, s) => acc + s.count, 0);
+    if (total === 0) {
+      return statuses.map((s) => ({
+        ...s,
+        pct: 0,
+        angle: 0,
+        startAngle: 0,
+      }));
+    }
     let currAngle = 0;
     return statuses.map((s) => {
       const pct = (s.count / total) * 100;
@@ -272,7 +351,7 @@ export const AnalyticsView: React.FC = () => {
         startAngle,
       };
     });
-  }, [resolvedCount, ongoingCount, verifiedCount, pendingCount]);
+  }, [resolvedCount, ongoingCount, acceptedCount, pendingCount]);
 
   // Incident Type Statistics Table
   const typeStatistics = useMemo(() => {
@@ -381,7 +460,7 @@ export const AnalyticsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4 Top KPI Cards (Matching visual reference layout: Blue, Purple, Cyan, Emerald circular badges) */}
+      {/* 4 Top KPI Cards (Matching visual reference layout with 100% Genuine Telemetry) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1 */}
         <div className="metric-card">
@@ -397,9 +476,9 @@ export const AnalyticsView: React.FC = () => {
           <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
             {totalSubmitted}
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
-            <span>↑ +20%</span>
-            <span className="text-slate-400 font-normal">from last week · verified intake</span>
+          <div className="flex items-center gap-1.5 text-xs text-blue-600 font-bold">
+            <span>{verifiedCount} verified</span>
+            <span className="text-slate-400 font-normal">of {totalSubmitted} total cases</span>
           </div>
         </div>
 
@@ -417,9 +496,9 @@ export const AnalyticsView: React.FC = () => {
           <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
             {verificationRate}%
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
-            <span>↑ +12.4%</span>
-            <span className="text-slate-400 font-normal">vs last month · zero prank</span>
+          <div className="flex items-center gap-1.5 text-xs text-purple-600 font-bold">
+            <span>{pendingCount} pending</span>
+            <span className="text-slate-400 font-normal">in triage queue</span>
           </div>
         </div>
 
@@ -431,15 +510,15 @@ export const AnalyticsView: React.FC = () => {
             </div>
             <div>
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">SLA Compliance</span>
-              <span className="text-xs text-slate-400 font-medium">Response Velocity</span>
+              <span className="text-xs text-slate-400 font-medium">Resolution Ratio</span>
             </div>
           </div>
           <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
             {resolutionRate}%
           </div>
           <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
-            <span>↑ +0.4%</span>
-            <span className="text-slate-400 font-normal">target &lt; 10 min arrival</span>
+            <span>{resolvedCount} resolved</span>
+            <span className="text-slate-400 font-normal">· {ongoingCount} ongoing</span>
           </div>
         </div>
 
@@ -457,9 +536,9 @@ export const AnalyticsView: React.FC = () => {
           <div className="text-3xl font-black text-slate-900 tracking-tight font-mono">
             {interAgencyRate}%
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
-            <span>↑ +8.1%</span>
-            <span className="text-slate-400 font-normal">tri-agency coordination</span>
+          <div className="flex items-center gap-1.5 text-xs text-teal-600 font-bold">
+            <span>{interAgencyAssistanceCount} assist dispatches</span>
+            <span className="text-slate-400 font-normal">tri-agency</span>
           </div>
         </div>
       </div>
@@ -571,7 +650,7 @@ export const AnalyticsView: React.FC = () => {
                 <span>Inter-Agency Readiness</span>
               </span>
               <span className="text-[10px] text-emerald-600 font-mono font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                94.2% Index
+                {overallReadinessIndex}% Index
               </span>
             </div>
 
@@ -709,10 +788,10 @@ export const AnalyticsView: React.FC = () => {
                   <div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
-                        {(totalSubmitted * 120 + 850).toLocaleString()}
+                        {totalSubmitted.toLocaleString()}
                       </span>
                       <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                        +20% ↑
+                        {verificationRate}% Verified
                       </span>
                     </div>
                     <span className="text-[11px] text-blue-600 font-semibold flex items-center gap-1.5 mt-0.5">
@@ -725,10 +804,10 @@ export const AnalyticsView: React.FC = () => {
                   <div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
-                        {(resolvedCount * 110 + 720).toLocaleString()}
+                        {resolvedCount.toLocaleString()}
                       </span>
                       <span className="inline-flex items-center text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
-                        +18% ↑
+                        {resolutionRate}% Cleared
                       </span>
                     </div>
                     <span className="text-[11px] text-orange-600 font-semibold flex items-center gap-1.5 mt-0.5">
@@ -779,18 +858,18 @@ export const AnalyticsView: React.FC = () => {
                   <g key={idx}>
                     <line x1="0" y1={y} x2="600" y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3,3" />
                     <text x="4" y={y - 4} fill="#94a3b8" fontSize="9" fontFamily="monospace">
-                      {500 - idx * 100}
+                      {Math.round(maxTimelineVal * (1 - idx * 0.25))}
                     </text>
                   </g>
                 ))}
 
                 {/* Area Wave 1: Incoming Reports */}
                 <path
-                  d={generateSmoothAreaPath(waveTimelineData.map((d) => d.inflow), 550, 600, 200)}
+                  d={generateSmoothAreaPath(waveTimelineData.map((d) => d.inflow), maxTimelineVal, 600, 200)}
                   fill="url(#waveInflowGradLight)"
                 />
                 <path
-                  d={generateSmoothLinePath(waveTimelineData.map((d) => d.inflow), 550, 600, 200)}
+                  d={generateSmoothLinePath(waveTimelineData.map((d) => d.inflow), maxTimelineVal, 600, 200)}
                   fill="none"
                   stroke="#2563eb"
                   strokeWidth="2.5"
@@ -798,11 +877,11 @@ export const AnalyticsView: React.FC = () => {
 
                 {/* Area Wave 2: Resolved Reports */}
                 <path
-                  d={generateSmoothAreaPath(waveTimelineData.map((d) => d.resolved), 550, 600, 200)}
+                  d={generateSmoothAreaPath(waveTimelineData.map((d) => d.resolved), maxTimelineVal, 600, 200)}
                   fill="url(#waveResolvedGradLight)"
                 />
                 <path
-                  d={generateSmoothLinePath(waveTimelineData.map((d) => d.resolved), 550, 600, 200)}
+                  d={generateSmoothLinePath(waveTimelineData.map((d) => d.resolved), maxTimelineVal, 600, 200)}
                   fill="none"
                   stroke="#ea580c"
                   strokeWidth="2"
@@ -812,7 +891,7 @@ export const AnalyticsView: React.FC = () => {
                 {waveTimelineData.map((d, i) => {
                   const stepX = 600 / 11;
                   const x = i * stepX;
-                  const y = 200 - (d.inflow / 550) * 170;
+                  const y = 200 - (d.inflow / maxTimelineVal) * 170;
                   return (
                     <circle
                       key={i}
@@ -841,22 +920,16 @@ export const AnalyticsView: React.FC = () => {
                       fontFamily="monospace"
                       fontWeight="600"
                     >
-                      {d.index}
+                      {d.month}
                     </text>
                   );
                 })}
               </svg>
             </div>
 
-            {/* Bottom Peak Months Callout Row */}
+            {/* Bottom Peak Months Callout Row (100% Genuine Metrics) */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
-              {[
-                { rank: 'No.1', val: '850', label: 'Feb Peak', color: 'text-blue-600' },
-                { rank: 'No.2', val: '750', label: 'Oct Storm', color: 'text-cyan-600' },
-                { rank: 'No.3', val: '650', label: 'Nov Alert', color: 'text-indigo-600' },
-                { rank: 'No.4', val: '550', label: 'Aug Season', color: 'text-amber-600' },
-                { rank: 'No.5', val: '450', label: 'Mar High', color: 'text-rose-600' },
-              ].map((item, idx) => (
+              {topMonths.map((item, idx) => (
                 <div key={idx} className="bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80 text-center">
                   <span className="text-[10px] font-mono text-slate-400 block font-bold">{item.rank}</span>
                   <span className={`text-base font-black font-mono block ${item.color}`}>{item.val}</span>
@@ -1080,7 +1153,7 @@ export const AnalyticsView: React.FC = () => {
                   <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
                     <div
                       className="h-full rounded-full bg-blue-600 transition-all duration-700"
-                      style={{ width: `${Math.max(item.percentage, 10)}%` }}
+                      style={{ width: `${item.count > 0 ? Math.max(item.percentage, 6) : 0}%` }}
                     />
                   </div>
                 </div>

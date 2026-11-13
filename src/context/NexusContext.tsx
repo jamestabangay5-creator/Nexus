@@ -36,6 +36,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   onSnapshot,
   updateDoc,
   deleteDoc,
@@ -1642,7 +1643,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const reportsCol = collection(db, 'reports');
       const snap = await getDocs(reportsCol);
-      snap.forEach((docSnap) => {
+      snap.forEach((docSnap: any) => {
         const data = docSnap.data() as IncidentReport;
         if (isSimulatedReport(data)) {
           deleteDoc(docSnap.ref).catch(() => null);

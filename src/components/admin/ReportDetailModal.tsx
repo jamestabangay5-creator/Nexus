@@ -28,7 +28,8 @@ import {
   RotateCcw,
   Lock,
   ExternalLink,
-  Maximize2
+  Maximize2,
+  Check
 } from 'lucide-react';
 
 interface Props {
@@ -188,7 +189,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
   return (
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xl overflow-y-auto animate-in fade-in">
-        <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl relative text-slate-800 my-8 max-h-[90vh] flex flex-col justify-between overflow-hidden">
+        <div className="glass-card bg-white/95 backdrop-blur-2xl border border-white/90 rounded-3xl max-w-3xl w-full p-4 sm:p-7 shadow-2xl relative text-slate-800 my-4 sm:my-8 max-h-[92vh] flex flex-col overflow-hidden">
           {/* Relevant Official Agency Seal Watermark & Ambient Command Glow Background */}
           <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-gradient-to-tr from-purple-500/10 via-slate-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -199,16 +200,16 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition cursor-pointer"
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition cursor-pointer z-10"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
 
-          {/* Modal Content */}
-          <div className="overflow-y-auto pr-1 space-y-5">
+          {/* Scrollable Modal Content (Flex-1 Min-H-0 guarantees smooth scrolling without overlapping) */}
+          <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-5 min-h-0">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 pr-8">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-2.5 py-1 rounded-lg">
@@ -311,6 +312,182 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                 {report.photoCaption && (
                   <div className="w-full p-2.5 sm:p-3 text-xs sm:text-sm text-slate-300 bg-slate-900/90 border-t border-slate-800/80 font-medium">
                     Evidence Note: {report.photoCaption}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Citizen / Resident View: Actual Report Status & 4-Stage Dispatch Pipeline (Inside Scroll Area) */}
+            {!isAgencyAdmin && (
+              <div
+                className={`p-4 sm:p-5 rounded-2xl border shadow-xs transition ${
+                  report.status === 'Resolved'
+                    ? 'bg-emerald-50/90 border-emerald-200 text-emerald-950'
+                    : report.status === 'Ongoing'
+                    ? 'bg-orange-50/90 border-orange-200 text-orange-950'
+                    : report.status === 'Accepted'
+                    ? 'bg-blue-50/90 border-blue-200 text-blue-950'
+                    : report.status === 'Rejected'
+                    ? 'bg-rose-50/90 border-rose-200 text-rose-950'
+                    : 'bg-amber-50/90 border-amber-200 text-amber-950'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {report.status === 'Resolved' && (
+                      <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-xs shrink-0">
+                        <CheckCircle className="w-5 h-5 text-emerald-600" />
+                      </div>
+                    )}
+                    {report.status === 'Ongoing' && (
+                      <div className="p-2.5 rounded-2xl bg-orange-100 text-orange-700 border border-orange-200 shadow-xs shrink-0 animate-pulse">
+                        <Clock className="w-5 h-5 text-orange-600" />
+                      </div>
+                    )}
+                    {report.status === 'Accepted' && (
+                      <div className="p-2.5 rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 shadow-xs shrink-0">
+                        <CheckCircle className="w-5 h-5 text-blue-600" />
+                      </div>
+                    )}
+                    {report.status === 'Pending Verification' && (
+                      <div className="p-2.5 rounded-2xl bg-amber-100 text-amber-700 border border-amber-200 shadow-xs shrink-0 animate-pulse">
+                        <Clock className="w-5 h-5 text-amber-600" />
+                      </div>
+                    )}
+                    {report.status === 'Rejected' && (
+                      <div className="p-2.5 rounded-2xl bg-rose-100 text-rose-700 border border-rose-200 shadow-xs shrink-0">
+                        <AlertOctagon className="w-5 h-5 text-rose-600" />
+                      </div>
+                    )}
+
+                    <div>
+                      <span className="text-[10px] uppercase font-extrabold tracking-wider opacity-75 block">
+                        {language === 'fil' ? 'Kasalukuyang Katayuan ng Ulat' : 'Actual Incident Report Status'}
+                      </span>
+                      <h4 className="text-sm sm:text-base font-black tracking-tight mt-0.5">
+                        {report.status === 'Pending Verification' &&
+                          (language === 'fil' ? 'Naka-pending para sa Beripikasyon ng Dispatch' : 'Pending Verification & Dispatch Triage')}
+                        {report.status === 'Accepted' &&
+                          (language === 'fil' ? `Tinanggap ng ${report.selectedAgency} Command` : `Accepted by ${report.selectedAgency} Command`)}
+                        {report.status === 'Ongoing' &&
+                          (language === 'fil' ? `Kasalukuyang Nirerespondehan ng ${report.selectedAgency}` : `Field Response Ongoing by ${report.selectedAgency}`)}
+                        {report.status === 'Resolved' &&
+                          (language === 'fil' ? 'Naresolba at Ligtas na Naisaayos' : 'Incident Resolved & Field Verified')}
+                        {report.status === 'Rejected' &&
+                          (language === 'fil' ? 'Ulat ay Na-archive / Hindi Na-verify' : 'Report Archived / Unverified')}
+                      </h4>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <span
+                    className={`self-start sm:self-center text-xs font-black px-3.5 py-1.5 rounded-full border shadow-xs ${
+                      report.status === 'Resolved'
+                        ? 'bg-emerald-600 text-white border-emerald-500'
+                        : report.status === 'Ongoing'
+                        ? 'bg-orange-500 text-white border-orange-400'
+                        : report.status === 'Accepted'
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : report.status === 'Rejected'
+                        ? 'bg-rose-600 text-white border-rose-500'
+                        : 'bg-amber-500 text-white border-amber-400'
+                    }`}
+                  >
+                    {t[report.status] || report.status}
+                  </span>
+                </div>
+
+                {/* Explanatory Message for Citizen */}
+                <p className="text-xs sm:text-sm leading-relaxed font-semibold text-slate-800 mt-2.5 pt-2.5 border-t border-slate-200/60">
+                  {report.status === 'Pending Verification' &&
+                    (language === 'fil'
+                      ? 'Natanggap na ng central 911 dispatch queue ang iyong ulat. Sinusuri ng duty officer ang iyong lokasyon para sa pagtatalaga ng pinakamalapit na patrol o emergency responder.'
+                      : 'Your emergency report has been received in the central 911 queue. Officers are verifying your location coordinates to assign the nearest field unit.')}
+                  {report.status === 'Accepted' &&
+                    (language === 'fil'
+                      ? `Kinumpirma ng ${report.selectedAgency} ang iyong ulat. Inihahanda na ang kaukulang kagamitan at mga tauhan para sa mabilisang deployment sa iyong lokasyon.`
+                      : `${report.selectedAgency} has verified and accepted your report. The designated emergency response team is preparing for rapid deployment to your location.`)}
+                  {report.status === 'Ongoing' &&
+                    (language === 'fil'
+                      ? `Kasalukuyang rumeresponde ang mga tauhan ng ${report.selectedAgency} sa iniulat na lokasyon sa ${report.barangay}. Mangyaring manatili sa ligtas na lugar at panatilihing bukas ang inyong telepono (${report.residentPhone}).`
+                      : `Emergency personnel and vehicles from ${report.selectedAgency} are actively responding on scene at ${report.barangay}. Please remain in a safe location and keep your phone line (${report.residentPhone}) reachable.`)}
+                  {report.status === 'Resolved' &&
+                    (language === 'fil'
+                      ? `Matagumpay na naresolba ng mga rumespondeng tauhan ang insidenteng ito noong ${new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Maraming salamat sa iyong pagiging mapagmatyag na mamamayan.`
+                      : `The field response has concluded and the incident was officially verified resolved at ${new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Thank you for your alert and community vigilance.`)}
+                  {report.status === 'Rejected' &&
+                    (language === 'fil'
+                      ? `Dokumentadong dahilan ng Dispatcher: "${report.rejection?.reason || 'Minarkahan bilang hindi kwalipikado o false alarm.'}"`
+                      : `Dispatcher Justification: "${report.rejection?.reason || 'Marked as unverified or false alarm.'}"`)}
+                </p>
+
+                {/* 4-Stage Dispatch Pipeline Visualizer (if not rejected) */}
+                {report.status !== 'Rejected' && (
+                  <div className="pt-3 mt-3 border-t border-slate-200/60">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">
+                      {language === 'fil' ? 'Progreso ng Operasyon' : 'Dispatch Response Pipeline'}
+                    </span>
+                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-center">
+                      {/* Step 1: Submitted */}
+                      <div className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 text-emerald-700 flex flex-col items-center gap-0.5 shadow-2xs">
+                        <span className="text-[10px] sm:text-xs text-emerald-600 font-mono">1. Sent</span>
+                        <span className="truncate flex items-center justify-center">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 inline mr-1 shrink-0" />
+                          {language === 'fil' ? 'Naipadala' : 'Submitted'}
+                        </span>
+                      </div>
+
+                      {/* Step 2: Accepted */}
+                      <div
+                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
+                          report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved'
+                            ? 'bg-white border-blue-200 text-blue-700'
+                            : 'bg-slate-100/60 border-slate-200 text-slate-400'
+                        }`}
+                      >
+                        <span className="text-[10px] sm:text-xs font-mono opacity-75">2. Verified</span>
+                        <span className="truncate flex items-center justify-center">
+                          {(report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved') && (
+                            <Check className="w-3.5 h-3.5 text-blue-600 inline mr-1 shrink-0" />
+                          )}
+                          {language === 'fil' ? 'Tinanggap' : 'Accepted'}
+                        </span>
+                      </div>
+
+                      {/* Step 3: Ongoing */}
+                      <div
+                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
+                          report.status === 'Ongoing' || report.status === 'Resolved'
+                            ? 'bg-white border-orange-200 text-orange-700'
+                            : 'bg-slate-100/60 border-slate-200 text-slate-400'
+                        }`}
+                      >
+                        <span className="text-[10px] sm:text-xs font-mono opacity-75">3. En Route</span>
+                        <span className="truncate flex items-center justify-center">
+                          {(report.status === 'Ongoing' || report.status === 'Resolved') && (
+                            <Check className="w-3.5 h-3.5 text-orange-600 inline mr-1 shrink-0" />
+                          )}
+                          {language === 'fil' ? 'Rumeresponde' : 'Ongoing'}
+                        </span>
+                      </div>
+
+                      {/* Step 4: Resolved */}
+                      <div
+                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
+                          report.status === 'Resolved'
+                            ? 'bg-white border-emerald-200 text-emerald-700'
+                            : 'bg-slate-100/60 border-slate-200 text-slate-400'
+                        }`}
+                      >
+                        <span className="text-[10px] sm:text-xs font-mono opacity-75">4. Cleared</span>
+                        <span className="truncate flex items-center justify-center">
+                          {report.status === 'Resolved' && (
+                            <Check className="w-3.5 h-3.5 text-emerald-600 inline mr-1 shrink-0" />
+                          )}
+                          {language === 'fil' ? 'Naresolba' : 'Resolved'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -661,203 +838,35 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
               </div>
             )
           ) : (
-            /* Citizen / Resident View: Shows Actual Status of the Report */
-            <div className="pt-4 mt-4 border-t border-slate-200/80 space-y-3.5">
-              {/* Actual Report Status Hero Card */}
-              <div
-                className={`p-4 rounded-2xl border shadow-xs transition ${
-                  report.status === 'Resolved'
-                    ? 'bg-emerald-50/90 border-emerald-200 text-emerald-950'
-                    : report.status === 'Ongoing'
-                    ? 'bg-orange-50/90 border-orange-200 text-orange-950'
-                    : report.status === 'Accepted'
-                    ? 'bg-blue-50/90 border-blue-200 text-blue-950'
-                    : report.status === 'Rejected'
-                    ? 'bg-rose-50/90 border-rose-200 text-rose-950'
-                    : 'bg-amber-50/90 border-amber-200 text-amber-950'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    {report.status === 'Resolved' && (
-                      <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-xs shrink-0">
-                        <CheckCircle className="w-5 h-5 text-emerald-600" />
-                      </div>
-                    )}
-                    {report.status === 'Ongoing' && (
-                      <div className="p-2.5 rounded-2xl bg-orange-100 text-orange-700 border border-orange-200 shadow-xs shrink-0 animate-pulse">
-                        <Clock className="w-5 h-5 text-orange-600" />
-                      </div>
-                    )}
-                    {report.status === 'Accepted' && (
-                      <div className="p-2.5 rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 shadow-xs shrink-0">
-                        <CheckCircle className="w-5 h-5 text-blue-600" />
-                      </div>
-                    )}
-                    {report.status === 'Pending Verification' && (
-                      <div className="p-2.5 rounded-2xl bg-amber-100 text-amber-700 border border-amber-200 shadow-xs shrink-0 animate-pulse">
-                        <Clock className="w-5 h-5 text-amber-600" />
-                      </div>
-                    )}
-                    {report.status === 'Rejected' && (
-                      <div className="p-2.5 rounded-2xl bg-rose-100 text-rose-700 border border-rose-200 shadow-xs shrink-0">
-                        <AlertOctagon className="w-5 h-5 text-rose-600" />
-                      </div>
-                    )}
-
-                    <div>
-                      <span className="text-[10px] uppercase font-extrabold tracking-wider opacity-75 block">
-                        {language === 'fil' ? 'Kasalukuyang Katayuan ng Ulat' : 'Actual Incident Report Status'}
-                      </span>
-                      <h4 className="text-sm sm:text-base font-black tracking-tight mt-0.5">
-                        {report.status === 'Pending Verification' &&
-                          (language === 'fil' ? 'Naka-pending para sa Beripikasyon ng Dispatch' : 'Pending Verification & Dispatch Triage')}
-                        {report.status === 'Accepted' &&
-                          (language === 'fil' ? `Tinanggap ng ${report.selectedAgency} Command` : `Accepted by ${report.selectedAgency} Command`)}
-                        {report.status === 'Ongoing' &&
-                          (language === 'fil' ? `Kasalukuyang Nirerespondehan ng ${report.selectedAgency}` : `Field Response Ongoing by ${report.selectedAgency}`)}
-                        {report.status === 'Resolved' &&
-                          (language === 'fil' ? 'Naresolba at Ligtas na Naisaayos' : 'Incident Resolved & Field Verified')}
-                        {report.status === 'Rejected' &&
-                          (language === 'fil' ? 'Ulat ay Na-archive / Hindi Na-verify' : 'Report Archived / Unverified')}
-                      </h4>
-                    </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <span
-                    className={`self-start sm:self-center text-xs font-black px-3.5 py-1.5 rounded-full border shadow-xs ${
-                      report.status === 'Resolved'
-                        ? 'bg-emerald-600 text-white border-emerald-500'
-                        : report.status === 'Ongoing'
-                        ? 'bg-orange-500 text-white border-orange-400'
-                        : report.status === 'Accepted'
-                        ? 'bg-blue-600 text-white border-blue-500'
-                        : report.status === 'Rejected'
-                        ? 'bg-rose-600 text-white border-rose-500'
-                        : 'bg-amber-500 text-white border-amber-400'
-                    }`}
-                  >
-                    {t[report.status] || report.status}
-                  </span>
-                </div>
-
-                {/* Explanatory Message for Citizen */}
-                <p className="text-xs sm:text-sm leading-relaxed font-semibold text-slate-800 mt-2.5 pt-2.5 border-t border-slate-200/60">
-                  {report.status === 'Pending Verification' &&
-                    (language === 'fil'
-                      ? 'Natanggap na ng central 911 dispatch queue ang iyong ulat. Sinusuri ng duty officer ang iyong lokasyon para sa pagtatalaga ng pinakamalapit na patrol o emergency responder.'
-                      : 'Your emergency report has been received in the central 911 queue. Officers are verifying your location coordinates to assign the nearest field unit.')}
-                  {report.status === 'Accepted' &&
-                    (language === 'fil'
-                      ? `Kinumpirma ng ${report.selectedAgency} ang iyong ulat. Inihahanda na ang kaukulang kagamitan at mga tauhan para sa mabilisang deployment sa iyong lokasyon.`
-                      : `${report.selectedAgency} has verified and accepted your report. The designated emergency response team is preparing for rapid deployment to your location.`)}
-                  {report.status === 'Ongoing' &&
-                    (language === 'fil'
-                      ? `Kasalukuyang rumeresponde ang mga tauhan ng ${report.selectedAgency} sa iniulat na lokasyon sa ${report.barangay}. Mangyaring manatili sa ligtas na lugar at panatilihing bukas ang inyong telepono (${report.residentPhone}).`
-                      : `Emergency personnel and vehicles from ${report.selectedAgency} are actively responding on scene at ${report.barangay}. Please remain in a safe location and keep your phone line (${report.residentPhone}) reachable.`)}
-                  {report.status === 'Resolved' &&
-                    (language === 'fil'
-                      ? `Matagumpay na naresolba ng mga rumespondeng tauhan ang insidenteng ito noong ${new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Maraming salamat sa iyong pagiging mapagmatyag na mamamayan.`
-                      : `The field response has concluded and the incident was officially verified resolved at ${new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Thank you for your alert and community vigilance.`)}
-                  {report.status === 'Rejected' &&
-                    (language === 'fil'
-                      ? `Dokumentadong dahilan ng Dispatcher: "${report.rejection?.reason || 'Minarkahan bilang hindi kwalipikado o false alarm.'}"`
-                      : `Dispatcher Justification: "${report.rejection?.reason || 'Marked as unverified or false alarm.'}"`)}
-                </p>
-
-                {/* 4-Stage Dispatch Pipeline Visualizer (if not rejected) */}
-                {report.status !== 'Rejected' && (
-                  <div className="pt-3 mt-3 border-t border-slate-200/60">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">
-                      {language === 'fil' ? 'Progreso ng Operasyon' : 'Dispatch Response Pipeline'}
-                    </span>
-                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-center">
-                      {/* Step 1: Submitted */}
-                      <div className="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 text-emerald-700 flex flex-col items-center gap-0.5 shadow-2xs">
-                        <span className="text-[10px] sm:text-xs text-emerald-600 font-mono">1. Sent</span>
-                        <span className="truncate">✓ {language === 'fil' ? 'Naipadala' : 'Submitted'}</span>
-                      </div>
-
-                      {/* Step 2: Accepted */}
-                      <div
-                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
-                          report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved'
-                            ? 'bg-white border-blue-200 text-blue-700'
-                            : 'bg-slate-100/60 border-slate-200 text-slate-400'
-                        }`}
-                      >
-                        <span className="text-[10px] sm:text-xs font-mono opacity-75">2. Verified</span>
-                        <span className="truncate">
-                          {report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved' ? '✓ ' : ''}
-                          {language === 'fil' ? 'Tinanggap' : 'Accepted'}
-                        </span>
-                      </div>
-
-                      {/* Step 3: Ongoing */}
-                      <div
-                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
-                          report.status === 'Ongoing' || report.status === 'Resolved'
-                            ? 'bg-white border-orange-200 text-orange-700'
-                            : 'bg-slate-100/60 border-slate-200 text-slate-400'
-                        }`}
-                      >
-                        <span className="text-[10px] sm:text-xs font-mono opacity-75">3. En Route</span>
-                        <span className="truncate">
-                          {report.status === 'Ongoing' || report.status === 'Resolved' ? '✓ ' : ''}
-                          {language === 'fil' ? 'Rumeresponde' : 'Ongoing'}
-                        </span>
-                      </div>
-
-                      {/* Step 4: Resolved */}
-                      <div
-                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center gap-0.5 shadow-2xs ${
-                          report.status === 'Resolved'
-                            ? 'bg-white border-emerald-200 text-emerald-700'
-                            : 'bg-slate-100/60 border-slate-200 text-slate-400'
-                        }`}
-                      >
-                        <span className="text-[10px] sm:text-xs font-mono opacity-75">4. Cleared</span>
-                        <span className="truncate">
-                          {report.status === 'Resolved' ? '✓ ' : ''}
-                          {language === 'fil' ? 'Naresolba' : 'Resolved'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+            /* Citizen / Resident View: Compact Sticky Action Footer */
+            <div className="pt-3.5 mt-2 border-t border-slate-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-700 font-semibold truncate">
+                <AgencyLogo agency={report.selectedAgency} className="w-5 h-5 object-contain shrink-0" />
+                <span className="truncate">
+                  {language === 'fil'
+                    ? `Nakatakdang Ahensya: ${report.selectedAgency} (${agencyInfo?.fullNameFil})`
+                    : `Assigned Agency: ${report.selectedAgency} (${agencyInfo?.fullNameEn})`}
+                </span>
               </div>
 
-              {/* Citizen Hotline Speed Dial & Close Action */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-700 font-semibold">
-                  <AgencyLogo agency={report.selectedAgency} className="w-5 h-5 object-contain shrink-0" />
-                  <span>
-                    {language === 'fil'
-                      ? `Nakatakdang Ahensya: ${report.selectedAgency} (${agencyInfo?.fullNameFil})`
-                      : `Assigned Agency: ${report.selectedAgency} (${agencyInfo?.fullNameEn})`}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  {agencyInfo?.hotline && (
-                    <a
-                      href={`tel:${agencyInfo.hotline.replace(/[^\d+]/g, '') || '911'}`}
-                      className="px-4 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs sm:text-sm font-bold flex items-center gap-2 transition shadow-2xs min-h-[40px]"
-                      title={`Direct call ${report.selectedAgency} emergency hotline`}
-                    >
-                      <Phone className="w-4 h-4" />
-                      <span>Call {report.selectedAgency} Hotline</span>
-                    </a>
-                  )}
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer min-h-[40px]"
+              <div className="flex items-center gap-2 shrink-0">
+                {agencyInfo?.hotline && (
+                  <a
+                    href={`tel:${agencyInfo.hotline.replace(/[^\d+]/g, '') || '911'}`}
+                    className="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs sm:text-sm font-bold flex items-center gap-2 transition shadow-2xs min-h-[38px]"
+                    title={`Direct call ${report.selectedAgency} emergency hotline`}
                   >
-                    {language === 'fil' ? 'Isara' : 'Close Details'}
-                  </button>
-                </div>
+                    <Phone className="w-4 h-4" />
+                    <span>Call {report.selectedAgency} Hotline</span>
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer min-h-[38px]"
+                >
+                  {language === 'fil' ? 'Isara' : 'Close Details'}
+                </button>
               </div>
             </div>
           )}

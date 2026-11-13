@@ -166,6 +166,7 @@ export interface UserProfile {
   isVerifiedIdentity?: boolean;
   authProvider?: 'google' | 'password' | 'demo';
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export type TimeFilterPeriod = 'all' | 'daily' | 'weekly' | 'monthly' | 'yearly';
