@@ -50,6 +50,7 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
     language,
     setLanguage,
     setActiveRole,
+    setPortalMode,
     firebaseUser,
     triggerSuccessModal,
   } = useNexus();
@@ -208,6 +209,10 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
   };
 
   const handleLogout = async () => {
+    try {
+      localStorage.setItem('nexus_portal_mode', 'landing');
+    } catch {}
+    setPortalMode('landing');
     try {
       await firebaseSignOut(auth);
     } catch (err) {

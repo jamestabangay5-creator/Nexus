@@ -26,7 +26,9 @@ import {
   AlertOctagon,
   History,
   RotateCcw,
-  Lock
+  Lock,
+  ExternalLink,
+  Maximize2
 } from 'lucide-react';
 
 interface Props {
@@ -269,13 +271,13 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
               </div>
             )}
 
-            {/* Evidence Image with Resilient Fallback */}
+            {/* Evidence Image with Resilient Fallback & Full Proportional Fit */}
             {report.photoUrl && (
-              <div className="rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-100 shadow-sm">
+              <div className="rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-950/95 shadow-md flex flex-col items-center justify-center relative group">
                 <img
                   src={report.photoUrl}
                   alt="Incident evidence"
-                  className="w-full max-h-64 object-cover"
+                  className="w-full max-h-80 sm:max-h-[380px] object-contain mx-auto"
                   onError={(e) => {
                     const target = e.currentTarget;
                     const fallbackUrl = 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80';
@@ -286,15 +288,28 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                       const parent = target.parentElement;
                       if (parent && !parent.querySelector('.evidence-fallback')) {
                         const fallback = document.createElement('div');
-                        fallback.className = 'evidence-fallback flex flex-col items-center justify-center p-6 bg-slate-100 text-slate-500 text-xs h-40';
-                        fallback.innerHTML = '<span class="font-bold text-slate-700">Evidence Record Captured</span><span class="text-[10px] text-slate-400 mt-1">Verified Digital Image on File in Central Incident Registry</span>';
+                        fallback.className = 'evidence-fallback flex flex-col items-center justify-center p-6 bg-slate-900 text-slate-400 text-xs sm:text-sm h-40';
+                        fallback.innerHTML = '<span class="font-bold text-slate-200">Evidence Record Captured</span><span class="text-xs text-slate-400 mt-1">Verified Digital Image on File in Central Incident Registry</span>';
                         parent.prepend(fallback);
                       }
                     }
                   }}
                 />
+
+                {/* 1-Click Open Full Resolution Evidence Image */}
+                <a
+                  href={report.photoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-slate-900/85 hover:bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 backdrop-blur-md opacity-90 sm:opacity-0 group-hover:opacity-100 transition shadow-md border border-white/10"
+                  title="Open full resolution evidence photo in new tab"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>View Full Photo</span>
+                </a>
+
                 {report.photoCaption && (
-                  <div className="p-2.5 text-xs text-slate-600 bg-white/90 border-t border-slate-200/80">
+                  <div className="w-full p-2.5 sm:p-3 text-xs sm:text-sm text-slate-300 bg-slate-900/90 border-t border-slate-800/80 font-medium">
                     Evidence Note: {report.photoCaption}
                   </div>
                 )}

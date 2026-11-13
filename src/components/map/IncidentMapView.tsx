@@ -1219,13 +1219,13 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                     </span>
                   </div>
 
-                  {/* Evidence Photo */}
+                  {/* Evidence Photo - Fully Fitted & Non-Cropped */}
                   {selectedReport.photoUrl && (
-                    <div className="relative rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-100">
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-950 flex flex-col items-center justify-center">
                       <img
                         src={selectedReport.photoUrl}
                         alt="Incident Evidence"
-                        className="w-full h-32 object-cover"
+                        className="w-full max-h-48 sm:max-h-56 object-contain mx-auto"
                         onError={(e) => {
                           const target = e.currentTarget;
                           const fallbackUrl = 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80';
@@ -1236,15 +1236,15 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                             const parent = target.parentElement;
                             if (parent && !parent.querySelector('.evidence-fallback')) {
                               const fallback = document.createElement('div');
-                              fallback.className = 'evidence-fallback flex flex-col items-center justify-center p-4 bg-slate-100 text-slate-500 text-xs h-32';
-                              fallback.innerHTML = '<span class="font-bold text-slate-700">Evidence Record Captured</span><span class="text-[10px] text-slate-400 mt-1">Verified Digital Image on File</span>';
+                              fallback.className = 'evidence-fallback flex flex-col items-center justify-center p-4 bg-slate-900 text-slate-400 text-xs h-32';
+                              fallback.innerHTML = '<span class="font-bold text-slate-200">Evidence Record Captured</span><span class="text-[10px] text-slate-400 mt-1">Verified Digital Image on File</span>';
                               parent.prepend(fallback);
                             }
                           }
                         }}
                       />
                       {selectedReport.photoCaption && (
-                        <div className="p-2 text-[10px] text-slate-600 bg-white/90 truncate border-t border-slate-200">
+                        <div className="w-full p-2 text-xs text-slate-300 bg-slate-900/90 truncate border-t border-slate-800">
                           {selectedReport.photoCaption}
                         </div>
                       )}

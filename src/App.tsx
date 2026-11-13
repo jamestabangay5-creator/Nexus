@@ -17,6 +17,7 @@ import { ActionSuccessModal } from './components/common/ActionSuccessModal';
 import { AGENCY_DETAILS } from './constants/incidentData';
 import { AgencyLogo } from './components/common/AgencyLogo';
 import { TRANSLATIONS } from './constants/translations';
+import { auth } from './lib/firebase';
 import {
   ShieldAlert,
   Flame,
@@ -44,6 +45,7 @@ const AppContent: React.FC = () => {
     closeAgencyProfileModal,
     openAgencyProfileModal,
     firebaseUser,
+    residentUser,
     agencyUser,
     isAgencyAuthenticated,
   } = useNexus();
@@ -117,7 +119,7 @@ const AppContent: React.FC = () => {
             onSelectReport={(id) => setSelectedReportId(id)}
           />
         ) : portalMode === 'resident' ? (
-          firebaseUser ? (
+          (firebaseUser || auth.currentUser || residentUser?.isVerifiedIdentity) ? (
             <ResidentPortal
               selectedReportId={selectedReportId}
               onSelectReport={(id) => setSelectedReportId(id)}

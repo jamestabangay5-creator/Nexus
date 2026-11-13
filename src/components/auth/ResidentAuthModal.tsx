@@ -217,10 +217,13 @@ export const ResidentAuthModal: React.FC<Props> = ({
       setResidentUser(profileData);
       setPortalMode('resident');
       setActiveRole('resident');
-      setSuccessMsg('Signed in with Google successfully! Opening Resident Portal...');
+      try {
+        localStorage.setItem('nexus_portal_mode', 'resident');
+      } catch {}
+      setSuccessMsg('Signed in with Google successfully! Redirecting to Resident Dashboard...');
       setTimeout(() => {
         onClose();
-      }, 700);
+      }, 500);
     } catch (err: any) {
       console.error('Google Sign-In Error:', err);
       if (err.code === 'auth/popup-closed-by-user') {
@@ -395,16 +398,19 @@ export const ResidentAuthModal: React.FC<Props> = ({
       setResidentUser(citizenProfile);
       setPortalMode('resident');
       setActiveRole('resident');
-      setSuccessMsg(`Welcome, ${citizenProfile.name}! Opening Resident Citizen Portal...`);
+      try {
+        localStorage.setItem('nexus_portal_mode', 'resident');
+      } catch {}
+      setSuccessMsg(`Welcome, ${citizenProfile.name}! Redirecting to Resident Dashboard...`);
       triggerSuccessModal({
         title: 'Welcome Back, Citizen!',
-        message: `Signed in as ${citizenProfile.name}. Resident emergency portal is ready.`,
+        message: `Signed in as ${citizenProfile.name}. Redirecting directly to your resident dashboard.`,
         statusBadge: 'Citizen Verified',
         actionType: 'auth'
       });
       setTimeout(() => {
         onClose();
-      }, 700);
+      }, 500);
     } catch (err: any) {
       console.error('Email Login Error:', err);
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
@@ -491,17 +497,20 @@ export const ResidentAuthModal: React.FC<Props> = ({
       setResidentUser(profileData);
       setPortalMode('resident');
       setActiveRole('resident');
-      setSuccessMsg('Citizen account registered successfully! Opening Resident Portal...');
+      try {
+        localStorage.setItem('nexus_portal_mode', 'resident');
+      } catch {}
+      setSuccessMsg('Citizen account registered successfully! Redirecting to Resident Dashboard...');
       triggerSuccessModal({
         title: 'Citizen Account Registered Successfully!',
-        message: `Welcome, ${profileData.name}! Your verified citizen profile is ready.`,
+        message: `Welcome, ${profileData.name}! Your verified citizen profile is ready. Redirecting directly to your dashboard.`,
         statusBadge: 'Citizen Registered',
         actionType: 'auth',
         details: `Registered location: ${barangay}, ${municipality}, Oriental Mindoro.`
       });
       setTimeout(() => {
         onClose();
-      }, 800);
+      }, 500);
     } catch (err: any) {
       console.error('Registration Error:', err);
       if (err.code === 'auth/email-already-in-use') {

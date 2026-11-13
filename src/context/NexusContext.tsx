@@ -269,6 +269,19 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [portalMode, setPortalMode] = useState<PortalMode>(() => {
     try {
+      const savedMode = localStorage.getItem('nexus_portal_mode') as PortalMode;
+      if (savedMode === 'resident' || savedMode === 'agency' || savedMode === 'landing') {
+        const savedAgency = localStorage.getItem(AGENCY_STORAGE_KEY);
+        if (savedMode === 'agency' && savedAgency) {
+          const parsed = JSON.parse(savedAgency);
+          if (parsed?.agency && isEmailOfficialAgency(parsed?.email)) {
+            return 'agency';
+          }
+        }
+        if (savedMode === 'resident') {
+          return 'resident';
+        }
+      }
       const savedAgency = localStorage.getItem(AGENCY_STORAGE_KEY);
       if (savedAgency) {
         const parsed = JSON.parse(savedAgency);
@@ -488,6 +501,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const agencyLogout = () => {
     try {
       localStorage.removeItem(AGENCY_STORAGE_KEY);
+      localStorage.setItem('nexus_portal_mode', 'landing');
     } catch {}
     setAgencyUser(null);
     setIsAgencyAuthenticated(false);
@@ -498,15 +512,18 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Safe portal mode switcher
   const handleSetPortalMode = (mode: PortalMode) => {
-    if (mode === 'resident' && !firebaseUser) {
+    if (mode === 'resident' && !firebaseUser && !auth.currentUser && !residentUser?.isVerifiedIdentity) {
       openAuthModal('login');
       return;
     }
-    if (mode === 'agency' && !isAgencyAuthenticated && firebaseUser?.email?.toLowerCase() !== 'systemadmin@nexus.gov.ph') {
+    if (mode === 'agency' && !isAgencyAuthenticated && !agencyUser && firebaseUser?.email?.toLowerCase() !== 'systemadmin@nexus.gov.ph') {
       openAuthModal('login');
       return;
     }
     setPortalMode(mode);
+    try {
+      localStorage.setItem('nexus_portal_mode', mode);
+    } catch {}
     if (mode === 'resident' || mode === 'landing') {
       setActiveRole('resident');
     } else if (mode === 'agency' && agencyUser) {
@@ -861,6 +878,14 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try {
           localStorage.removeItem(AGENCY_STORAGE_KEY);
         } catch {}
+
+        // Automatically activate Resident Portal Mode immediately upon citizen login
+        setPortalMode('resident');
+        setActiveRole('resident');
+        try {
+          localStorage.setItem('nexus_portal_mode', 'resident');
+        } catch {}
+
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const docSnap = await getDoc(userDocRef);
@@ -915,14 +940,15 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               persistUserAvatar(user.uid, user.email || '', finalAvatar);
             }
           }
-          setPortalMode('resident');
-          setActiveRole('resident');
         } catch (err) {
           console.warn('Firebase user profile retrieval warning:', err);
         }
       } else {
         setFirebaseUser(null);
         setPortalMode((prev) => (prev === 'resident' ? 'landing' : prev));
+        try {
+          localStorage.setItem('nexus_portal_mode', 'landing');
+        } catch {}
       }
     });
 

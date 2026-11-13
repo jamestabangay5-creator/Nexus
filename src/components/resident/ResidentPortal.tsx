@@ -845,11 +845,11 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
               {/* Photo preview if present */}
               {photoUrl && (
-                <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-white max-w-sm shadow-md">
+                <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-950/95 max-w-sm shadow-md flex flex-col items-center justify-center">
                   <img
                     src={photoUrl}
                     alt="Uploaded evidence"
-                    className="w-full h-44 object-cover"
+                    className="w-full max-h-60 object-contain mx-auto"
                   />
                   <button
                     type="button"
@@ -857,12 +857,12 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                       setPhotoUrl('');
                       setPhotoCaption('');
                     }}
-                    className="absolute top-2 right-2 bg-slate-900/90 text-white hover:bg-slate-900 px-2.5 py-1 rounded-lg text-[10px] font-bold shadow"
+                    className="absolute top-2 right-2 bg-slate-900/90 text-white hover:bg-slate-900 px-2.5 py-1 rounded-lg text-xs font-bold shadow transition cursor-pointer"
                   >
                     Remove
                   </button>
                   {photoCaption && (
-                    <div className="p-2 text-[10px] text-slate-700 bg-white border-t border-slate-100 truncate font-medium">
+                    <div className="w-full p-2 text-xs text-slate-300 bg-slate-900/90 border-t border-slate-800 truncate font-medium">
                       {photoCaption}
                     </div>
                   )}
