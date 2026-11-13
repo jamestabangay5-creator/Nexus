@@ -98,6 +98,32 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
   // Fallback internal dossier modal state if parent didn't pass onSelectReport
   const [internalDossierReportId, setInternalDossierReportId] = useState<string | null>(null);
 
+  // Auto-fit initial flag
+  const hasAutoFittedInitial = useRef(false);
+
+  // Calculate incident counts per color category for UI badges
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      ALL: 0,
+      RED: 0,
+      ORANGE: 0,
+      YELLOW: 0,
+      GREEN: 0,
+      BLUE: 0,
+      WHITE: 0,
+    };
+    reports.forEach((r) => {
+      if (!includeRejected && r.status === 'Rejected') return;
+      counts.ALL += 1;
+      if (counts[r.category] !== undefined) {
+        counts[r.category] += 1;
+      } else {
+        counts.WHITE += 1;
+      }
+    });
+    return counts;
+  }, [reports, includeRejected]);
+
   const handleInspectDossier = (reportId: string) => {
     setSelectedReportId(reportId);
     setSilencedReportId(null);
@@ -217,8 +243,8 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
-        center: [13.4115, 121.1803],
-        zoom: 12,
+        center: [13.05, 121.3],
+        zoom: 9,
         zoomControl: false,
         attributionControl: false,
       });
@@ -536,11 +562,17 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
     map.on('move', renderHeatmap);
     map.on('zoom', renderHeatmap);
     map.on('resize', renderHeatmap);
+    map.on('moveend', renderHeatmap);
+    map.on('zoomend', renderHeatmap);
+    map.on('viewreset', renderHeatmap);
 
     return () => {
       map.off('move', renderHeatmap);
       map.off('zoom', renderHeatmap);
       map.off('resize', renderHeatmap);
+      map.off('moveend', renderHeatmap);
+      map.off('zoomend', renderHeatmap);
+      map.off('viewreset', renderHeatmap);
     };
   }, [filteredReports, showHeatmap, heatIntensity]);
 
@@ -550,8 +582,8 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
     setSilencedReportId(null);
     setActiveSideTab('details');
     if (mapInstanceRef.current) {
-      const lat = typeof rep.coordinates?.lat === 'number' ? rep.coordinates.lat : 13.4115;
-      const lng = typeof rep.coordinates?.lng === 'number' ? rep.coordinates.lng : 121.1803;
+      const lat = typeof rep.coordinates?.lat === 'number' ? rep.coordinates.lat : 13.05;
+      const lng = typeof rep.coordinates?.lng === 'number' ? rep.coordinates.lng : 121.3;
       mapInstanceRef.current.setView([lat, lng], 15, {
         animate: true,
       });
@@ -562,6 +594,92 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       }
     }
   };
+
+  // Auto-fit map bounds or flyTo matching reports whenever a category or filter is selected
+  const fitMapToReports = (reportsToFit: IncidentReport[], targetCategory?: string) => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Filter to reports with valid numeric coordinates
+    const validCoords: [number, number][] = reportsToFit
+      .map((r) => {
+        const lat = typeof r.coordinates?.lat === 'number' ? r.coordinates.lat : null;
+        const lng = typeof r.coordinates?.lng === 'number' ? r.coordinates.lng : null;
+        if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+          return [lat, lng] as [number, number];
+        }
+        return null;
+      })
+      .filter((c): c is [number, number] => c !== null);
+
+    if (validCoords.length === 0) {
+      // If no matching reports exist, smooth fly to provincial view of Oriental Mindoro
+      map.flyTo([13.05, 121.3], 9, { animate: true, duration: 0.8 });
+      return;
+    }
+
+    if (validCoords.length === 1) {
+      // Exactly 1 incident: fly directly to it and automatically open its popup
+      const targetReport = reportsToFit[0];
+      map.flyTo(validCoords[0], 14, { animate: true, duration: 0.8 });
+      setSelectedReportId(targetReport.id);
+      setActiveSideTab('details');
+
+      setTimeout(() => {
+        const marker = markerObjMapRef.current.get(targetReport.id);
+        if (marker) {
+          marker.openPopup();
+        }
+      }, 500);
+    } else {
+      // Multiple incidents: fit map bounds so all matching reports and their heatmaps are in view
+      const bounds = L.latLngBounds(validCoords);
+      map.fitBounds(bounds, {
+        padding: [60, 60],
+        maxZoom: 14,
+        animate: true,
+        duration: 0.8,
+      });
+    }
+  };
+
+  // Handler for category selection (from pills, dropdown, or hierarchy cards)
+  const handleCategorySelect = (category: string) => {
+    const targetCategory = selectedCategory === category && category !== 'ALL' ? 'ALL' : category;
+    setSelectedCategory(targetCategory);
+
+    // Compute matching reports for bounds fitting
+    const matching = reports.filter((r) => {
+      if (!includeRejected && r.status === 'Rejected') return false;
+      if (targetCategory !== 'ALL' && r.category !== targetCategory) return false;
+      if (selectedMunicipality !== 'ALL' && (r.municipality || 'Calapan City') !== selectedMunicipality) return false;
+      if (selectedBarangay !== 'ALL' && r.barangay !== selectedBarangay) return false;
+      if (selectedStatus !== 'ALL' && r.status !== selectedStatus) return false;
+      if (dateFilter !== 'ALL') {
+        const now = Date.now();
+        const repTime = new Date(r.createdAt).getTime();
+        const diffHours = (now - repTime) / (1000 * 60 * 60);
+        if (dateFilter === '24h' && diffHours > 24) return false;
+        if (dateFilter === '7d' && diffHours > 24 * 7) return false;
+        if (dateFilter === '30d' && diffHours > 24 * 30) return false;
+      }
+      return true;
+    });
+
+    fitMapToReports(matching, targetCategory);
+  };
+
+  // Initial auto-fit: frame existing active reports if any exist across the province
+  useEffect(() => {
+    if (!mapInstanceRef.current || reports.length === 0 || hasAutoFittedInitial.current) return;
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current && reports.length > 0) {
+        fitMapToReports(filteredReports);
+        hasAutoFittedInitial.current = true;
+      }
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [reports.length]);
 
   const renderCategoryPills = (isMobile: boolean) => (
     <div
@@ -580,105 +698,126 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       {/* All Category Pill */}
       <button
         type="button"
-        onClick={() => setSelectedCategory('ALL')}
-        className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition cursor-pointer shrink-0 ${
+        onClick={() => handleCategorySelect('ALL')}
+        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold transition cursor-pointer shrink-0 ${
           selectedCategory === 'ALL'
             ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-500'
             : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
         }`}
-        title="Show all incident categories"
+        title="Show all incident categories and frame all reports"
       >
-        All
+        <span>All</span>
+        <span className={`text-[9px] px-1.5 py-0.2 rounded-full ${selectedCategory === 'ALL' ? 'bg-white/25 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
+          {categoryCounts.ALL}
+        </span>
       </button>
 
       {/* RED */}
       <button
         type="button"
-        onClick={() => setSelectedCategory(selectedCategory === 'RED' ? 'ALL' : 'RED')}
-        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+        onClick={() => handleCategorySelect('RED')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
           selectedCategory === 'RED'
             ? 'bg-red-600 text-white shadow-sm ring-1 ring-red-400'
             : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
         }`}
-        title="RED: Critical Safety Emergencies (Click to filter)"
+        title="RED: Critical Safety Emergencies (Click to filter and auto-frame)"
       >
         <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
         <span className="whitespace-nowrap">Critical</span>
+        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-extrabold ${selectedCategory === 'RED' ? 'bg-white/25 text-white' : 'bg-red-200 text-red-800'}`}>
+          {categoryCounts.RED}
+        </span>
       </button>
 
       {/* ORANGE */}
       <button
         type="button"
-        onClick={() => setSelectedCategory(selectedCategory === 'ORANGE' ? 'ALL' : 'ORANGE')}
-        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+        onClick={() => handleCategorySelect('ORANGE')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
           selectedCategory === 'ORANGE'
             ? 'bg-orange-500 text-white shadow-sm ring-1 ring-orange-400'
             : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
         }`}
-        title="ORANGE: Accidents, Rescue & Medical (Click to filter)"
+        title="ORANGE: Accidents, Rescue & Medical (Click to filter and auto-frame)"
       >
         <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
         <span className="whitespace-nowrap">Accidents</span>
+        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-extrabold ${selectedCategory === 'ORANGE' ? 'bg-white/25 text-white' : 'bg-orange-200 text-orange-800'}`}>
+          {categoryCounts.ORANGE}
+        </span>
       </button>
 
       {/* YELLOW */}
       <button
         type="button"
-        onClick={() => setSelectedCategory(selectedCategory === 'YELLOW' ? 'ALL' : 'YELLOW')}
-        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+        onClick={() => handleCategorySelect('YELLOW')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
           selectedCategory === 'YELLOW'
             ? 'bg-yellow-500 text-slate-900 font-black shadow-sm ring-1 ring-yellow-400'
             : 'bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-100'
         }`}
-        title="YELLOW: Suspected Criminal Activities (Click to filter)"
+        title="YELLOW: Suspected Criminal Activities (Click to filter and auto-frame)"
       >
         <span className="w-2 h-2 rounded-full bg-yellow-500 shrink-0" />
         <span className="whitespace-nowrap">Crime</span>
+        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${selectedCategory === 'YELLOW' ? 'bg-black/20 text-slate-950' : 'bg-yellow-200 text-yellow-900'}`}>
+          {categoryCounts.YELLOW}
+        </span>
       </button>
 
       {/* GREEN */}
       <button
         type="button"
-        onClick={() => setSelectedCategory(selectedCategory === 'GREEN' ? 'ALL' : 'GREEN')}
-        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+        onClick={() => handleCategorySelect('GREEN')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
           selectedCategory === 'GREEN'
             ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
             : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
         }`}
-        title="GREEN: Community & Personal Safety (Click to filter)"
+        title="GREEN: Community & Personal Safety (Click to filter and auto-frame)"
       >
         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
         <span className="whitespace-nowrap">Safety</span>
+        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-extrabold ${selectedCategory === 'GREEN' ? 'bg-white/25 text-white' : 'bg-emerald-200 text-emerald-800'}`}>
+          {categoryCounts.GREEN}
+        </span>
       </button>
 
       {/* BLUE */}
       <button
         type="button"
-        onClick={() => setSelectedCategory(selectedCategory === 'BLUE' ? 'ALL' : 'BLUE')}
-        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+        onClick={() => handleCategorySelect('BLUE')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
           selectedCategory === 'BLUE'
             ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
             : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
         }`}
-        title="BLUE: Public Complaints & Online (Click to filter)"
+        title="BLUE: Public Complaints & Online (Click to filter and auto-frame)"
       >
         <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
         <span className="whitespace-nowrap">Online</span>
+        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-extrabold ${selectedCategory === 'BLUE' ? 'bg-white/25 text-white' : 'bg-blue-200 text-blue-800'}`}>
+          {categoryCounts.BLUE}
+        </span>
       </button>
 
       {/* WHITE */}
       <button
         type="button"
-        onClick={() => setSelectedCategory(selectedCategory === 'WHITE' ? 'ALL' : 'WHITE')}
-        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
+        onClick={() => handleCategorySelect('WHITE')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold cursor-pointer transition shrink-0 ${
           selectedCategory === 'WHITE'
             ? 'bg-slate-700 text-white font-bold shadow-sm'
             : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
         }`}
-        title="WHITE: Other / Unclassified Incidents (Click to filter)"
+        title="WHITE: Other / Unclassified Incidents (Click to filter and auto-frame)"
       >
         <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
         <span className="whitespace-nowrap">Other</span>
+        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-extrabold ${selectedCategory === 'WHITE' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-800'}`}>
+          {categoryCounts.WHITE}
+        </span>
       </button>
     </div>
   );
@@ -716,12 +855,13 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
             <button
               onClick={() => {
-                mapInstanceRef.current?.setView([13.4115, 121.1803], 12, { animate: true });
+                setSelectedCategory('ALL');
                 setSelectedMunicipality('ALL');
                 setSelectedBarangay('ALL');
+                fitMapToReports(reports);
               }}
               className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl font-bold flex items-center gap-1.5 transition cursor-pointer"
-              title="Reset map view to Oriental Mindoro center"
+              title="Reset map view and frame all incidents across Oriental Mindoro"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Center</span>
@@ -747,16 +887,16 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             {/* Category Filter */}
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => handleCategorySelect(e.target.value)}
               className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
             >
-              <option value="ALL">All Categories (6 Colors)</option>
-              <option value="RED">RED — Critical Safety</option>
-              <option value="ORANGE">ORANGE — Accidents & Emergencies</option>
-              <option value="YELLOW">YELLOW — Suspected Criminal</option>
-              <option value="GREEN">GREEN — Community Concerns</option>
-              <option value="BLUE">BLUE — Online & Complaints</option>
-              <option value="WHITE">WHITE — Other</option>
+              <option value="ALL">All Categories ({categoryCounts.ALL})</option>
+              <option value="RED">RED — Critical Safety ({categoryCounts.RED})</option>
+              <option value="ORANGE">ORANGE — Accidents & Emergencies ({categoryCounts.ORANGE})</option>
+              <option value="YELLOW">YELLOW — Suspected Criminal ({categoryCounts.YELLOW})</option>
+              <option value="GREEN">GREEN — Community Concerns ({categoryCounts.GREEN})</option>
+              <option value="BLUE">BLUE — Online & Complaints ({categoryCounts.BLUE})</option>
+              <option value="WHITE">WHITE — Other ({categoryCounts.WHITE})</option>
             </select>
 
             {/* Oriental Mindoro Municipality Filter */}
@@ -980,6 +1120,33 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
           {/* Desktop Floating Category Filter Bar (Only shown on large desktop screens) */}
           {renderCategoryPills(false)}
+
+          {/* Active Category Auto-Frame Badge on Desktop/Tablet Map */}
+          {selectedCategory !== 'ALL' && (
+            <div className="hidden sm:flex absolute top-14 left-3 z-20 items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200/90 shadow-md text-xs font-bold text-slate-800 animate-fadeIn">
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor:
+                    selectedCategory === 'RED' ? '#ef4444' :
+                    selectedCategory === 'ORANGE' ? '#f97316' :
+                    selectedCategory === 'YELLOW' ? '#eab308' :
+                    selectedCategory === 'GREEN' ? '#10b981' :
+                    selectedCategory === 'BLUE' ? '#3b82f6' : '#64748b'
+                }}
+              />
+              <span className="font-extrabold text-slate-900">
+                Viewing {selectedCategory}: {filteredReports.length} {filteredReports.length === 1 ? 'Report' : 'Reports'} Auto-Framed
+              </span>
+              <button
+                type="button"
+                onClick={() => handleCategorySelect('ALL')}
+                className="ml-1 text-blue-600 hover:text-blue-800 underline text-[11px] font-bold cursor-pointer"
+              >
+                Show All
+              </button>
+            </div>
+          )}
 
           {/* On-Map Floating Map Layer Switcher */}
           <div className="absolute bottom-3 left-3 z-20 flex items-center bg-white/95 backdrop-blur-md border border-white/80 p-1 rounded-2xl shadow-xl">
@@ -1383,10 +1550,27 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 text-xs">
           {/* RED */}
-          <div className="p-4 rounded-2xl bg-red-50/80 border border-red-200 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500 shadow-sm" />
-              <strong className="text-red-700 font-extrabold">RED — Critical Safety Incidents</strong>
+          <div
+            onClick={() => {
+              handleCategorySelect('RED');
+              mapContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className={`p-4 rounded-2xl border space-y-1.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] ${
+              selectedCategory === 'RED'
+                ? 'bg-red-100/90 border-red-500 ring-2 ring-red-400 shadow-md'
+                : 'bg-red-50/80 border-red-200 hover:border-red-300'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-500 shadow-sm" />
+                <strong className="text-red-700 font-extrabold">RED — Critical Safety Incidents</strong>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                categoryCounts.RED > 0 ? 'bg-red-600 text-white' : 'bg-red-100 text-red-600'
+              }`}>
+                {categoryCounts.RED} Active
+              </span>
             </div>
             <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Suspected Killing — Pinaghihinalaang pagpatay</li>
@@ -1397,10 +1581,27 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* ORANGE */}
-          <div className="p-4 rounded-2xl bg-orange-50/80 border border-orange-200 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-orange-500 shadow-sm" />
-              <strong className="text-orange-700 font-extrabold">ORANGE — Accidents and Emergencies</strong>
+          <div
+            onClick={() => {
+              handleCategorySelect('ORANGE');
+              mapContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className={`p-4 rounded-2xl border space-y-1.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] ${
+              selectedCategory === 'ORANGE'
+                ? 'bg-orange-100/90 border-orange-500 ring-2 ring-orange-400 shadow-md'
+                : 'bg-orange-50/80 border-orange-200 hover:border-orange-300'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-orange-500 shadow-sm" />
+                <strong className="text-orange-700 font-extrabold">ORANGE — Accidents and Emergencies</strong>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                categoryCounts.ORANGE > 0 ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-600'
+              }`}>
+                {categoryCounts.ORANGE} Active
+              </span>
             </div>
             <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Road Accident — Aksidente sa kalsada</li>
@@ -1412,10 +1613,27 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* YELLOW */}
-          <div className="p-4 rounded-2xl bg-yellow-50/80 border border-yellow-200 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-yellow-500 shadow-sm" />
-              <strong className="text-yellow-800 font-extrabold">YELLOW — Suspected Criminal Activities</strong>
+          <div
+            onClick={() => {
+              handleCategorySelect('YELLOW');
+              mapContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className={`p-4 rounded-2xl border space-y-1.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] ${
+              selectedCategory === 'YELLOW'
+                ? 'bg-yellow-100/90 border-yellow-500 ring-2 ring-yellow-400 shadow-md'
+                : 'bg-yellow-50/80 border-yellow-200 hover:border-yellow-300'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-yellow-500 shadow-sm" />
+                <strong className="text-yellow-800 font-extrabold">YELLOW — Suspected Criminal Activities</strong>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                categoryCounts.YELLOW > 0 ? 'bg-yellow-500 text-slate-950 font-black' : 'bg-yellow-100 text-yellow-700'
+              }`}>
+                {categoryCounts.YELLOW} Active
+              </span>
             </div>
             <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Theft / Robbery — Pagnanakaw / Holdup</li>
@@ -1427,10 +1645,27 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* GREEN */}
-          <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm" />
-              <strong className="text-emerald-700 font-extrabold">GREEN — Community & Personal Safety</strong>
+          <div
+            onClick={() => {
+              handleCategorySelect('GREEN');
+              mapContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className={`p-4 rounded-2xl border space-y-1.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] ${
+              selectedCategory === 'GREEN'
+                ? 'bg-emerald-100/90 border-emerald-500 ring-2 ring-emerald-400 shadow-md'
+                : 'bg-emerald-50/80 border-emerald-200 hover:border-emerald-300'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm" />
+                <strong className="text-emerald-700 font-extrabold">GREEN — Community & Personal Safety</strong>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                categoryCounts.GREEN > 0 ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600'
+              }`}>
+                {categoryCounts.GREEN} Active
+              </span>
             </div>
             <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Vandalism / Property Damage — Paninira</li>
@@ -1442,10 +1677,27 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* BLUE */}
-          <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-blue-600 shadow-sm" />
-              <strong className="text-blue-700 font-extrabold">BLUE — Community Complaints & Online</strong>
+          <div
+            onClick={() => {
+              handleCategorySelect('BLUE');
+              mapContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className={`p-4 rounded-2xl border space-y-1.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] ${
+              selectedCategory === 'BLUE'
+                ? 'bg-blue-100/90 border-blue-500 ring-2 ring-blue-400 shadow-md'
+                : 'bg-blue-50/80 border-blue-200 hover:border-blue-300'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-blue-600 shadow-sm" />
+                <strong className="text-blue-700 font-extrabold">BLUE — Community Complaints & Online</strong>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                categoryCounts.BLUE > 0 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+              }`}>
+                {categoryCounts.BLUE} Active
+              </span>
             </div>
             <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Noise Complaint — Reklamo sa ingay</li>
@@ -1456,10 +1708,27 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           </div>
 
           {/* WHITE */}
-          <div className="p-4 rounded-2xl bg-slate-100 border border-slate-200 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-slate-400 shadow-sm" />
-              <strong className="text-slate-700 font-extrabold">WHITE — Other / Unclassified</strong>
+          <div
+            onClick={() => {
+              handleCategorySelect('WHITE');
+              mapContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className={`p-4 rounded-2xl border space-y-1.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] ${
+              selectedCategory === 'WHITE'
+                ? 'bg-slate-200/90 border-slate-500 ring-2 ring-slate-400 shadow-md'
+                : 'bg-slate-100 border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-slate-400 shadow-sm" />
+                <strong className="text-slate-700 font-extrabold">WHITE — Other / Unclassified</strong>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                categoryCounts.WHITE > 0 ? 'bg-slate-600 text-white' : 'bg-slate-200 text-slate-600'
+              }`}>
+                {categoryCounts.WHITE} Active
+              </span>
             </div>
             <ul className="text-[11px] text-slate-600 list-disc list-inside space-y-0.5 font-medium">
               <li>Not Sure / Other — Hindi tiyak / Iba pa</li>
