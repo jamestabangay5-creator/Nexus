@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNexus } from '../context/NexusContext';
 import { TRANSLATIONS } from '../constants/translations';
 import { AGENCY_DETAILS } from '../constants/incidentData';
@@ -67,6 +67,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     adminProfiles,
     agencyDetails,
     markAgencyReportsAsRead,
+    markResidentNotificationsAsRead,
+    markNotificationAsRead,
+    readNotifKeys,
     agencyUser,
     isAgencyAuthenticated,
     openAgencyProfileModal,
@@ -95,13 +98,33 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
   }, [notificationsOpen]);
 
-  // Calculate unread count for current view
-  const unreadCount =
-    portalMode === 'resident'
-      ? reports.filter((r) => r.residentId === residentUser.id && r.status !== 'Pending Verification').length
-      : activeRole === 'CENTRAL'
-      ? reports.filter((r) => r.isUnreadForAgencies.PNP || r.isUnreadForAgencies.BFP || r.isUnreadForAgencies.MDRRMO).length
-      : reports.filter((r) => activeRole !== 'resident' && r.isUnreadForAgencies[activeRole as Agency]).length;
+  // Calculate unread count for current view (dynamically updated and cleared via Mark as read)
+  const unreadCount = useMemo(() => {
+    if (portalMode === 'resident') {
+      return reports.filter((r) => {
+        const isMyReport = r.residentId === residentUser.id || r.residentName === residentUser.name;
+        if (!isMyReport) return false;
+        if (r.isUnreadForResident === false) return false;
+        const notifKey = `${r.id}_${r.status}`;
+        if (readNotifKeys.has(notifKey) || readNotifKeys.has(r.id) || readNotifKeys.has(`${r.id}_resident`)) {
+          return false;
+        }
+        return true;
+      }).length;
+    }
+
+    // Agency mode
+    return reports.filter((r) => {
+      const notifKey = `${r.id}_agency_${activeRole}`;
+      if (readNotifKeys.has(notifKey) || readNotifKeys.has(`${r.id}_agency_ALL`) || readNotifKeys.has(r.id)) {
+        return false;
+      }
+      if (activeRole === 'CENTRAL') {
+        return r.isUnreadForAgencies?.PNP || r.isUnreadForAgencies?.BFP || r.isUnreadForAgencies?.MDRRMO;
+      }
+      return activeRole !== 'resident' && r.isUnreadForAgencies?.[activeRole as Agency];
+    }).length;
+  }, [reports, portalMode, activeRole, residentUser, readNotifKeys]);
 
   const handleSwitchToResident = () => {
     setPortalMode('resident');
@@ -418,11 +441,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button
+                      type="button"
                       onClick={() => {
-                        if (activeRole !== 'resident') {
+                        if (portalMode === 'resident' || activeRole === 'resident') {
+                          markResidentNotificationsAsRead();
+                        } else {
                           markAgencyReportsAsRead(activeRole);
                         }
-                        setNotificationsOpen(false);
                       }}
                       className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition"
                     >
@@ -451,10 +476,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ) : (
                     reports.slice(0, 8).map((rep) => {
                       const isMyReport = rep.residentId === residentUser.id || rep.residentName === residentUser.name;
+                      const notifKey = portalMode === 'resident' ? `${rep.id}_${rep.status}` : `${rep.id}_agency_${activeRole}`;
+                      const isUnread = portalMode === 'resident'
+                        ? (rep.isUnreadForResident !== false && !readNotifKeys.has(notifKey) && !readNotifKeys.has(rep.id) && !readNotifKeys.has(`${rep.id}_resident`))
+                        : (!readNotifKeys.has(notifKey) && !readNotifKeys.has(`${rep.id}_agency_ALL`) && !readNotifKeys.has(rep.id) && (activeRole === 'CENTRAL' ? (rep.isUnreadForAgencies?.PNP || rep.isUnreadForAgencies?.BFP || rep.isUnreadForAgencies?.MDRRMO) : rep.isUnreadForAgencies?.[activeRole as Agency]));
+
                       return (
                         <div
                           key={rep.id}
                           onClick={() => {
+                            markNotificationAsRead(rep.id);
                             setNotificationsOpen(false);
                             if (portalMode === 'resident') {
                               setActiveRole('resident');
@@ -466,11 +497,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                             }
                             onSelectReport?.(rep.id);
                           }}
-                          className="p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-300 transition-all cursor-pointer group shadow-xs space-y-1.5"
+                          className={`p-3 rounded-2xl border transition-all cursor-pointer group shadow-xs space-y-1.5 ${
+                            isUnread
+                              ? 'bg-blue-50/70 hover:bg-blue-100/70 border-blue-200'
+                              : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200/80'
+                          }`}
                           title="Click to view full incident details and response timeline"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5 flex-wrap">
+                              {isUnread && (
+                                <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse shrink-0" title="Unread Update" />
+                              )}
                               <span className="font-mono text-xs text-blue-700 font-black group-hover:text-blue-800">
                                 {rep.trackingCode}
                               </span>

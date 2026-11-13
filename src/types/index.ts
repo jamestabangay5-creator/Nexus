@@ -143,6 +143,7 @@ export interface IncidentReport {
   history: AuditLogEntry[];
   assistanceRequests: AssistanceRequest[];
   isUnreadForAgencies: Record<Agency, boolean>;
+  isUnreadForResident?: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -162,6 +162,9 @@ interface NexusContextType {
   sendAssistanceRequest: (reportId: string, fromAgency: Agency, targetAgencies: Agency[], urgency: 'Routine' | 'Urgent' | 'Critical', note: string, requestedBy: string) => void;
   acknowledgeAssistanceRequest: (reportId: string, requestId: string, agency: Agency, acknowledgedBy: string, actionNote?: string) => void;
   markAgencyReportsAsRead: (agency: AgencyScope) => void;
+  markResidentNotificationsAsRead: (residentId?: string) => void;
+  markNotificationAsRead: (reportId: string) => void;
+  readNotifKeys: Set<string>;
   simulateIncomingIncident: () => void;
   purgeAllSimulatedReports: () => Promise<void>;
   restoreRejectedReport: (reportId: string, adminName: string, agency: AgencyScope) => void;
@@ -172,6 +175,7 @@ const NexusContext = createContext<NexusContextType | undefined>(undefined);
 const STORAGE_KEY = 'nexus_emergency_reports_v3';
 const RESIDENT_STORAGE_KEY = 'nexus_resident_user_v2';
 const AGENCY_STORAGE_KEY = 'nexus_agency_user_v2';
+const READ_NOTIFS_STORAGE_KEY = 'nexus_read_notifications_v2';
 
 const MOCK_SEED_IDS = new Set(['rep-001', 'rep-002', 'rep-003', 'rep-004', 'rep-005', 'rep-006', 'rep-007', 'rep-008', 'res-sim']);
 
@@ -712,6 +716,24 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try { localStorage.setItem('nexus_evac_centers_v1', JSON.stringify(next)); } catch {}
       return next;
     });
+  };
+
+  // Persistent tracking of read notifications so "Mark as read" immediately and permanently clears notification badges
+  const [readNotifKeys, setReadNotifKeys] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(READ_NOTIFS_STORAGE_KEY);
+      if (saved) {
+        return new Set(JSON.parse(saved));
+      }
+    } catch {}
+    return new Set<string>();
+  });
+
+  const persistReadKeys = (newSet: Set<string>) => {
+    setReadNotifKeys(newSet);
+    try {
+      localStorage.setItem(READ_NOTIFS_STORAGE_KEY, JSON.stringify(Array.from(newSet)));
+    } catch {}
   };
 
   const [residentUser, setResidentUser] = useState<UserProfile>(() => {
@@ -1633,6 +1655,16 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const markAgencyReportsAsRead = (agency: AgencyScope) => {
+    const newKeys = new Set(readNotifKeys);
+
+    reports.forEach((rep) => {
+      newKeys.add(`${rep.id}_agency_${agency}`);
+      newKeys.add(`${rep.id}_agency_ALL`);
+      newKeys.add(rep.id);
+    });
+
+    persistReadKeys(newKeys);
+
     setReports((prev) =>
       prev.map((rep) => {
         if (agency === 'CENTRAL') {
@@ -1645,7 +1677,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             },
           };
         }
-        if (!rep.isUnreadForAgencies[agency as Agency]) return rep;
+        if (!rep.isUnreadForAgencies?.[agency as Agency]) return rep;
         return {
           ...rep,
           isUnreadForAgencies: {
@@ -1655,6 +1687,111 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
       })
     );
+
+    // Persist to Firestore asynchronously
+    reports.forEach(async (rep) => {
+      try {
+        const docRef = doc(db, 'reports', rep.id);
+        if (agency === 'CENTRAL') {
+          await updateDoc(docRef, {
+            'isUnreadForAgencies.PNP': false,
+            'isUnreadForAgencies.BFP': false,
+            'isUnreadForAgencies.MDRRMO': false,
+            updatedAt: new Date().toISOString(),
+          });
+        } else {
+          await updateDoc(docRef, {
+            [`isUnreadForAgencies.${agency}`]: false,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      } catch {}
+    });
+  };
+
+  const markResidentNotificationsAsRead = (residentId?: string) => {
+    const targetResId = residentId || residentUser.id;
+    const newKeys = new Set(readNotifKeys);
+
+    reports.forEach((rep) => {
+      const isMyReport = rep.residentId === targetResId || rep.residentName === residentUser.name;
+      if (isMyReport) {
+        newKeys.add(`${rep.id}_${rep.status}`);
+        newKeys.add(rep.id);
+        newKeys.add(`${rep.id}_resident`);
+      }
+    });
+
+    persistReadKeys(newKeys);
+
+    setReports((prev) =>
+      prev.map((rep) => {
+        const isMyReport = rep.residentId === targetResId || rep.residentName === residentUser.name;
+        if (isMyReport) {
+          return { ...rep, isUnreadForResident: false };
+        }
+        return rep;
+      })
+    );
+
+    // Persist to Firestore asynchronously
+    reports.forEach(async (rep) => {
+      const isMyReport = rep.residentId === targetResId || rep.residentName === residentUser.name;
+      if (isMyReport) {
+        try {
+          const docRef = doc(db, 'reports', rep.id);
+          await updateDoc(docRef, { isUnreadForResident: false, updatedAt: new Date().toISOString() });
+        } catch {}
+      }
+    });
+  };
+
+  const markNotificationAsRead = (reportId: string) => {
+    const targetReport = reports.find((r) => r.id === reportId);
+    if (!targetReport) return;
+
+    const newKeys = new Set(readNotifKeys);
+    newKeys.add(`${targetReport.id}_${targetReport.status}`);
+    newKeys.add(targetReport.id);
+    newKeys.add(`${targetReport.id}_resident`);
+    newKeys.add(`${targetReport.id}_agency_${activeRole}`);
+    newKeys.add(`${targetReport.id}_agency_ALL`);
+    persistReadKeys(newKeys);
+
+    setReports((prev) =>
+      prev.map((rep) => {
+        if (rep.id !== reportId) return rep;
+        const updated = { ...rep, isUnreadForResident: false };
+        if (activeRole === 'CENTRAL') {
+          updated.isUnreadForAgencies = { PNP: false, BFP: false, MDRRMO: false };
+        } else if (activeRole !== 'resident') {
+          updated.isUnreadForAgencies = {
+            ...rep.isUnreadForAgencies,
+            [activeRole as Agency]: false,
+          };
+        }
+        return updated;
+      })
+    );
+
+    try {
+      const docRef = doc(db, 'reports', reportId);
+      if (activeRole === 'resident') {
+        updateDoc(docRef, { isUnreadForResident: false, updatedAt: new Date().toISOString() }).catch(() => null);
+      } else if (activeRole === 'CENTRAL') {
+        updateDoc(docRef, {
+          'isUnreadForAgencies.PNP': false,
+          'isUnreadForAgencies.BFP': false,
+          'isUnreadForAgencies.MDRRMO': false,
+          updatedAt: new Date().toISOString(),
+        }).catch(() => null);
+      } else {
+        updateDoc(docRef, {
+          [`isUnreadForAgencies.${activeRole}`]: false,
+          updatedAt: new Date().toISOString(),
+        }).catch(() => null);
+      }
+    } catch {}
   };
 
   // Simulated emergency report - disabled to ensure only 100% genuine real incident reports are processed
@@ -1745,6 +1882,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         sendAssistanceRequest,
         acknowledgeAssistanceRequest,
         markAgencyReportsAsRead,
+        markResidentNotificationsAsRead,
+        markNotificationAsRead,
+        readNotifKeys,
         simulateIncomingIncident,
         purgeAllSimulatedReports,
         restoreRejectedReport,
