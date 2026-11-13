@@ -108,6 +108,7 @@ interface NexusContextType {
   }>) => Promise<void>;
   agencyLogin: (user: AgencyUser) => void;
   agencyLogout: () => void;
+  citizenLogout: () => Promise<void>;
 
   // Mobile Navigation & View State Synchronization
   residentActiveTab: 'report' | 'tracking' | 'map';
@@ -528,6 +529,36 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPortalMode('landing');
     setActiveRole('resident');
     auth.signOut().catch(() => null);
+  };
+
+  const citizenLogout = async () => {
+    try {
+      localStorage.setItem('nexus_portal_mode', 'landing');
+      localStorage.removeItem(RESIDENT_STORAGE_KEY);
+    } catch {}
+    setPortalMode('landing');
+    setActiveRole('resident');
+    setFirebaseUser(null);
+    setResidentUser({
+      id: 'res-guest',
+      name: 'Resident Citizen',
+      role: 'resident',
+      email: '',
+      phone: '0917-000-0000',
+      province: 'Oriental Mindoro',
+      municipality: 'Calapan City',
+      barangay: 'Ibaba East',
+      address: 'Poblacion',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      termsAccepted: true,
+      termsAcceptedAt: new Date().toISOString(),
+      isVerifiedIdentity: false,
+    });
+    try {
+      await auth.signOut();
+    } catch (err) {
+      console.warn('Citizen logout error:', err);
+    }
   };
 
   // Safe portal mode switcher
@@ -1691,6 +1722,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateAgencyProfile,
         agencyLogin,
         agencyLogout,
+        citizenLogout,
         residentActiveTab,
         setResidentActiveTab,
         agencyActiveTab,

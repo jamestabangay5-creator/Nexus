@@ -71,6 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     isAgencyAuthenticated,
     openAgencyProfileModal,
     agencyLogout,
+    citizenLogout,
     setResidentActiveTab,
   } = useNexus();
 
@@ -307,6 +308,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       title="Enter Resident Portal"
                     >
                       Resident Portal
+                    </button>
+                  )}
+                  {portalMode === 'resident' && (
+                    <button
+                      onClick={async () => {
+                        await citizenLogout();
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-bold transition cursor-pointer shadow-xs min-h-[38px]"
+                      title="Sign out of your citizen account"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Logout</span>
                     </button>
                   )}
                 </div>
@@ -732,17 +745,31 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )}
               </div>
 
-              {/* Return to Main Landing Page on Mobile */}
-              <button
-                onClick={() => {
-                  setPortalMode('landing');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-slate-200 transition cursor-pointer shadow-xs"
-              >
-                <Home className="w-4 h-4 text-blue-600" />
-                <span>Return to Main Landing Page</span>
-              </button>
+              {/* Logout / Return Controls on Mobile Citizen Side */}
+              {firebaseUser ? (
+                <button
+                  onClick={async () => {
+                    setMobileMenuOpen(false);
+                    await citizenLogout();
+                  }}
+                  className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs min-h-[40px]"
+                  title="Logout citizen account and return to main landing page"
+                >
+                  <LogOut className="w-4 h-4 text-rose-600" />
+                  <span>Logout</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setPortalMode('landing');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-slate-200 transition cursor-pointer shadow-xs min-h-[40px]"
+                >
+                  <Home className="w-4 h-4 text-blue-600" />
+                  <span>Return to Main Landing Page</span>
+                </button>
+              )}
             </div>
           )}
         </div>
