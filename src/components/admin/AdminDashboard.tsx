@@ -140,32 +140,32 @@ export const AdminDashboard: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Commander, Hotline info & Profile Settings Button */}
-          <div className="flex flex-row items-center justify-between w-full lg:w-auto gap-3 bg-slate-50/90 border border-slate-200/80 p-3 rounded-2xl text-xs shrink-0 flex-wrap sm:flex-nowrap shadow-xs">
-            <div>
+          {/* Commander, Hotline info & Profile Settings Button (Responsive Grid on Mobile) */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-between w-full lg:w-auto gap-2.5 sm:gap-3 bg-slate-50/90 border border-slate-200/80 p-3 rounded-2xl text-xs shrink-0 shadow-xs">
+            <div className="min-w-0">
               <span className="text-[9px] sm:text-[10px] text-slate-500 block uppercase font-bold">
                 Duty Officer:
               </span>
-              <span className="font-bold text-slate-900 block truncate max-w-[140px]">
+              <span className="font-bold text-slate-900 block truncate">
                 {adminProfile?.name || (agency === 'CENTRAL' && agencyUser ? agencyUser.name : 'Duty Officer')}
               </span>
-              <span className="text-[10px] text-indigo-600 font-mono font-bold block truncate max-w-[140px]">
+              <span className="text-[10px] text-indigo-600 font-mono font-bold block truncate">
                 {adminProfile?.title || (agency === 'CENTRAL' && agencyUser ? agencyUser.email : 'Command Staff')}
               </span>
             </div>
-            <div className="border-l border-slate-200 pl-3">
-              <span className="text-[9px] sm:text-[10px] text-slate-500 block uppercase font-bold flex items-center gap-1">
-                <Phone className="w-3 h-3 text-red-500" />
-                Emergency Hotline:
+            <div className="border-l border-slate-200 pl-2.5 sm:pl-3 min-w-0">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 block uppercase font-bold flex items-center gap-1 truncate">
+                <Phone className="w-3 h-3 text-red-500 shrink-0" />
+                <span className="truncate">Hotline:</span>
               </span>
-              <span className="font-mono font-black text-red-600 text-sm sm:text-base">
+              <span className="font-mono font-black text-red-600 text-xs sm:text-base block truncate">
                 {agencyDetails[agency]?.hotline || agencyInfo.hotline}
               </span>
             </div>
-            <div className="border-l border-slate-200 pl-3">
+            <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-slate-200 pt-2 sm:pt-0 sm:pl-3">
               <button
                 onClick={openAgencyProfileModal}
-                className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-500/20 hover:scale-[1.02]"
+                className="w-full sm:w-auto justify-center px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-500/20 active:scale-95"
                 title="Edit department profile, change password, update duty officer & hotlines"
               >
                 <Settings className="w-3.5 h-3.5" />
@@ -178,12 +178,12 @@ export const AdminDashboard: React.FC<Props> = ({
       </div>
 
       {/* Navigation Sub-Tabs with Smooth Horizontal Mobile Scrolling */}
-      <div ref={tabContentRef} className="overflow-x-auto no-scrollbar pb-0.5 scroll-mt-20">
+      <div ref={tabContentRef} className="overflow-x-auto no-scrollbar pb-0.5 scroll-mt-20 scroll-smooth">
         <div className="glass-card-subtle bg-white/70 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 flex items-center gap-1.5 min-w-max shadow-sm">
           {/* Department Specialized Command Console */}
           <button
             onClick={() => setActiveTab('command')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] shrink-0 ${
               activeTab === 'command'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -207,7 +207,7 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Active Reports Registry */}
           <button
             onClick={() => setActiveTab('reports')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] shrink-0 ${
               activeTab === 'reports'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -223,7 +223,7 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Map & Heatmap */}
           <button
             onClick={() => setActiveTab('map')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] shrink-0 ${
               activeTab === 'map'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -236,7 +236,7 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Statistics & Analytics */}
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] shrink-0 ${
               activeTab === 'analytics'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -249,7 +249,7 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Inter-Agency Coordination */}
           <button
             onClick={() => setActiveTab('coordination')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] shrink-0 ${
               activeTab === 'coordination'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
@@ -267,7 +267,7 @@ export const AdminDashboard: React.FC<Props> = ({
           {/* Emergency Archive */}
           <button
             onClick={() => setActiveTab('archive')}
-            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] ${
+            className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] shrink-0 ${
               activeTab === 'archive'
                 ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'

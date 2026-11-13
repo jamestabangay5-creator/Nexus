@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
   const [isGlobalMapActive, setIsGlobalMapActive] = useState(false);
 
   return (
-    <div className="min-h-screen nexus-ambient-bg text-slate-800 flex flex-col font-sans selection:bg-blue-500 selection:text-white relative">
+    <div className="min-h-screen nexus-ambient-bg text-slate-800 flex flex-col font-sans selection:bg-blue-500 selection:text-white relative overflow-x-hidden w-full max-w-full">
       {/* Subtle Ambient Luminous Background Orbs (matching UI reference) */}
       <div className="fixed top-0 left-1/4 -z-10 w-96 h-96 bg-purple-300/30 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-10 right-1/4 -z-10 w-[30rem] h-[30rem] bg-sky-200/40 rounded-full blur-3xl pointer-events-none" />
@@ -83,7 +83,7 @@ const AppContent: React.FC = () => {
       />
 
       {/* Main Content Area with Bottom Clearance for Mobile Navigation */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8 pb-24 sm:pb-28 md:pb-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 pb-28 sm:pb-32 md:pb-8">
         {isGlobalMapActive ? (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between glass-card p-3 rounded-2xl gap-2.5">
@@ -189,38 +189,40 @@ const AppContent: React.FC = () => {
         )}
       </main>
 
-      {/* Emergency System Footer (Frosted Glass UI) */}
-      <footer className="mt-auto border-t border-white/60 bg-white/70 backdrop-blur-xl py-6 text-xs text-slate-600 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="font-mono font-black text-slate-800 tracking-tight">NEXUS DISPATCH</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-slate-600 flex items-center gap-1.5 font-medium">
-              <Database className="w-3.5 h-3.5 text-emerald-600" />
-              Unified Public Safety Incident Registry
+      {/* Emergency System Footer (Frosted Glass UI with Safe-Area Clearance for Mobile Bottom Nav) */}
+      <footer className="mt-auto border-t border-white/60 bg-white/75 backdrop-blur-xl pt-6 pb-24 sm:pb-28 md:py-6 text-xs text-slate-600 shadow-sm w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-3 text-center sm:text-left">
+            <span className="font-mono font-black text-slate-900 tracking-tight text-xs sm:text-sm">
+              NEXUS DISPATCH
+            </span>
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <span className="text-slate-600 flex items-center justify-center gap-1.5 font-medium text-[11px] sm:text-xs">
+              <Database className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Unified Public Safety Incident Registry</span>
             </span>
           </div>
 
           {/* Quick Hotline & Separated Agency Link */}
-          <div className="flex flex-wrap items-center gap-4 text-[11px] font-semibold">
-            <span className="flex items-center gap-1.5 text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200/60 shadow-xs">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 text-[10.5px] sm:text-[11px] font-semibold">
+            <span className="flex items-center gap-1.5 text-blue-700 bg-blue-50/90 px-2.5 py-1 rounded-full border border-blue-200/60 shadow-xs">
               <AgencyLogo agency="PNP" className="w-3.5 h-3.5 object-contain" />
-              PNP: 911
+              <span>PNP: 911</span>
             </span>
-            <span className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60 shadow-xs">
+            <span className="flex items-center gap-1.5 text-amber-700 bg-amber-50/90 px-2.5 py-1 rounded-full border border-amber-200/60 shadow-xs">
               <AgencyLogo agency="BFP" className="w-3.5 h-3.5 object-contain" />
-              BFP: 160
+              <span>BFP: 160</span>
             </span>
-            <span className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60 shadow-xs">
+            <span className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50/90 px-2.5 py-1 rounded-full border border-emerald-200/60 shadow-xs">
               <AgencyLogo agency="MDRRMO" className="w-3.5 h-3.5 object-contain" />
-              MDRRMO: 122
+              <span>MDRRMO: 122</span>
             </span>
             {portalMode !== 'resident' && (
               <>
-                <span className="text-slate-300 hidden sm:inline">|</span>
+                <span className="text-slate-300 hidden md:inline">|</span>
                 <button
                   onClick={() => openAuthModal('login')}
-                  className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition cursor-pointer"
+                  className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition cursor-pointer px-2 py-1 rounded-lg hover:bg-white/60"
                   title="Official Agency Dispatch Login"
                 >
                   <Lock className="w-3 h-3 text-blue-600" />
