@@ -4,32 +4,31 @@
   "description": "Multi-agency incident response and dispatch system connecting PNP, BFP, MDRRMO, and residents with real-time mapping, inter-agency coordination, and bilingual reporting.",
   "icons": [
     {
-      "src": "/icons/nexus-crystal-icon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/nexus-crystal-icon.svg",
-      "type": "image/svg+xml",
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-192x192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-144x144.png",
       "type": "image/png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "/icons/nexus-logo.jpg",
+      "type": "image/jpeg",
       "sizes": "512x512"
     }
   ],
   "start_url": "/",
-  "background_color": "#f1f5f9",
+  "background_color": "#0f172a",
   "theme_color": "#2563eb",
   "display": "standalone",
   "orientation": "portrait"
 }
-

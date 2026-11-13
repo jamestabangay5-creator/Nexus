@@ -215,18 +215,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-3">
-        {/* Left: Branding with 3D Faceted Crystal Icon */}
+        {/* Left: Branding with Nexus Official Logo */}
         <div className="flex items-center gap-3 shrink-0">
           <div
             onClick={() => setPortalMode('landing')}
             className="flex items-center gap-2.5 cursor-pointer group"
             title="Return to NEXUS 911 Main Landing Page"
           >
-            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-white p-1 shadow-md shadow-indigo-100/50 border border-white/80 shrink-0 group-hover:scale-105 transition flex items-center justify-center">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-slate-950 p-0.5 shadow-md shadow-indigo-100/50 border border-slate-800/80 shrink-0 group-hover:scale-105 transition flex items-center justify-center overflow-hidden">
               <img
-                src="/icons/nexus-crystal-icon.svg"
-                alt="Nexus 3D Crystal"
-                className="w-full h-full object-contain drop-shadow-sm"
+                src="/icons/nexus-logo.jpg"
+                alt="NEXUS"
+                className="w-full h-full object-cover rounded-xl"
               />
             </div>
             <div>

@@ -559,13 +559,13 @@ export const ResidentAuthModal: React.FC<Props> = ({
           <X className="w-5 h-5" />
         </button>
 
-        {/* Modal Branding Header with 3D Crystal Gem */}
+        {/* Modal Branding Header with Nexus Official Logo */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-10 w-10 rounded-2xl bg-white p-1 border border-slate-200/80 shadow-sm shrink-0 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-2xl bg-slate-950 p-0.5 border border-slate-800/80 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
             <img
-              src="/icons/nexus-crystal-icon.svg"
-              alt="Nexus 3D Crystal"
-              className="w-full h-full object-contain drop-shadow-xs"
+              src="/icons/nexus-logo.jpg"
+              alt="NEXUS"
+              className="w-full h-full object-cover rounded-xl"
             />
           </div>
           <div>

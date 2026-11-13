@@ -168,11 +168,11 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
         {/* Top Emergency Status Banner */}
         <div className="bg-white/80 px-6 py-4 border-b border-slate-200/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white p-1 border border-slate-200/80 shadow-xs flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-slate-950 p-0.5 border border-slate-800/80 shadow-xs flex items-center justify-center overflow-hidden shrink-0">
               <img
-                src="/icons/nexus-crystal-icon.svg"
-                alt="Nexus 3D Crystal"
-                className="w-full h-full object-contain drop-shadow-xs"
+                src="/icons/nexus-logo.jpg"
+                alt="NEXUS"
+                className="w-full h-full object-cover rounded-xl"
               />
             </div>
             <div>

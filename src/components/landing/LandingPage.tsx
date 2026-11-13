@@ -175,12 +175,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="absolute -top-20 -left-20 -z-10 w-72 h-72 bg-sky-300/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center space-y-6">
-          {/* Government / Regional Infrastructure Badge with 3D Crystal Icon */}
+          {/* Government / Regional Infrastructure Badge with Official Logo */}
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/80 border border-slate-200/80 shadow-xs">
             <img
-              src="/icons/nexus-crystal-icon.svg"
-              alt="Nexus 3D Crystal"
-              className="w-4 h-4 object-contain drop-shadow-xs"
+              src="/icons/nexus-logo.jpg"
+              alt="NEXUS"
+              className="w-4 h-4 object-cover rounded-full drop-shadow-xs"
             />
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] sm:text-xs font-bold tracking-wider uppercase text-slate-700">
