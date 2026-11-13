@@ -5,6 +5,7 @@ import { INCIDENT_TYPES, BARANGAYS, AGENCY_DETAILS } from '../../constants/incid
 import { ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS } from '../../constants/orientalMindoroData';
 import { TRANSLATIONS } from '../../constants/translations';
 import { RequestAssistanceModal } from './RequestAssistanceModal';
+import { ExportReportsButton } from '../common/ExportReportsButton';
 import {
   Search,
   Filter,
@@ -57,6 +58,9 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
   const [barangayFilter, setBarangayFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [agencyFilter, setAgencyFilter] = useState(currentScope === 'CENTRAL' ? 'ALL' : currentScope);
+  const [dateFilter, setDateFilter] = useState<'ALL' | '24h' | '7d' | '30d' | 'custom'>('ALL');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
 
   // Quick Assistance Modal
   const [assistanceReport, setAssistanceReport] = useState<IncidentReport | null>(null);
@@ -85,7 +89,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
     statusFilter !== 'ALL' ||
     barangayFilter !== 'ALL' ||
     categoryFilter !== 'ALL' ||
-    agencyFilter !== 'ALL';
+    agencyFilter !== 'ALL' ||
+    dateFilter !== 'ALL';
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,13 +102,16 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
     setBarangayFilter('ALL');
     setCategoryFilter('ALL');
     setAgencyFilter('ALL');
+    setDateFilter('ALL');
+    setCustomStartDate('');
+    setCustomEndDate('');
     setCurrentPage(1);
   };
 
   // Reset pagination when any filter changes
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, barangayFilter, categoryFilter, agencyFilter]);
+  }, [search, statusFilter, barangayFilter, categoryFilter, agencyFilter, dateFilter, customStartDate, customEndDate]);
 
   const filteredReports = useMemo(() => {
     return activeReports
@@ -112,6 +120,25 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
         if (barangayFilter !== 'ALL' && rep.barangay !== barangayFilter) return false;
         if (categoryFilter !== 'ALL' && rep.category !== categoryFilter) return false;
         if (agencyFilter !== 'ALL' && rep.selectedAgency !== agencyFilter) return false;
+
+        // Date Filter
+        if (dateFilter !== 'ALL') {
+          const now = Date.now();
+          const repTime = new Date(rep.createdAt || rep.dateTime).getTime();
+          if (dateFilter === '24h' && now - repTime > 24 * 60 * 60 * 1000) return false;
+          if (dateFilter === '7d' && now - repTime > 7 * 24 * 60 * 60 * 1000) return false;
+          if (dateFilter === '30d' && now - repTime > 30 * 24 * 60 * 60 * 1000) return false;
+          if (dateFilter === 'custom') {
+            if (customStartDate) {
+              const start = new Date(customStartDate).getTime();
+              if (repTime < start) return false;
+            }
+            if (customEndDate) {
+              const end = new Date(customEndDate).getTime() + 24 * 60 * 60 * 1000;
+              if (repTime > end) return false;
+            }
+          }
+        }
 
         if (search) {
           const query = search.toLowerCase();
@@ -128,7 +155,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
         return true;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [activeReports, statusFilter, barangayFilter, categoryFilter, agencyFilter, search]);
+  }, [activeReports, statusFilter, barangayFilter, categoryFilter, agencyFilter, dateFilter, customStartDate, customEndDate, search]);
 
   const totalReports = filteredReports.length;
   const totalPages = Math.max(1, Math.ceil(totalReports / pageSize));
@@ -290,16 +317,33 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
             )}
           </div>
 
-          {/* Reset Filters button if any active */}
-          {hasActiveFilters && (
-            <button
-              onClick={resetFilters}
-              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] shrink-0"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-              <span>Reset Filters</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Reset Filters button if any active */}
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] shrink-0"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                <span>Reset Filters</span>
+              </button>
+            )}
+
+            {/* Professional Multi-Format Export Dropdown */}
+            <ExportReportsButton
+              reports={filteredReports}
+              agencyScope={currentScope}
+              officerName={agencyUser?.name || currentAdmin?.name}
+              badgeNumber={agencyUser?.badgeNumber || currentAdmin?.badgeNumber}
+              filtersApplied={{
+                category: categoryFilter,
+                status: statusFilter,
+                dateRange: dateFilter,
+                barangay: barangayFilter,
+                searchQuery: search,
+              }}
+            />
+          </div>
         </div>
 
         {/* Quick Scope Filter Toggle for Department Officers */}
@@ -399,7 +443,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
         </div>
 
         {/* Filter Dropdowns Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs sm:text-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs sm:text-sm">
           {/* Status Filter */}
           <select
             value={statusFilter}
@@ -453,7 +497,60 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
             <option value="BFP">BFP Filed</option>
             <option value="MDRRMO">MDRRMO Filed</option>
           </select>
+
+          {/* Date Range Filter */}
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as any)}
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[42px] shadow-2xs font-semibold col-span-2 sm:col-span-1"
+          >
+            <option value="ALL">All Time</option>
+            <option value="24h">Past 24 Hours</option>
+            <option value="7d">Past 7 Days</option>
+            <option value="30d">Past 30 Days</option>
+            <option value="custom">Custom Date Range...</option>
+          </select>
         </div>
+
+        {/* Custom Date Range Picker */}
+        {dateFilter === 'custom' && (
+          <div className="flex flex-wrap items-center gap-3 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-3 rounded-2xl animate-in fade-in">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              <span>Select Date Interval:</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-slate-600">From:</label>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-slate-600">To:</label>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              />
+            </div>
+            {(customStartDate || customEndDate) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+                className="text-xs text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
+              >
+                Clear Dates
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Resolved Incidents History Context Banner */}

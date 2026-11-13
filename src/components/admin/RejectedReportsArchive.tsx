@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNexus } from '../../context/NexusContext';
-import { IncidentReport, Agency } from '../../types';
+import { IncidentReport, Agency, AgencyScope } from '../../types';
 import { INCIDENT_TYPES, BARANGAYS } from '../../constants/incidentData';
 import { ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS } from '../../constants/orientalMindoroData';
 import { TRANSLATIONS } from '../../constants/translations';
+import { ExportReportsButton } from '../common/ExportReportsButton';
 import {
   Archive,
   Search,
@@ -16,7 +17,10 @@ import {
   FileText,
   MapPin,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
 } from 'lucide-react';
 
 interface Props {
@@ -30,18 +34,34 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
     restoreRejectedReport,
     adminProfiles,
     language,
+    agencyUser,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
-  const currentAgency: Agency = activeRole === 'resident' ? 'PNP' : (activeRole as Agency);
+  const currentScope: AgencyScope = activeRole === 'resident' ? 'CENTRAL' : activeRole;
+  const currentAgency: Agency = (currentScope === 'CENTRAL' ? 'PNP' : currentScope) as Agency;
   const currentAdmin = adminProfiles[currentAgency];
 
   const [search, setSearch] = useState('');
   const [selectedBarangay, setSelectedBarangay] = useState('ALL');
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [selectedAgencyFilter, setSelectedAgencyFilter] = useState('ALL');
   const [archiveFilter, setArchiveFilter] = useState<'ALL' | 'Rejected' | 'Resolved'>('ALL');
+  const [dateFilter, setDateFilter] = useState<'ALL' | '24h' | '7d' | '30d' | 'custom'>('ALL');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const totalRejected = reports.filter((r) => r.status === 'Rejected').length;
   const totalResolved = reports.filter((r) => r.status === 'Resolved').length;
+
+  // Reset pagination on any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedBarangay, selectedCategory, selectedAgencyFilter, archiveFilter, dateFilter, customStartDate, customEndDate]);
 
   // Filter archived reports (both Rejected and Resolved incidents) - sorted descending (newest on top)
   const archivedReports = useMemo(() => {
@@ -50,6 +70,28 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
       .filter((r) => {
         if (archiveFilter !== 'ALL' && r.status !== archiveFilter) return false;
         if (selectedBarangay !== 'ALL' && r.barangay !== selectedBarangay) return false;
+        if (selectedCategory !== 'ALL' && r.category !== selectedCategory) return false;
+        if (selectedAgencyFilter !== 'ALL' && r.selectedAgency !== selectedAgencyFilter) return false;
+
+        // Date Filter
+        if (dateFilter !== 'ALL') {
+          const now = Date.now();
+          const repTime = new Date(r.rejection?.rejectedAt || r.updatedAt || r.createdAt).getTime();
+          if (dateFilter === '24h' && now - repTime > 24 * 60 * 60 * 1000) return false;
+          if (dateFilter === '7d' && now - repTime > 7 * 24 * 60 * 60 * 1000) return false;
+          if (dateFilter === '30d' && now - repTime > 30 * 24 * 60 * 60 * 1000) return false;
+          if (dateFilter === 'custom') {
+            if (customStartDate) {
+              const start = new Date(customStartDate).getTime();
+              if (repTime < start) return false;
+            }
+            if (customEndDate) {
+              const end = new Date(customEndDate).getTime() + 24 * 60 * 60 * 1000;
+              if (repTime > end) return false;
+            }
+          }
+        }
+
         if (search) {
           const query = search.toLowerCase();
           const matchCode = r.trackingCode.toLowerCase().includes(query);
@@ -63,12 +105,39 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
         return true;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [reports, archiveFilter, selectedBarangay, search]);
+  }, [reports, archiveFilter, selectedBarangay, selectedCategory, selectedAgencyFilter, dateFilter, customStartDate, customEndDate, search]);
+
+  const totalReports = archivedReports.length;
+  const totalPages = Math.max(1, Math.ceil(totalReports / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedReports = useMemo(() => {
+    return archivedReports.slice(startIndex, startIndex + pageSize);
+  }, [archivedReports, startIndex, pageSize]);
+
+  const hasActiveFilters =
+    search !== '' ||
+    selectedBarangay !== 'ALL' ||
+    selectedCategory !== 'ALL' ||
+    selectedAgencyFilter !== 'ALL' ||
+    archiveFilter !== 'ALL' ||
+    dateFilter !== 'ALL';
+
+  const resetFilters = () => {
+    setSearch('');
+    setSelectedBarangay('ALL');
+    setSelectedCategory('ALL');
+    setSelectedAgencyFilter('ALL');
+    setArchiveFilter('ALL');
+    setDateFilter('ALL');
+    setCustomStartDate('');
+    setCustomEndDate('');
+    setCurrentPage(1);
+  };
 
   const handleRestore = (reportId: string) => {
     restoreRejectedReport(
       reportId,
-      currentAdmin?.name || `${currentAgency} Officer`,
+      agencyUser?.name || currentAdmin?.name || `${currentAgency} Officer`,
       currentAgency
     );
   };
@@ -91,16 +160,32 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="text-xs bg-slate-50 px-4 py-2 rounded-xl border border-slate-200/80 text-slate-700 font-mono font-bold">
-            <span>{archivedReports.length} Cases in Archive</span>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="text-xs bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/80 text-slate-700 font-mono font-bold">
+            <span>{archivedReports.length} Cases in View</span>
           </div>
+
+          {/* Export Button */}
+          <ExportReportsButton
+            reports={archivedReports}
+            agencyScope={currentScope}
+            officerName={agencyUser?.name || currentAdmin?.name}
+            badgeNumber={agencyUser?.badgeNumber || currentAdmin?.badgeNumber}
+            buttonLabel="Download Archive Dossier"
+            filtersApplied={{
+              category: selectedCategory,
+              status: archiveFilter,
+              dateRange: dateFilter,
+              barangay: selectedBarangay,
+              searchQuery: search,
+            }}
+          />
         </div>
       </div>
 
       {/* Filter and Search Bar */}
       <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/50 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-[240px]">
             <Search className="w-4 h-4 text-slate-400" />
             <input
@@ -108,14 +193,36 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
               placeholder="Search archive by code, keyword, citizen, officer, or reason..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+              className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none min-h-[40px] font-medium"
             />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="text-xs text-slate-400 hover:text-slate-700 font-bold px-2"
+              >
+                Clear
+              </button>
+            )}
           </div>
 
+          {hasActiveFilters && (
+            <button
+              onClick={resetFilters}
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[40px] shrink-0"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <span>Reset Filters</span>
+            </button>
+          )}
+        </div>
+
+        {/* Dropdowns Filter Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+          {/* Barangay Filter */}
           <select
             value={selectedBarangay}
             onChange={(e) => setSelectedBarangay(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer"
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer min-h-[40px]"
           >
             <option value="ALL">All Barangays</option>
             {ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS.map((brgy, idx) => (
@@ -124,7 +231,87 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
               </option>
             ))}
           </select>
+
+          {/* Category Filter */}
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer min-h-[40px]"
+          >
+            <option value="ALL">All Categories</option>
+            <option value="RED">RED — Critical Safety</option>
+            <option value="ORANGE">ORANGE — Accidents & Emergencies</option>
+            <option value="YELLOW">YELLOW — Suspected Criminal</option>
+            <option value="GREEN">GREEN — Community Concerns</option>
+            <option value="BLUE">BLUE — Online & Complaints</option>
+            <option value="WHITE">WHITE — Other</option>
+          </select>
+
+          {/* Agency Filter */}
+          <select
+            value={selectedAgencyFilter}
+            onChange={(e) => setSelectedAgencyFilter(e.target.value)}
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer min-h-[40px]"
+          >
+            <option value="ALL">All Primary Agencies</option>
+            <option value="PNP">PNP</option>
+            <option value="BFP">BFP</option>
+            <option value="MDRRMO">MDRRMO</option>
+          </select>
+
+          {/* Date Range Filter */}
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as any)}
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer min-h-[40px]"
+          >
+            <option value="ALL">All Time</option>
+            <option value="24h">Past 24 Hours</option>
+            <option value="7d">Past 7 Days</option>
+            <option value="30d">Past 30 Days</option>
+            <option value="custom">Custom Date Range...</option>
+          </select>
         </div>
+
+        {/* Custom Date Interval Input Row */}
+        {dateFilter === 'custom' && (
+          <div className="flex flex-wrap items-center gap-3 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-3 rounded-2xl animate-in fade-in">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              <span>Select Date Interval:</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-slate-600">From:</label>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-slate-600">To:</label>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              />
+            </div>
+            {(customStartDate || customEndDate) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+                className="text-xs text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
+              >
+                Clear Dates
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Archive Category Filter Pills */}
         <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
@@ -167,7 +354,7 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
 
       {/* Archived Reports Cards */}
       <div className="space-y-4">
-        {archivedReports.length === 0 ? (
+        {totalReports === 0 ? (
           <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-12 text-center text-slate-500 text-xs shadow-xl shadow-slate-200/50">
             <Archive className="w-10 h-10 text-slate-400 mx-auto mb-2 stroke-1" />
             <p className="text-sm font-bold text-slate-700">
@@ -178,7 +365,7 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
             </p>
           </div>
         ) : (
-          archivedReports.map((report) => {
+          paginatedReports.map((report) => {
             const typeDef = INCIDENT_TYPES.find(
               (t) => t.id === (report.verifiedTypeId || report.initialTypeId)
             );
@@ -305,6 +492,68 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
           })
         )}
       </div>
+
+      {/* Pagination Controls Bar */}
+      {totalReports > 0 && (
+        <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-2xl p-3.5 sm:p-4 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+          <div className="flex items-center gap-2">
+            <span>
+              Showing <strong className="text-slate-900 font-bold">{startIndex + 1}</strong> to{' '}
+              <strong className="text-slate-900 font-bold">{Math.min(startIndex + pageSize, totalReports)}</strong> of{' '}
+              <strong className="text-slate-900 font-bold">{totalReports}</strong> archived cases
+            </span>
+            <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-500">Per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 transition ${
+                currentPage === 1
+                  ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50/50'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs'
+              }`}
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Prev</span>
+            </button>
+
+            <span className="text-xs font-bold text-slate-700 px-2">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 transition ${
+                currentPage === totalPages
+                  ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50/50'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs'
+              }`}
+            >
+              <span>Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

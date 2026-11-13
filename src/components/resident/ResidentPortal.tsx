@@ -15,6 +15,7 @@ import { compressEvidenceImage } from '../../utils/imageUtils';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { UserProfileModal } from './UserProfileModal';
 import { AgencyLogo } from '../common/AgencyLogo';
+import { ExportReportsButton } from '../common/ExportReportsButton';
 import {
   ShieldAlert,
   Flame,
@@ -29,6 +30,7 @@ import {
   FileText,
   Building2,
   ChevronRight,
+  ChevronLeft,
   Info,
   ShieldCheck,
   AlertOctagon,
@@ -42,7 +44,10 @@ import {
   CheckCheck,
   LogIn,
   UserPlus,
-  Eye
+  Eye,
+  RotateCcw,
+  LayoutList,
+  LayoutGrid
 } from 'lucide-react';
 import { IncidentMapView } from '../map/IncidentMapView';
 import { ReportDetailModal } from '../admin/ReportDetailModal';
@@ -141,6 +146,16 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   // Tracking Filter & Search State
   const [trackingSearch, setTrackingSearch] = useState('');
   const [trackingStatusFilter, setTrackingStatusFilter] = useState('ALL');
+  const [trackingCategoryFilter, setTrackingCategoryFilter] = useState('ALL');
+  const [trackingAgencyFilter, setTrackingAgencyFilter] = useState('ALL');
+  const [trackingDateFilter, setTrackingDateFilter] = useState<'ALL' | '24h' | '7d' | '30d' | 'custom'>('ALL');
+  const [trackingCustomStartDate, setTrackingCustomStartDate] = useState('');
+  const [trackingCustomEndDate, setTrackingCustomEndDate] = useState('');
+  const [trackingViewMode, setTrackingViewMode] = useState<'cards' | 'table'>('cards');
+
+  // Pagination for Resident Reports
+  const [trackingPage, setTrackingPage] = useState(1);
+  const [trackingPageSize, setTrackingPageSize] = useState(10);
 
   // My Reports (Reports filed by resident user) - sorted descending (newest on top)
   const myReports = useMemo(() => {
@@ -149,10 +164,55 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [reports, residentUser]);
 
+  // Reset pagination on filter change
+  useEffect(() => {
+    setTrackingPage(1);
+  }, [trackingSearch, trackingStatusFilter, trackingCategoryFilter, trackingAgencyFilter, trackingDateFilter, trackingCustomStartDate, trackingCustomEndDate]);
+
+  const hasActiveTrackingFilters =
+    trackingSearch !== '' ||
+    trackingStatusFilter !== 'ALL' ||
+    trackingCategoryFilter !== 'ALL' ||
+    trackingAgencyFilter !== 'ALL' ||
+    trackingDateFilter !== 'ALL';
+
+  const resetTrackingFilters = () => {
+    setTrackingSearch('');
+    setTrackingStatusFilter('ALL');
+    setTrackingCategoryFilter('ALL');
+    setTrackingAgencyFilter('ALL');
+    setTrackingDateFilter('ALL');
+    setTrackingCustomStartDate('');
+    setTrackingCustomEndDate('');
+    setTrackingPage(1);
+  };
+
   const filteredMyReports = useMemo(() => {
     return myReports
       .filter((r) => {
         if (trackingStatusFilter !== 'ALL' && r.status !== trackingStatusFilter) return false;
+        if (trackingCategoryFilter !== 'ALL' && r.category !== trackingCategoryFilter) return false;
+        if (trackingAgencyFilter !== 'ALL' && r.selectedAgency !== trackingAgencyFilter) return false;
+
+        // Date Filter
+        if (trackingDateFilter !== 'ALL') {
+          const now = Date.now();
+          const repTime = new Date(r.createdAt || r.dateTime).getTime();
+          if (trackingDateFilter === '24h' && now - repTime > 24 * 60 * 60 * 1000) return false;
+          if (trackingDateFilter === '7d' && now - repTime > 7 * 24 * 60 * 60 * 1000) return false;
+          if (trackingDateFilter === '30d' && now - repTime > 30 * 24 * 60 * 60 * 1000) return false;
+          if (trackingDateFilter === 'custom') {
+            if (trackingCustomStartDate) {
+              const start = new Date(trackingCustomStartDate).getTime();
+              if (repTime < start) return false;
+            }
+            if (trackingCustomEndDate) {
+              const end = new Date(trackingCustomEndDate).getTime() + 24 * 60 * 60 * 1000;
+              if (repTime > end) return false;
+            }
+          }
+        }
+
         if (trackingSearch.trim()) {
           const q = trackingSearch.toLowerCase();
           const matchCode = r.trackingCode.toLowerCase().includes(q);
@@ -163,7 +223,14 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
         return true;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [myReports, trackingStatusFilter, trackingSearch]);
+  }, [myReports, trackingStatusFilter, trackingCategoryFilter, trackingAgencyFilter, trackingDateFilter, trackingCustomStartDate, trackingCustomEndDate, trackingSearch]);
+
+  const totalMyReports = filteredMyReports.length;
+  const totalTrackingPages = Math.max(1, Math.ceil(totalMyReports / trackingPageSize));
+  const trackingStartIndex = (trackingPage - 1) * trackingPageSize;
+  const paginatedMyReports = useMemo(() => {
+    return filteredMyReports.slice(trackingStartIndex, trackingStartIndex + trackingPageSize);
+  }, [filteredMyReports, trackingStartIndex, trackingPageSize]);
 
   // Handle Photo preset pick
   const samplePhotoPresets = [
@@ -951,6 +1018,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       {/* TAB 2: RESIDENT REPORT STATUS TRACKING */}
       {activeTab === 'tracking' && (
         <div className="space-y-4">
+          {/* Header Banner with Export & View Toggle */}
           <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-base sm:text-lg font-black text-slate-900">
@@ -960,45 +1028,193 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 Track status updates, verification milestones, and responder communications.
               </p>
             </div>
-            <span className="text-xs sm:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-1.5 rounded-xl self-start sm:self-center">
-              {myReports.length} Submitted by You
-            </span>
+
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+              <span className="text-xs sm:text-sm font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-1.5 rounded-xl">
+                {myReports.length} Filed
+              </span>
+
+              {/* View Mode Toggle: Cards vs Table */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => setTrackingViewMode('cards')}
+                  title="Card View"
+                  className={`p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                    trackingViewMode === 'cards'
+                      ? 'bg-white text-indigo-700 shadow-2xs font-extrabold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Cards</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTrackingViewMode('table')}
+                  title="Accessible Table View"
+                  className={`p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                    trackingViewMode === 'table'
+                      ? 'bg-white text-indigo-700 shadow-2xs font-extrabold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <LayoutList className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Table</span>
+                </button>
+              </div>
+
+              {/* Citizen Incident Export Dossier */}
+              <ExportReportsButton
+                reports={filteredMyReports}
+                agencyScope="RESIDENT"
+                officerName={residentUser.name}
+                buttonLabel="Download Incident Dossier"
+                filtersApplied={{
+                  category: trackingCategoryFilter,
+                  status: trackingStatusFilter,
+                  dateRange: trackingDateFilter,
+                  searchQuery: trackingSearch,
+                }}
+              />
+            </div>
           </div>
 
           {/* Quick Filter & Search Bar for My Reports */}
           {myReports.length > 0 && (
-            <div className="glass-card-subtle bg-white/75 border border-white/80 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2.5 text-xs shadow-xs">
-              <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-                <Search className="w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Filter by tracking code or details..."
-                  value={trackingSearch}
-                  onChange={(e) => setTrackingSearch(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-2xs font-medium"
-                />
+            <div className="glass-card-subtle bg-white/85 border border-white/80 rounded-2xl p-3.5 space-y-3 shadow-xs">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2 flex-1 min-w-[180px]">
+                  <Search className="w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search tracking code, details, location..."
+                    value={trackingSearch}
+                    onChange={(e) => setTrackingSearch(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-2xs font-medium min-h-[38px]"
+                  />
+                  {trackingSearch && (
+                    <button
+                      onClick={() => setTrackingSearch('')}
+                      className="text-xs text-slate-400 hover:text-slate-700 font-bold px-2"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                {hasActiveTrackingFilters && (
+                  <button
+                    onClick={resetTrackingFilters}
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer min-h-[38px] shrink-0"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Reset Filters</span>
+                  </button>
+                )}
               </div>
 
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {(['ALL', 'Pending Verification', 'Accepted', 'Ongoing', 'Resolved'] as const).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setTrackingStatusFilter(st)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer min-h-[36px] ${
-                      trackingStatusFilter === st
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:border-slate-300'
-                    }`}
-                  >
-                    {st === 'ALL' ? 'All' : st}
-                  </button>
-                ))}
+              {/* Filter Pills and Dropdowns Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                {/* Status Dropdown */}
+                <select
+                  value={trackingStatusFilter}
+                  onChange={(e) => setTrackingStatusFilter(e.target.value)}
+                  className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-2xs min-h-[38px] cursor-pointer"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="Pending Verification">Pending Verification</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Ongoing">Ongoing</option>
+                  <option value="Resolved">Resolved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+
+                {/* Category Dropdown */}
+                <select
+                  value={trackingCategoryFilter}
+                  onChange={(e) => setTrackingCategoryFilter(e.target.value)}
+                  className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-2xs min-h-[38px] cursor-pointer"
+                >
+                  <option value="ALL">All Categories</option>
+                  <option value="RED">RED — Critical Safety</option>
+                  <option value="ORANGE">ORANGE — Accidents & Emergencies</option>
+                  <option value="YELLOW">YELLOW — Suspected Criminal</option>
+                  <option value="GREEN">GREEN — Community Concerns</option>
+                  <option value="BLUE">BLUE — Online & Complaints</option>
+                  <option value="WHITE">WHITE — Other</option>
+                </select>
+
+                {/* Agency Dropdown */}
+                <select
+                  value={trackingAgencyFilter}
+                  onChange={(e) => setTrackingAgencyFilter(e.target.value)}
+                  className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-2xs min-h-[38px] cursor-pointer"
+                >
+                  <option value="ALL">All Responding Agencies</option>
+                  <option value="PNP">PNP (Police)</option>
+                  <option value="BFP">BFP (Fire)</option>
+                  <option value="MDRRMO">MDRRMO (Disaster)</option>
+                </select>
+
+                {/* Date Filter Dropdown */}
+                <select
+                  value={trackingDateFilter}
+                  onChange={(e) => setTrackingDateFilter(e.target.value as any)}
+                  className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-2xs min-h-[38px] cursor-pointer"
+                >
+                  <option value="ALL">All Time</option>
+                  <option value="24h">Past 24 Hours</option>
+                  <option value="7d">Past 7 Days</option>
+                  <option value="30d">Past 30 Days</option>
+                  <option value="custom">Custom Date Range...</option>
+                </select>
               </div>
+
+              {/* Custom Date Interval Input Row */}
+              {trackingDateFilter === 'custom' && (
+                <div className="flex flex-wrap items-center gap-3 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-2.5 rounded-xl animate-in fade-in">
+                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <span>Select Date Interval:</span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-semibold text-slate-600">From:</label>
+                    <input
+                      type="date"
+                      value={trackingCustomStartDate}
+                      onChange={(e) => setTrackingCustomStartDate(e.target.value)}
+                      className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-semibold text-slate-600">To:</label>
+                    <input
+                      type="date"
+                      value={trackingCustomEndDate}
+                      onChange={(e) => setTrackingCustomEndDate(e.target.value)}
+                      className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                    />
+                  </div>
+                  {(trackingCustomStartDate || trackingCustomEndDate) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTrackingCustomStartDate('');
+                        setTrackingCustomEndDate('');
+                      }}
+                      className="text-xs text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
+                    >
+                      Clear Dates
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
-          {/* Reports List */}
-          <div className="space-y-3.5">
+          {/* Reports Content Area */}
+          <div>
             {myReports.length === 0 ? (
               <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-10 sm:p-14 text-center text-slate-600 text-sm shadow-lg">
                 <Clock className="w-12 h-12 text-slate-400 mx-auto mb-2 stroke-1" />
@@ -1017,164 +1233,333 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
               </div>
             ) : filteredMyReports.length === 0 ? (
               <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-8 text-center text-slate-600 text-sm shadow-sm">
-                <p className="font-semibold">No reports match your search criteria.</p>
+                <p className="font-semibold">No reports match your search or filter criteria.</p>
+              </div>
+            ) : trackingViewMode === 'table' ? (
+              /* Accessible Table View (Especially beneficial for elders, tablets, and comprehensive desktop tracking) */
+              <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs sm:text-sm">
+                    <thead className="bg-slate-50/90 text-slate-600 uppercase font-black text-xs tracking-wider border-b border-slate-200/80">
+                      <tr>
+                        <th className="py-4 px-4 font-black w-36 whitespace-nowrap">Tracking Code</th>
+                        <th className="py-4 px-4 font-black min-w-[190px]">Incident Category & Type</th>
+                        <th className="py-4 px-4 font-black min-w-[180px]">Location Details</th>
+                        <th className="py-4 px-4 font-black w-24 whitespace-nowrap">Agency</th>
+                        <th className="py-4 px-4 font-black w-36 whitespace-nowrap">Date & Time</th>
+                        <th className="py-4 px-4 font-black w-40 whitespace-nowrap">Status</th>
+                        <th className="py-4 px-4 text-right font-black w-36 whitespace-nowrap">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-800">
+                      {paginatedMyReports.map((report) => {
+                        const typeDef = INCIDENT_TYPES.find(
+                          (t) => t.id === (report.verifiedTypeId || report.initialTypeId)
+                        );
+                        return (
+                          <tr
+                            key={report.id}
+                            className="hover:bg-slate-50/80 transition group cursor-pointer"
+                            onClick={() => setSelectedReportId(report.id)}
+                          >
+                            <td className="py-4 px-4 font-mono font-black text-blue-700 whitespace-nowrap">
+                              {report.trackingCode}
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="font-bold text-slate-900">
+                                {language === 'fil' ? typeDef?.fil : typeDef?.en}
+                              </div>
+                              <span
+                                className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                                style={{
+                                  backgroundColor: `${typeDef?.colorHex || '#64748b'}18`,
+                                  color: typeDef?.colorHex || '#475569',
+                                  border: `1px solid ${typeDef?.colorHex || '#64748b'}40`,
+                                }}
+                              >
+                                {report.category}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <span className="font-bold text-slate-900 block">
+                                {report.barangay}, {report.municipality || 'Calapan City'}
+                              </span>
+                              <span className="text-slate-500 text-xs line-clamp-1">
+                                {report.locationDetails}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 font-mono font-bold text-slate-700">
+                              <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs">
+                                {report.selectedAgency}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 text-slate-600 text-xs whitespace-nowrap">
+                              {new Date(report.createdAt).toLocaleString(undefined, {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap">
+                              <span
+                                className={`text-xs font-bold px-3 py-1 rounded-full border inline-flex items-center gap-1.5 ${
+                                  report.status === 'Resolved'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                    : report.status === 'Ongoing'
+                                    ? 'bg-orange-50 text-orange-700 border-orange-300'
+                                    : report.status === 'Accepted'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-300'
+                                    : report.status === 'Rejected'
+                                    ? 'bg-rose-50 text-rose-700 border-rose-300'
+                                    : 'bg-amber-50 text-amber-700 border-amber-300'
+                                }`}
+                              >
+                                {report.status === 'Resolved' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                {report.status === 'Ongoing' && <Clock className="w-3.5 h-3.5 animate-pulse" />}
+                                {report.status === 'Pending Verification' && <Clock className="w-3.5 h-3.5" />}
+                                <span>{t[report.status] || report.status}</span>
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 text-right">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedReportId(report.id);
+                                }}
+                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Details</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
-              filteredMyReports.map((report) => {
-                const typeDef = INCIDENT_TYPES.find(
-                  (t) => t.id === (report.verifiedTypeId || report.initialTypeId)
-                );
+              /* Responsive Card View */
+              <div className="space-y-3.5">
+                {paginatedMyReports.map((report) => {
+                  const typeDef = INCIDENT_TYPES.find(
+                    (t) => t.id === (report.verifiedTypeId || report.initialTypeId)
+                  );
 
-                return (
-                  <div
-                    key={report.id}
-                    className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-4 hover:shadow-2xl transition"
-                  >
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs sm:text-sm font-black text-blue-700">
-                            {report.trackingCode}
-                          </span>
-                          <span
-                            className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider"
-                            style={{
-                              backgroundColor: `${typeDef?.colorHex}18`,
-                              color: typeDef?.colorHex,
-                              border: `1px solid ${typeDef?.colorHex}40`,
-                            }}
-                          >
-                            {report.category}
-                          </span>
-                        </div>
-                        <h4 className="text-base sm:text-lg font-black text-slate-900 mt-1">
-                          {language === 'fil' ? typeDef?.fil : typeDef?.en}
-                        </h4>
-                      </div>
-
-                      {/* Status Badge & Inspect Dossier */}
-                      <div className="flex items-center gap-2 self-start sm:self-center">
-                        <span
-                          className={`text-xs sm:text-sm font-bold px-3 py-1 rounded-full border ${
-                            report.status === 'Resolved'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                              : report.status === 'Ongoing'
-                              ? 'bg-orange-50 text-orange-700 border-orange-300'
-                              : report.status === 'Accepted'
-                              ? 'bg-blue-50 text-blue-700 border-blue-300'
-                              : report.status === 'Rejected'
-                              ? 'bg-rose-50 text-rose-700 border-rose-300'
-                              : 'bg-amber-50 text-amber-700 border-amber-300'
-                          }`}
-                        >
-                          {t[report.status] || report.status}
-                        </span>
-                        <button
-                          onClick={() => setSelectedReportId(report.id)}
-                          className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs min-h-[40px]"
-                          title="Inspect Full Incident Details & Audit Log"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>View Full Report</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Rejection Notice if rejected */}
-                    {report.status === 'Rejected' && report.rejection && (
-                      <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs sm:text-sm space-y-1.5 text-rose-950">
-                        <div className="flex items-center gap-2 font-bold text-rose-800">
-                          <AlertOctagon className="w-4 h-4 text-rose-600" />
-                          <span>Report Rejected by {report.rejection.agency}:</span>
-                        </div>
-                        <p className="italic pl-6 text-slate-900 font-medium">"{report.rejection.reason}"</p>
-                        <span className="block text-xs text-slate-600 pl-6">
-                          Reviewed by {report.rejection.rejectedByAdmin} on{' '}
-                          {new Date(report.rejection.rejectedAt).toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Progress Pipeline - Fully Responsive 2x2 on Mobile, 4-col on Tablet/Desktop */}
-                    <div className="bg-slate-50/80 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80">
-                      <div className="flex items-center justify-between text-xs mb-2.5 text-slate-600 font-semibold">
-                        <span className="font-bold text-slate-800">Dispatch Pipeline:</span>
-                        <span className="font-mono text-indigo-700 font-bold">Agency: {report.selectedAgency}</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-bold">
-                        <div
-                          className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
-                            report.status !== 'Rejected'
-                              ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs'
-                              : 'bg-white border-slate-200 text-slate-400'
-                          }`}
-                        >
-                          <Check className="w-3.5 h-3.5 text-blue-600" />
-                          <span>1. Submitted</span>
-                        </div>
-
-                        <div
-                          className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
-                            report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved'
-                              ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs'
-                              : 'bg-white border-slate-200 text-slate-400'
-                          }`}
-                        >
-                          {(report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved') && (
-                            <Check className="w-3.5 h-3.5 text-blue-600" />
-                          )}
-                          <span>2. Accepted</span>
-                        </div>
-
-                        <div
-                          className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
-                            report.status === 'Ongoing' || report.status === 'Resolved'
-                              ? 'bg-orange-50 border-orange-300 text-orange-700 shadow-2xs'
-                              : 'bg-white border-slate-200 text-slate-400'
-                          }`}
-                        >
-                          {(report.status === 'Ongoing' || report.status === 'Resolved') && (
-                            <Check className="w-3.5 h-3.5 text-orange-600" />
-                          )}
-                          <span>3. Ongoing</span>
-                        </div>
-
-                        <div
-                          className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
-                            report.status === 'Resolved'
-                              ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-2xs'
-                              : 'bg-white border-slate-200 text-slate-400'
-                          }`}
-                        >
-                          {report.status === 'Resolved' && (
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          )}
-                          <span>4. Resolved</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-slate-600 pt-1 font-medium">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                  return (
+                    <div
+                      key={report.id}
+                      className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 space-y-4 hover:shadow-2xl transition"
+                    >
+                      {/* Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
                         <div>
-                          <strong className="text-slate-900 block font-bold">{report.barangay}, {report.municipality || 'Calapan City'}</strong>
-                          <span className="text-slate-700">{report.locationDetails}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs sm:text-sm font-black text-blue-700">
+                              {report.trackingCode}
+                            </span>
+                            <span
+                              className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider"
+                              style={{
+                                backgroundColor: `${typeDef?.colorHex}18`,
+                                color: typeDef?.colorHex,
+                                border: `1px solid ${typeDef?.colorHex}40`,
+                              }}
+                            >
+                              {report.category}
+                            </span>
+                          </div>
+                          <h4 className="text-base sm:text-lg font-black text-slate-900 mt-1">
+                            {language === 'fil' ? typeDef?.fil : typeDef?.en}
+                          </h4>
+                        </div>
+
+                        {/* Status Badge & Inspect Dossier */}
+                        <div className="flex items-center gap-2 self-start sm:self-center">
+                          <span
+                            className={`text-xs sm:text-sm font-bold px-3 py-1 rounded-full border ${
+                              report.status === 'Resolved'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                : report.status === 'Ongoing'
+                                ? 'bg-orange-50 text-orange-700 border-orange-300'
+                                : report.status === 'Accepted'
+                                ? 'bg-blue-50 text-blue-700 border-blue-300'
+                                : report.status === 'Rejected'
+                                ? 'bg-rose-50 text-rose-700 border-rose-300'
+                                : 'bg-amber-50 text-amber-700 border-amber-300'
+                            }`}
+                          >
+                            {t[report.status] || report.status}
+                          </span>
+                          <button
+                            onClick={() => setSelectedReportId(report.id)}
+                            className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs min-h-[40px]"
+                            title="Inspect Full Incident Details & Audit Log"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>View Full Report</span>
+                          </button>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
-                        <span>Submitted on {new Date(report.createdAt).toLocaleString()}</span>
+                      {/* Rejection Notice if rejected */}
+                      {report.status === 'Rejected' && report.rejection && (
+                        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs sm:text-sm space-y-1.5 text-rose-950">
+                          <div className="flex items-center gap-2 font-bold text-rose-800">
+                            <AlertOctagon className="w-4 h-4 text-rose-600" />
+                            <span>Report Rejected by {report.rejection.agency}:</span>
+                          </div>
+                          <p className="italic pl-6 text-slate-900 font-medium">"{report.rejection.reason}"</p>
+                          <span className="block text-xs text-slate-600 pl-6">
+                            Reviewed by {report.rejection.rejectedByAdmin} on{' '}
+                            {new Date(report.rejection.rejectedAt).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Progress Pipeline - Fully Responsive 2x2 on Mobile, 4-col on Tablet/Desktop */}
+                      <div className="bg-slate-50/80 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80">
+                        <div className="flex items-center justify-between text-xs mb-2.5 text-slate-600 font-semibold">
+                          <span className="font-bold text-slate-800">Dispatch Pipeline:</span>
+                          <span className="font-mono text-indigo-700 font-bold">Agency: {report.selectedAgency}</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-bold">
+                          <div
+                            className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
+                              report.status !== 'Rejected'
+                                ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs'
+                                : 'bg-white border-slate-200 text-slate-400'
+                            }`}
+                          >
+                            <Check className="w-3.5 h-3.5 text-blue-600" />
+                            <span>1. Submitted</span>
+                          </div>
+
+                          <div
+                            className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
+                              report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved'
+                                ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs'
+                                : 'bg-white border-slate-200 text-slate-400'
+                            }`}
+                          >
+                            {(report.status === 'Accepted' || report.status === 'Ongoing' || report.status === 'Resolved') && (
+                              <Check className="w-3.5 h-3.5 text-blue-600" />
+                            )}
+                            <span>2. Accepted</span>
+                          </div>
+
+                          <div
+                            className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
+                              report.status === 'Ongoing' || report.status === 'Resolved'
+                                ? 'bg-orange-50 border-orange-300 text-orange-700 shadow-2xs'
+                                : 'bg-white border-slate-200 text-slate-400'
+                            }`}
+                          >
+                            {(report.status === 'Ongoing' || report.status === 'Resolved') && (
+                              <Check className="w-3.5 h-3.5 text-orange-600" />
+                            )}
+                            <span>3. Ongoing</span>
+                          </div>
+
+                          <div
+                            className={`p-2.5 rounded-xl border flex items-center justify-center gap-1.5 ${
+                              report.status === 'Resolved'
+                                ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-2xs'
+                                : 'bg-white border-slate-200 text-slate-400'
+                            }`}
+                          >
+                            {report.status === 'Resolved' && (
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            )}
+                            <span>4. Resolved</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-slate-600 pt-1 font-medium">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                          <div>
+                            <strong className="text-slate-900 block font-bold">{report.barangay}, {report.municipality || 'Calapan City'}</strong>
+                            <span className="text-slate-700">{report.locationDetails}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
+                          <span>Submitted on {new Date(report.createdAt).toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </div>
+
+          {/* Citizen Pagination Controls Bar */}
+          {totalMyReports > 0 && (
+            <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-2xl p-3.5 sm:p-4 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div className="flex items-center gap-2">
+                <span>
+                  Showing <strong className="text-slate-900 font-bold">{trackingStartIndex + 1}</strong> to{' '}
+                  <strong className="text-slate-900 font-bold">{Math.min(trackingStartIndex + trackingPageSize, totalMyReports)}</strong> of{' '}
+                  <strong className="text-slate-900 font-bold">{totalMyReports}</strong> filed reports
+                </span>
+                <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-slate-500">Per page:</span>
+                  <select
+                    value={trackingPageSize}
+                    onChange={(e) => {
+                      setTrackingPageSize(Number(e.target.value));
+                      setTrackingPage(1);
+                    }}
+                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setTrackingPage((p) => Math.max(1, p - 1))}
+                  disabled={trackingPage === 1}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 transition ${
+                    trackingPage === 1
+                      ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50/50'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs'
+                  }`}
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Prev</span>
+                </button>
+
+                <span className="text-xs font-bold text-slate-700 px-2">
+                  Page {trackingPage} of {totalTrackingPages}
+                </span>
+
+                <button
+                  onClick={() => setTrackingPage((p) => Math.min(totalTrackingPages, p + 1))}
+                  disabled={trackingPage === totalTrackingPages}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 transition ${
+                    trackingPage === totalTrackingPages
+                      ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50/50'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs'
+                  }`}
+                >
+                  <span>Next</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
