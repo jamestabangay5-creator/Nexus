@@ -34,7 +34,7 @@ interface Props {
 }
 
 export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { language, agencyLogin, triggerSuccessModal } = useNexus();
+  const { language, agencyLogin, triggerSuccessModal, openAuthModal } = useNexus();
   const t = TRANSLATIONS[language];
 
   const [selectedAgency, setSelectedAgency] = useState<AgencyScope>('CENTRAL');
@@ -371,14 +371,24 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
             </button>
           </form>
 
-          {/* Footer note */}
-          <div className="text-center pt-2 border-t border-slate-100">
+          {/* Footer switcher to Citizen Portal */}
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openAuthModal('login');
+              }}
+              className="text-xs text-blue-600 hover:text-blue-800 transition font-bold hover:underline cursor-pointer"
+            >
+              Reporting as Citizen? Sign In Here
+            </button>
             <button
               type="button"
               onClick={onClose}
-              className="text-xs text-slate-500 hover:text-slate-800 transition font-semibold"
+              className="text-xs text-slate-500 hover:text-slate-800 transition font-semibold cursor-pointer"
             >
-              Cancel and Return to Main Page
+              Cancel
             </button>
           </div>
         </div>

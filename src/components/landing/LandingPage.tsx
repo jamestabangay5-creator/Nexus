@@ -573,10 +573,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <span>Pre-Provisioned Agency Access</span>
               </span>
               <button
-                onClick={() => openAuthModal('login')}
-                className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition cursor-pointer shadow-xs"
+                onClick={() => onOpenAgencyAuth ? onOpenAgencyAuth() : openAuthModal('login')}
+                className="px-3.5 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md shadow-blue-500/20"
               >
-                Sign In
+                Sign In (Agency)
               </button>
             </div>
           )}

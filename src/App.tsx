@@ -9,6 +9,7 @@ import { TermsAndConditionsModal } from './components/resident/TermsAndCondition
 import { ReportDetailModal } from './components/admin/ReportDetailModal';
 import { IncidentMapView } from './components/map/IncidentMapView';
 import { ResidentAuthModal } from './components/auth/ResidentAuthModal';
+import { AgencyAuthModal } from './components/auth/AgencyAuthModal';
 import { AgencyProfileModal } from './components/admin/AgencyProfileModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { MobileBottomNav } from './components/navigation/MobileBottomNav';
@@ -44,6 +45,9 @@ const AppContent: React.FC = () => {
     isAgencyProfileModalOpen,
     closeAgencyProfileModal,
     openAgencyProfileModal,
+    isAgencyAuthModalOpen,
+    closeAgencyAuthModal,
+    openAgencyAuthModal,
     firebaseUser,
     residentUser,
     agencyUser,
@@ -114,7 +118,7 @@ const AppContent: React.FC = () => {
                 openAuthModal('login');
               }
             }}
-            onOpenAgencyAuth={() => openAuthModal('login')}
+            onOpenAgencyAuth={openAgencyAuthModal}
             onOpenGlobalMap={() => setIsGlobalMapActive(true)}
             onSelectReport={(id) => setSelectedReportId(id)}
           />
@@ -174,7 +178,7 @@ const AppContent: React.FC = () => {
               </p>
               <div className="flex flex-col gap-2 pt-2">
                 <button
-                  onClick={() => openAuthModal('login')}
+                  onClick={openAgencyAuthModal}
                   className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/20 cursor-pointer"
                 >
                   Agency Officer Sign In
@@ -223,7 +227,7 @@ const AppContent: React.FC = () => {
               <>
                 <span className="text-slate-300 hidden md:inline">|</span>
                 <button
-                  onClick={() => openAuthModal('login')}
+                  onClick={openAgencyAuthModal}
                   className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition cursor-pointer px-2 py-1 rounded-lg hover:bg-white/60"
                   title="Official Agency Dispatch Login"
                 >
@@ -247,6 +251,11 @@ const AppContent: React.FC = () => {
         isOpen={isAuthModalOpen}
         onClose={closeAuthModal}
         initialMode={authModalInitialMode}
+      />
+
+      <AgencyAuthModal
+        isOpen={isAgencyAuthModalOpen}
+        onClose={closeAgencyAuthModal}
       />
 
       <AgencyProfileModal

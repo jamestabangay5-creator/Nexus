@@ -30,14 +30,14 @@ import {
   Firestore
 } from "firebase/firestore";
 
-// Nexus Firebase Configuration
+// Nexus Firebase Configuration (Supports Vercel environment variables with resilient fallbacks)
 const firebaseConfig = {
-  apiKey: "AIzaSyCo58-f_aRRP28ai3FPnagRrNysa-yJuOQ",
-  authDomain: "nexus-a0b72.firebaseapp.com",
-  projectId: "nexus-a0b72",
-  storageBucket: "nexus-a0b72.firebasestorage.app",
-  messagingSenderId: "1098811715365",
-  appId: "1:1098811715365:web:eaefc6b11e6777104d74cc"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCo58-f_aRRP28ai3FPnagRrNysa-yJuOQ",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "nexus-a0b72.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "nexus-a0b72",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "nexus-a0b72.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1098811715365",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1098811715365:web:eaefc6b11e6777104d74cc"
 };
 
 // Initialize Firebase (singleton)

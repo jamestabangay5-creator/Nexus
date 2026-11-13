@@ -71,6 +71,7 @@ export const ResidentAuthModal: React.FC<Props> = ({
     agencyLogin,
     adminProfiles,
     triggerSuccessModal,
+    openAgencyAuthModal,
   } = useNexus();
 
   const t = TRANSLATIONS[language];
@@ -744,6 +745,22 @@ export const ResidentAuthModal: React.FC<Props> = ({
                   </>
                 )}
               </button>
+
+              {/* Quick Link to Official Agency Sign-In */}
+              <div className="pt-2 flex items-center justify-between text-xs bg-indigo-50/70 p-2.5 rounded-xl border border-indigo-100">
+                <span className="text-slate-600 font-medium">Official Dispatcher / Responder?</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    openAgencyAuthModal();
+                  }}
+                  className="font-bold text-indigo-700 hover:text-indigo-900 flex items-center gap-1 cursor-pointer transition hover:underline"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Agency Command Access</span>
+                </button>
+              </div>
             </form>
           </div>
         )}
