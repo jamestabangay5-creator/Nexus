@@ -11,6 +11,7 @@ import { BONGABONG_AGENCY_STATIONS, AgencyScope } from '../../constants/oriental
 
 interface IncidentLocationPickerMapProps {
   coords: { lat: number; lng: number };
+  isLocationPinned?: boolean;
   onCoordinatesChange?: (newCoords: { lat: number; lng: number }) => void;
   barangay?: string;
   municipality?: string;
@@ -21,6 +22,7 @@ interface IncidentLocationPickerMapProps {
 
 export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps> = ({
   coords,
+  isLocationPinned = false,
   onCoordinatesChange,
   barangay = 'Bongabong',
   municipality = 'Bongabong',
@@ -73,10 +75,10 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    // Center on current coords with neighborhood level zoom
+    // Center on current coords or Bongabong municipality overview
     const map = L.map(mapContainerRef.current, {
       center: [coords.lat, coords.lng],
-      zoom: 16,
+      zoom: isLocationPinned ? 16 : 14,
       zoomControl: false,
       attributionControl: false,
     });
@@ -95,33 +97,34 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     }).addTo(map);
     tileLayerRef.current = streetLayer;
 
-    // Locked Pin Marker (Position driven exclusively by Detect My Exact GPS & Barangay selection)
-    const marker = L.marker([coords.lat, coords.lng], {
-      draggable: false,
-      icon: createPickerPinIcon(),
-      title: 'Emergency Dispatch Location (Pinned via Detect My Exact GPS)',
-    }).addTo(map);
+    // Only add dispatch pin marker if location has been pinned
+    if (isLocationPinned) {
+      const marker = L.marker([coords.lat, coords.lng], {
+        draggable: false,
+        icon: createPickerPinIcon(),
+        title: 'Emergency Dispatch Location (Pinned via Pin my Location)',
+      }).addTo(map);
 
-    // Accuracy Circle
-    const circle = L.circle([coords.lat, coords.lng], {
-      radius: 30,
-      color: '#3b82f6',
-      fillColor: '#60a5fa',
-      fillOpacity: 0.18,
-      weight: 1.5,
-      dashArray: '4, 4',
-    }).addTo(map);
+      const circle = L.circle([coords.lat, coords.lng], {
+        radius: 30,
+        color: '#3b82f6',
+        fillColor: '#60a5fa',
+        fillOpacity: 0.18,
+        weight: 1.5,
+        dashArray: '4, 4',
+      }).addTo(map);
 
-    // Bind popup with helpful instructions
-    marker.bindPopup(`
-      <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px;">
-        <strong style="color: #1e3a8a; display: block; margin-bottom: 2px;">📍 Verified Dispatch Location</strong>
-        <span style="color: #475569;">Pinned via 'Detect My Exact GPS' and Barangay selection.</span>
-      </div>
-    `);
+      marker.bindPopup(`
+        <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px;">
+          <strong style="color: #1e3a8a; display: block; margin-bottom: 2px;">📍 Verified Dispatch Location</strong>
+          <span style="color: #475569;">Pinned via 'Pin my Location'.</span>
+        </div>
+      `);
 
-    markerRef.current = marker;
-    circleRef.current = circle;
+      markerRef.current = marker;
+      circleRef.current = circle;
+    }
+
     mapInstanceRef.current = map;
 
     // Render Bongabong Emergency Agency Headquarters Stations (PNP, BFP, MDRRMO)
@@ -203,27 +206,56 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     }
   }, [mapMode]);
 
-  // Sync marker and pan map when coordinates prop changes from outside (e.g. GPS detected or barangay selected)
+  // Sync marker and pan map when coordinates or pin status changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !markerRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!map) return;
 
-    const curPos = markerRef.current.getLatLng();
-    const diffLat = Math.abs(curPos.lat - coords.lat);
-    const diffLng = Math.abs(curPos.lng - coords.lng);
+    if (isLocationPinned) {
+      if (!markerRef.current) {
+        const marker = L.marker([coords.lat, coords.lng], {
+          draggable: false,
+          icon: createPickerPinIcon(),
+          title: 'Emergency Dispatch Location (Pinned via Pin my Location)',
+        }).addTo(map);
 
-    // Only update if difference is meaningful (avoids feedback loops during drag)
-    if (diffLat > 0.00003 || diffLng > 0.00003) {
-      markerRef.current.setLatLng([coords.lat, coords.lng]);
-      if (circleRef.current) {
-        circleRef.current.setLatLng([coords.lat, coords.lng]);
+        const circle = L.circle([coords.lat, coords.lng], {
+          radius: 30,
+          color: '#3b82f6',
+          fillColor: '#60a5fa',
+          fillOpacity: 0.18,
+          weight: 1.5,
+          dashArray: '4, 4',
+        }).addTo(map);
+
+        marker.bindPopup(`
+          <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px;">
+            <strong style="color: #1e3a8a; display: block; margin-bottom: 2px;">📍 Verified Dispatch Location</strong>
+            <span style="color: #475569;">Pinned via 'Pin my Location'.</span>
+          </div>
+        `);
+
+        markerRef.current = marker;
+        circleRef.current = circle;
+      } else {
+        markerRef.current.setLatLng([coords.lat, coords.lng]);
+        if (circleRef.current) {
+          circleRef.current.setLatLng([coords.lat, coords.lng]);
+        }
       }
-      mapInstanceRef.current.flyTo(
-        [coords.lat, coords.lng],
-        Math.max(mapInstanceRef.current.getZoom(), 16),
-        { animate: true, duration: 0.8 }
-      );
+
+      map.flyTo([coords.lat, coords.lng], 16, { animate: true, duration: 0.8 });
+    } else {
+      if (markerRef.current) {
+        map.removeLayer(markerRef.current);
+        markerRef.current = null;
+      }
+      if (circleRef.current) {
+        map.removeLayer(circleRef.current);
+        circleRef.current = null;
+      }
     }
-  }, [coords.lat, coords.lng]);
+  }, [coords.lat, coords.lng, isLocationPinned]);
 
   const handleCenterOnPin = () => {
     if (mapInstanceRef.current && markerRef.current) {
@@ -245,7 +277,7 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
               Incident Verification Map
             </span>
             <span className="text-[11px] text-slate-300 font-medium">
-              Bongabong, Oriental Mindoro · Auto-Marked via GPS
+              Bongabong, Oriental Mindoro · {isLocationPinned ? 'Pinned via GPS' : 'Awaiting Pin'}
             </span>
           </div>
         </div>
@@ -256,12 +288,17 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
           {locationSuccess ? (
             <span className="px-2.5 py-1 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-2xs">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>GPS Device Synced</span>
+              <span>Location Pinned</span>
             </span>
-          ) : (
+          ) : isLocationPinned ? (
             <span className="px-2.5 py-1 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-2xs">
               <Crosshair className="w-3.5 h-3.5 text-indigo-400" />
               <span>Exact GPS Pinned</span>
+            </span>
+          ) : (
+            <span className="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-2xs">
+              <Crosshair className="w-3.5 h-3.5 text-slate-400" />
+              <span>Pending Pin</span>
             </span>
           )}
 
@@ -300,39 +337,45 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
         {/* Floating Controls Overlay on Map */}
         <div className="absolute top-3 left-3 z-[400] flex flex-col gap-2">
           {/* Quick Recenter on Pin */}
-          <button
-            type="button"
-            onClick={handleCenterOnPin}
-            className="px-2.5 py-1.5 bg-white/95 backdrop-blur hover:bg-white text-slate-800 rounded-xl text-xs font-bold border border-slate-200/80 shadow-md flex items-center gap-1.5 cursor-pointer hover:border-slate-300 transition"
-            title="Center map on pin"
-          >
-            <Crosshair className="w-3.5 h-3.5 text-blue-600" />
-            <span className="hidden sm:inline">Center on Pin</span>
-          </button>
+          {isLocationPinned && (
+            <button
+              type="button"
+              onClick={handleCenterOnPin}
+              className="px-2.5 py-1.5 bg-white/95 backdrop-blur hover:bg-white text-slate-800 rounded-xl text-xs font-bold border border-slate-200/80 shadow-md flex items-center gap-1.5 cursor-pointer hover:border-slate-300 transition"
+              title="Center map on pin"
+            >
+              <Crosshair className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">Center on Pin</span>
+            </button>
+          )}
 
-          {/* Quick Re-detect GPS button on map */}
+          {/* Quick Pin my Location button on map */}
           {onDetectGPS && (
             <button
               type="button"
               onClick={onDetectGPS}
               disabled={isLocating}
-              className="px-2.5 py-1.5 bg-white/95 backdrop-blur hover:bg-white text-slate-800 rounded-xl text-xs font-bold border border-slate-200/80 shadow-md flex items-center gap-1.5 cursor-pointer hover:border-slate-300 transition disabled:opacity-60"
-              title="Detect device GPS location"
+              className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold border border-blue-500 shadow-md flex items-center gap-1.5 cursor-pointer transition disabled:opacity-60"
+              title="Pin my Location"
             >
-              <Navigation className={`w-3.5 h-3.5 text-blue-600 ${isLocating ? 'animate-spin' : ''}`} />
+              <Navigation className={`w-3.5 h-3.5 text-white ${isLocating ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">
-                {isLocating ? 'Locating...' : 'GPS Device'}
+                {isLocating ? 'Pinning...' : 'Pin my Location'}
               </span>
             </button>
           )}
         </div>
 
-        {/* Bottom Banner with GPS Instructions */}
+        {/* Bottom Banner with Pin Instructions */}
         <div className="absolute bottom-2 left-2 right-14 sm:right-auto z-[400] pointer-events-none">
           <div className="bg-slate-900/85 backdrop-blur text-white px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-lg text-[11px] font-medium flex items-center gap-2 max-w-sm">
-            <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping shrink-0" />
+            <span className={`w-2 h-2 rounded-full ${isLocationPinned ? 'bg-emerald-400' : 'bg-blue-400'} animate-ping shrink-0`} />
             <span className="truncate">
-              📍 Location pinned via <strong>Detect My Exact GPS</strong>
+              {isLocationPinned ? (
+                <>📍 Location pinned via <strong>Pin my Location</strong></>
+              ) : (
+                <>Click <strong>Pin my Location</strong> to pin your exact location</>
+              )}
             </span>
           </div>
         </div>
@@ -342,12 +385,15 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
       <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-slate-700">
           <span className="font-bold text-slate-900">Current Pinpoint:</span>
-          <span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-800 font-bold">
-            {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
-          </span>
-          <span className="text-slate-500 font-medium">
-            ({barangay}, {municipality})
-          </span>
+          {isLocationPinned ? (
+            <span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-800 font-bold">
+              {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+            </span>
+          ) : (
+            <span className="text-slate-500 font-medium italic">
+              Pending Pin (Click "Pin my Location")
+            </span>
+          )}
         </div>
 
         <div className="text-slate-500 text-[11px] font-medium flex items-center gap-1">

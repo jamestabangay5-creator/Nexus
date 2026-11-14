@@ -128,14 +128,12 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     setSelectedMunicipality('Bongabong');
     if (residentUser.barangay) {
       setBarangay(residentUser.barangay);
-      if (!locationSuccess) {
-        setCoords(getCoordinatesForBarangay('Bongabong', residentUser.barangay));
-      }
     }
   }, [residentUser.barangay]);
 
   const [isLocating, setIsLocating] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState(false);
+  const [isLocationPinned, setIsLocationPinned] = useState(false);
   const [description, setDescription] = useState('');
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [photoCaption, setPhotoCaption] = useState<string>('');
@@ -279,9 +277,6 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     const brgys = getBarangaysForMunicipality(newMuni);
     const firstBrgy = brgys[0] || '';
     setBarangay(firstBrgy);
-    if (!locationSuccess) {
-      setCoords(getCoordinatesForBarangay(newMuni, firstBrgy));
-    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -324,6 +319,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
           setBarangay(autoBrgy);
           setIsLocating(false);
           setLocationSuccess(true);
+          setIsLocationPinned(true);
           setTimeout(() => setLocationSuccess(false), 3000);
         },
         () => {
@@ -336,6 +332,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
           setBarangay(autoBrgy);
           setIsLocating(false);
           setLocationSuccess(true);
+          setIsLocationPinned(true);
           setTimeout(() => setLocationSuccess(false), 3000);
         },
         { timeout: 4000 }
@@ -343,18 +340,10 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     } else {
       setIsLocating(false);
       setLocationSuccess(true);
+      setIsLocationPinned(true);
       setTimeout(() => setLocationSuccess(false), 3000);
     }
   };
-
-  // Automatically attempt device GPS detection upon accessing the reporting form
-  const hasAttemptedAutoGpsRef = useRef(false);
-  useEffect(() => {
-    if (activeTab === 'report' && !hasAttemptedAutoGpsRef.current) {
-      hasAttemptedAutoGpsRef.current = true;
-      handleDetectGPS();
-    }
-  }, [activeTab]);
 
   const handleCopyTrackingCode = (code: string) => {
     navigator.clipboard?.writeText(code);
@@ -429,6 +418,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     setLocationDetails('');
     setPhotoUrl('');
     setPhotoCaption('');
+    setIsLocationPinned(false);
   };
 
   return (
@@ -982,15 +972,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     </label>
                     <select
                       value={barangay}
-                      onChange={(e) => {
-                        const newBrgy = e.target.value;
-                        setBarangay(newBrgy);
-                        if (BONGABONG_BARANGAY_COORDINATES[newBrgy]) {
-                          setCoords(BONGABONG_BARANGAY_COORDINATES[newBrgy]);
-                        } else {
-                          setCoords(getCoordinatesForBarangay('Bongabong', newBrgy));
-                        }
-                      }}
+                      onChange={(e) => setBarangay(e.target.value)}
                       required
                       className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs cursor-pointer"
                     >
@@ -1038,7 +1020,11 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                       GPS Dispatch Coordinates:
                     </span>
                     <span className="font-mono text-slate-700 font-bold text-xs sm:text-sm">
-                      Latitude: {coords.lat.toFixed(5)}, Longitude: {coords.lng.toFixed(5)}
+                      {isLocationPinned ? (
+                        <>Latitude: {coords.lat.toFixed(5)}, Longitude: {coords.lng.toFixed(5)}</>
+                      ) : (
+                        <span className="text-slate-500 font-medium italic">Pending Pin — click 'Pin my Location' below</span>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -1047,10 +1033,10 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   type="button"
                   onClick={handleDetectGPS}
                   disabled={isLocating}
-                  className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer self-start sm:self-center shadow-xs min-h-[40px]"
+                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer self-start sm:self-center shadow-md shadow-blue-500/20 min-h-[40px] active:scale-95"
                 >
-                  <Navigation className={`w-4 h-4 text-blue-600 ${isLocating ? 'animate-spin' : ''}`} />
-                  <span>{isLocating ? 'Acquiring GPS...' : locationSuccess ? 'GPS Updated!' : 'Detect My Exact GPS'}</span>
+                  <Navigation className={`w-4 h-4 text-white ${isLocating ? 'animate-spin' : ''}`} />
+                  <span>{isLocating ? 'Pinning Location...' : locationSuccess ? 'Location Pinned!' : 'Pin my Location'}</span>
                 </button>
               </div>
               <p className="text-xs text-slate-600 font-medium">
@@ -1061,6 +1047,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             {/* Real-time Interactive Location Verification Map */}
             <IncidentLocationPickerMap
               coords={coords}
+              isLocationPinned={isLocationPinned}
               barangay={barangay}
               municipality={selectedMunicipality}
               isLocating={isLocating}
