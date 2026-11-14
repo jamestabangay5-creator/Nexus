@@ -50,7 +50,8 @@ import {
   Eye,
   RotateCcw,
   LayoutList,
-  LayoutGrid
+  LayoutGrid,
+  AlertCircle
 } from 'lucide-react';
 import { IncidentMapView } from '../map/IncidentMapView';
 import { ReportDetailModal } from '../admin/ReportDetailModal';
@@ -150,6 +151,28 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   const [trackingDateFilter, setTrackingDateFilter] = useState<'ALL' | '24h' | '7d' | '30d' | 'custom'>('ALL');
   const [trackingCustomStartDate, setTrackingCustomStartDate] = useState('');
   const [trackingCustomEndDate, setTrackingCustomEndDate] = useState('');
+
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const trackingDateValidationError = useMemo(() => {
+    if (trackingDateFilter !== 'custom') return null;
+    if (trackingCustomStartDate && trackingCustomStartDate > todayStr) {
+      return 'Starting date cannot be in the future. Reports can only be filtered up to today.';
+    }
+    if (trackingCustomEndDate && trackingCustomEndDate > todayStr) {
+      return 'Ending date cannot be in the future. Please select today or an earlier date.';
+    }
+    if (trackingCustomStartDate && trackingCustomEndDate && trackingCustomStartDate > trackingCustomEndDate) {
+      return "Invalid date range: 'From' date cannot be later than 'To' date.";
+    }
+    return null;
+  }, [trackingDateFilter, trackingCustomStartDate, trackingCustomEndDate, todayStr]);
   const [trackingViewMode, setTrackingViewMode] = useState<'cards' | 'table'>('cards');
 
   // Pagination for Resident Reports
@@ -200,13 +223,13 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
           if (trackingDateFilter === '24h' && now - repTime > 24 * 60 * 60 * 1000) return false;
           if (trackingDateFilter === '7d' && now - repTime > 7 * 24 * 60 * 60 * 1000) return false;
           if (trackingDateFilter === '30d' && now - repTime > 30 * 24 * 60 * 60 * 1000) return false;
-          if (trackingDateFilter === 'custom') {
+          if (trackingDateFilter === 'custom' && !trackingDateValidationError) {
             if (trackingCustomStartDate) {
-              const start = new Date(trackingCustomStartDate).getTime();
+              const start = new Date(trackingCustomStartDate + 'T00:00:00').getTime();
               if (repTime < start) return false;
             }
             if (trackingCustomEndDate) {
-              const end = new Date(trackingCustomEndDate).getTime() + 24 * 60 * 60 * 1000;
+              const end = new Date(trackingCustomEndDate + 'T23:59:59.999').getTime();
               if (repTime > end) return false;
             }
           }
@@ -1214,40 +1237,63 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
               {/* Custom Date Interval Input Row */}
               {trackingDateFilter === 'custom' && (
-                <div className="flex flex-wrap items-center gap-3 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-2.5 rounded-xl animate-in fade-in">
-                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-blue-600" />
-                    <span>Select Date Interval:</span>
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-semibold text-slate-600">From:</label>
-                    <input
-                      type="date"
-                      value={trackingCustomStartDate}
-                      onChange={(e) => setTrackingCustomStartDate(e.target.value)}
-                      className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
-                    />
+                <div className="flex flex-col gap-2 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-2.5 rounded-xl animate-in fade-in">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-blue-600" />
+                      <span>Select Date Interval:</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-semibold text-slate-600">From:</label>
+                      <input
+                        type="date"
+                        value={trackingCustomStartDate}
+                        max={todayStr}
+                        onChange={(e) => setTrackingCustomStartDate(e.target.value)}
+                        className={`bg-white border rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs ${
+                          (trackingCustomStartDate && trackingCustomStartDate > todayStr) ||
+                          (trackingCustomStartDate && trackingCustomEndDate && trackingCustomStartDate > trackingCustomEndDate)
+                            ? 'border-rose-400 bg-rose-50/50 text-rose-800'
+                            : 'border-slate-200'
+                        }`}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-semibold text-slate-600">To:</label>
+                      <input
+                        type="date"
+                        value={trackingCustomEndDate}
+                        max={todayStr}
+                        min={trackingCustomStartDate || undefined}
+                        onChange={(e) => setTrackingCustomEndDate(e.target.value)}
+                        className={`bg-white border rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs ${
+                          (trackingCustomEndDate && trackingCustomEndDate > todayStr) ||
+                          (trackingCustomStartDate && trackingCustomEndDate && trackingCustomStartDate > trackingCustomEndDate)
+                            ? 'border-rose-400 bg-rose-50/50 text-rose-800'
+                            : 'border-slate-200'
+                        }`}
+                      />
+                    </div>
+                    {(trackingCustomStartDate || trackingCustomEndDate) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTrackingCustomStartDate('');
+                          setTrackingCustomEndDate('');
+                        }}
+                        className="text-xs text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
+                      >
+                        Clear Dates
+                      </button>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-semibold text-slate-600">To:</label>
-                    <input
-                      type="date"
-                      value={trackingCustomEndDate}
-                      onChange={(e) => setTrackingCustomEndDate(e.target.value)}
-                      className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
-                    />
-                  </div>
-                  {(trackingCustomStartDate || trackingCustomEndDate) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTrackingCustomStartDate('');
-                        setTrackingCustomEndDate('');
-                      }}
-                      className="text-xs text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
-                    >
-                      Clear Dates
-                    </button>
+
+                  {/* Reactive Date Validation Alert */}
+                  {trackingDateValidationError && (
+                    <div className="w-full flex items-center gap-2 p-2.5 bg-rose-50 border border-rose-300 text-rose-800 rounded-xl text-xs font-bold animate-in fade-in">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{trackingDateValidationError}</span>
+                    </div>
                   )}
                 </div>
               )}

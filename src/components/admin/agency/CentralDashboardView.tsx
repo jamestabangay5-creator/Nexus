@@ -23,8 +23,10 @@ import {
   TrendingUp,
   Layers,
   ShieldCheck,
-  Send
+  Send,
+  Phone
 } from 'lucide-react';
+import { BONGABONG_AGENCY_STATIONS } from '../../../constants/orientalMindoroData';
 
 interface Props {
   onSelectReport: (reportId: string) => void;
@@ -217,7 +219,7 @@ export const CentralDashboardView: React.FC<Props> = ({
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs text-slate-600 pt-1">
+            <div className="space-y-2 text-xs text-slate-600 pt-1">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 flex items-center gap-1">
                   <Car className="w-3.5 h-3.5 text-blue-600" /> Patrol Fleet Ready:
@@ -225,19 +227,40 @@ export const CentralDashboardView: React.FC<Props> = ({
                 <span className="font-bold text-slate-900">{onPatrolCount} Units</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Emergency Hotline:</span>
-                <span className="font-mono text-blue-700 font-bold">911 / (02) 8722-0650</span>
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-blue-600" /> 24/7 Station Hotline:
+                </span>
+                <a
+                  href={`tel:${BONGABONG_AGENCY_STATIONS.PNP.hotline.split('/')[0].replace(/[^0-9]/g, '')}`}
+                  className="font-mono text-blue-700 font-bold hover:underline"
+                >
+                  {BONGABONG_AGENCY_STATIONS.PNP.hotline}
+                </a>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onSwitchAgencyView('PNP')}
-              className="w-full py-2.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2 shadow-2xs"
-            >
-              <span>Inspect Police Console</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            {/* Station Operational & Jurisdiction Profile */}
+            <div className="pt-2 border-t border-blue-100/90 space-y-1.5 text-xs">
+              <div className="flex items-start gap-1.5 text-[11px] text-slate-600">
+                <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                <span className="line-clamp-2">
+                  <strong className="text-slate-900 font-semibold">Station:</strong> {BONGABONG_AGENCY_STATIONS.PNP.address}
+                </span>
+              </div>
+              <div className="bg-blue-50/90 border border-blue-200/80 rounded-xl p-2.5 text-xs text-blue-900">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase font-black text-blue-700 tracking-wider">
+                    Police Jurisdiction
+                  </span>
+                  <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-blue-600 text-white shadow-2xs">
+                    24/7 Active
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-snug">
+                  Jurisdiction across all 32 Bongabong Barangays. Law enforcement, crime investigation, mobile patrol & tactical peacekeeping.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* BFP Fire Card */}
@@ -257,7 +280,7 @@ export const CentralDashboardView: React.FC<Props> = ({
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs text-slate-600 pt-1">
+            <div className="space-y-2 text-xs text-slate-600 pt-1">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5 text-orange-600" /> In Station Ready:
@@ -265,19 +288,46 @@ export const CentralDashboardView: React.FC<Props> = ({
                 <span className="font-bold text-slate-900">{inStationCount} Apparatus</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Alarm Escalation:</span>
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Flame className="w-3 h-3 text-orange-600" /> Alarm Escalation:
+                </span>
                 <span className="font-mono text-orange-700 font-bold">{fireAlarmLevel}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-orange-600" /> 24/7 Fire Hotline:
+                </span>
+                <a
+                  href={`tel:${BONGABONG_AGENCY_STATIONS.BFP.hotline.split('/')[0].replace(/[^0-9]/g, '')}`}
+                  className="font-mono text-orange-700 font-bold hover:underline"
+                >
+                  {BONGABONG_AGENCY_STATIONS.BFP.hotline}
+                </a>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onSwitchAgencyView('BFP')}
-              className="w-full py-2.5 bg-orange-50 hover:bg-orange-600 text-orange-700 hover:text-white border border-orange-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2 shadow-2xs"
-            >
-              <span>Inspect Fire Console</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            {/* Station Operational & Jurisdiction Profile */}
+            <div className="pt-2 border-t border-orange-100/90 space-y-1.5 text-xs">
+              <div className="flex items-start gap-1.5 text-[11px] text-slate-600">
+                <MapPin className="w-3.5 h-3.5 text-orange-600 shrink-0 mt-0.5" />
+                <span className="line-clamp-2">
+                  <strong className="text-slate-900 font-semibold">Station:</strong> {BONGABONG_AGENCY_STATIONS.BFP.address}
+                </span>
+              </div>
+              <div className="bg-orange-50/90 border border-orange-200/80 rounded-xl p-2.5 text-xs text-orange-900">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase font-black text-orange-700 tracking-wider">
+                    Fire & HazMat Suppression
+                  </span>
+                  <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-orange-600 text-white shadow-2xs">
+                    Ready Standby
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-snug">
+                  Structural fire response, highway vehicle collision extrication, chemical hazard containment, and fire safety enforcement.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* MDRRMO Rescue Card */}
@@ -297,23 +347,48 @@ export const CentralDashboardView: React.FC<Props> = ({
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs text-slate-600 pt-1">
+            <div className="space-y-2 text-xs text-slate-600 pt-1">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 flex items-center gap-1">
                   <Ambulance className="w-3.5 h-3.5 text-emerald-600" /> Ambulances Ready:
                 </span>
                 <span className="font-bold text-slate-900">{availableMedics} / {medicalUnits.length} Medics</span>
               </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-emerald-600" /> 24/7 Rescue Hotline:
+                </span>
+                <a
+                  href={`tel:${BONGABONG_AGENCY_STATIONS.MDRRMO.hotline.split('/')[0].replace(/[^0-9]/g, '')}`}
+                  className="font-mono text-emerald-700 font-bold hover:underline"
+                >
+                  {BONGABONG_AGENCY_STATIONS.MDRRMO.hotline}
+                </a>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onSwitchAgencyView('MDRRMO')}
-              className="w-full py-2.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2 shadow-2xs"
-            >
-              <span>Inspect Rescue Console</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            {/* Station Operational & Jurisdiction Profile */}
+            <div className="pt-2 border-t border-emerald-100/90 space-y-1.5 text-xs">
+              <div className="flex items-start gap-1.5 text-[11px] text-slate-600">
+                <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <span className="line-clamp-2">
+                  <strong className="text-slate-900 font-semibold">EOC:</strong> {BONGABONG_AGENCY_STATIONS.MDRRMO.address}
+                </span>
+              </div>
+              <div className="bg-emerald-50/90 border border-emerald-200/80 rounded-xl p-2.5 text-xs text-emerald-900">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase font-black text-emerald-700 tracking-wider">
+                    Disaster EOC & EMS
+                  </span>
+                  <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-emerald-600 text-white shadow-2xs">
+                    Paramedics Ready
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-snug">
+                  Emergency medical dispatch, flood water rescue, typhoon evacuation coordination, and comprehensive calamity mitigation.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

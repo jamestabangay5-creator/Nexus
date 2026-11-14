@@ -50,6 +50,7 @@ import {
   ShieldCheck,
   Lock,
   Navigation,
+  AlertCircle,
 } from 'lucide-react';
 import { startContinuousCriticalAlarm, stopContinuousCriticalAlarm } from '../../services/soundService';
 import { ReportDetailModal } from '../admin/ReportDetailModal';
@@ -130,6 +131,34 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
   const [endDate, setEndDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [includeRejected, setIncludeRejected] = useState<boolean>(false);
+
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const mapDateValidationError = useMemo(() => {
+    if (dateFilter === 'specific') {
+      if (specificDate && specificDate > todayStr) {
+        return 'Date cannot be in the future. Reports can only be mapped up to today.';
+      }
+    }
+    if (dateFilter === 'range') {
+      if (startDate && startDate > todayStr) {
+        return 'Start date cannot be in the future. Reports can only be mapped up to today.';
+      }
+      if (endDate && endDate > todayStr) {
+        return 'End date cannot be in the future. Please select today or an earlier date.';
+      }
+      if (startDate && endDate && startDate > endDate) {
+        return "Invalid date range: 'From' date cannot be after 'To' date.";
+      }
+    }
+    return null;
+  }, [dateFilter, specificDate, startDate, endDate, todayStr]);
 
   // Map display controls
   const [mapMode, setMapMode] = useState<MapTileMode>('osm');
@@ -233,17 +262,17 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
         if (dateFilter === '24h' && diffHours > 24) return false;
         if (dateFilter === '7d' && diffHours > 24 * 7) return false;
         if (dateFilter === '30d' && diffHours > 24 * 30) return false;
-        if (dateFilter === 'specific' && specificDate) {
+        if (dateFilter === 'specific' && specificDate && !mapDateValidationError) {
           const repDate = new Date(r.createdAt || r.dateTime).toISOString().slice(0, 10);
           if (repDate !== specificDate) return false;
         }
-        if (dateFilter === 'range') {
+        if (dateFilter === 'range' && !mapDateValidationError) {
           if (startDate) {
-            const startMs = new Date(startDate).getTime();
+            const startMs = new Date(startDate + 'T00:00:00').getTime();
             if (repTime < startMs) return false;
           }
           if (endDate) {
-            const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000;
+            const endMs = new Date(endDate + 'T23:59:59.999').getTime();
             if (repTime > endMs) return false;
           }
         }
@@ -734,6 +763,16 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <span>View Full Report Details</span>
             <span style="font-size: 13px;">→</span>
           </button>
+          ${isAgencyViewer ? `
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=${report.coordinates.lat},${report.coordinates.lng}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="width: 100%; margin-top: 6px; padding: 7px 10px; background: #059669; color: white; border: 1px solid #10b981; border-radius: 8px; font-weight: 800; font-size: 11px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 8px rgba(5,150,105,0.35);"
+            >
+              <span>🧭 Navigate to Location ↗</span>
+            </a>
+          ` : ''}
         </div>
       `;
 
@@ -944,17 +983,17 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
         if (dateFilter === '24h' && diffHours > 24) return false;
         if (dateFilter === '7d' && diffHours > 24 * 7) return false;
         if (dateFilter === '30d' && diffHours > 24 * 30) return false;
-        if (dateFilter === 'specific' && specificDate) {
+        if (dateFilter === 'specific' && specificDate && !mapDateValidationError) {
           const repDate = new Date(r.createdAt || r.dateTime).toISOString().slice(0, 10);
           if (repDate !== specificDate) return false;
         }
-        if (dateFilter === 'range') {
+        if (dateFilter === 'range' && !mapDateValidationError) {
           if (startDate) {
-            const startMs = new Date(startDate).getTime();
+            const startMs = new Date(startDate + 'T00:00:00').getTime();
             if (repTime < startMs) return false;
           }
           if (endDate) {
-            const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000;
+            const endMs = new Date(endDate + 'T23:59:59.999').getTime();
             if (repTime > endMs) return false;
           }
         }
@@ -1261,32 +1300,50 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 <input
                   type="date"
                   value={specificDate}
+                  max={todayStr}
                   onChange={(e) => setSpecificDate(e.target.value)}
-                  className="bg-white border border-blue-300 text-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono font-bold focus:ring-2 focus:ring-blue-500/30 focus:outline-none shadow-2xs"
+                  className={`bg-white border text-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono font-bold focus:ring-2 focus:ring-blue-500/30 focus:outline-none shadow-2xs ${
+                    specificDate > todayStr ? 'border-rose-400 bg-rose-50/50 text-rose-800' : 'border-blue-300'
+                  }`}
                   title="Filter incidents on this specific calendar date"
                 />
               )}
 
               {dateFilter === 'range' && (
-                <div className="flex items-center gap-1 bg-white border border-blue-300 rounded-xl px-2 py-0.5 shadow-2xs text-xs">
+                <div className={`flex items-center gap-1 bg-white border rounded-xl px-2 py-0.5 shadow-2xs text-xs ${
+                  (startDate && startDate > todayStr) || (endDate && endDate > todayStr) || (startDate && endDate && startDate > endDate)
+                    ? 'border-rose-400 bg-rose-50/50'
+                    : 'border-blue-300'
+                }`}>
                   <input
                     type="date"
                     value={startDate}
+                    max={todayStr}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="font-mono text-xs text-slate-800 focus:outline-none py-1"
+                    className="font-mono text-xs text-slate-800 focus:outline-none py-1 bg-transparent"
                     title="From Date"
                   />
                   <span className="text-slate-400 font-bold px-0.5">to</span>
                   <input
                     type="date"
                     value={endDate}
+                    max={todayStr}
+                    min={startDate || undefined}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="font-mono text-xs text-slate-800 focus:outline-none py-1"
+                    className="font-mono text-xs text-slate-800 focus:outline-none py-1 bg-transparent"
                     title="To Date"
                   />
                 </div>
               )}
             </div>
+
+            {/* Reactive Map Date Validation Alert */}
+            {mapDateValidationError && (
+              <div className="w-full flex items-center gap-2 p-2 bg-rose-50 border border-rose-300 text-rose-800 rounded-xl text-xs font-bold animate-in fade-in">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                <span>{mapDateValidationError}</span>
+              </div>
+            )}
 
             {/* Status Filter */}
             <select
@@ -1490,11 +1547,11 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                   href={`https://www.google.com/maps/dir/?api=1&origin=${routeInfo.station.lat},${routeInfo.station.lng}&destination=${selectedReport.coordinates.lat},${selectedReport.coordinates.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-xs transition shrink-0 cursor-pointer"
+                  className="px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md shadow-blue-500/25 transition shrink-0 cursor-pointer"
                   title="Open in Google Maps Navigation"
                 >
-                  <Navigation className="w-3 h-3" />
-                  <span>GPS Nav ↗</span>
+                  <Navigation className="w-3.5 h-3.5 fill-white shrink-0" />
+                  <span>Navigate to Location ↗</span>
                 </a>
               </div>
             </div>
@@ -1920,10 +1977,10 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                         href={`https://www.google.com/maps/dir/?api=1&origin=${routeInfo.station.lat},${routeInfo.station.lng}&destination=${selectedReport.coordinates.lat},${selectedReport.coordinates.lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition cursor-pointer"
+                        className="w-full py-2.5 px-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition cursor-pointer"
                       >
-                        <Navigation className="w-3.5 h-3.5" />
-                        <span>Open Turn-by-Turn Navigation ↗</span>
+                        <Navigation className="w-4 h-4 fill-white shrink-0" />
+                        <span>Navigate to Location (Google Maps) ↗</span>
                       </a>
                     </div>
                   )}

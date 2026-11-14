@@ -28,7 +28,8 @@ import {
   ShieldAlert,
   Activity,
   FileText,
-  Shield
+  Shield,
+  AlertCircle
 } from 'lucide-react';
 
 interface Props {
@@ -61,6 +62,28 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
   const [dateFilter, setDateFilter] = useState<'ALL' | '24h' | '7d' | '30d' | 'custom'>('ALL');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const dateValidationError = useMemo(() => {
+    if (dateFilter !== 'custom') return null;
+    if (customStartDate && customStartDate > todayStr) {
+      return 'Starting date cannot be in the future. Reports can only be filtered up to today.';
+    }
+    if (customEndDate && customEndDate > todayStr) {
+      return 'Ending date cannot be in the future. Please select today or an earlier date.';
+    }
+    if (customStartDate && customEndDate && customStartDate > customEndDate) {
+      return "Invalid date range: 'From' date cannot be later than 'To' date.";
+    }
+    return null;
+  }, [dateFilter, customStartDate, customEndDate, todayStr]);
 
   // Quick Assistance Modal
   const [assistanceReport, setAssistanceReport] = useState<IncidentReport | null>(null);
@@ -128,13 +151,13 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
           if (dateFilter === '24h' && now - repTime > 24 * 60 * 60 * 1000) return false;
           if (dateFilter === '7d' && now - repTime > 7 * 24 * 60 * 60 * 1000) return false;
           if (dateFilter === '30d' && now - repTime > 30 * 24 * 60 * 60 * 1000) return false;
-          if (dateFilter === 'custom') {
+          if (dateFilter === 'custom' && !dateValidationError) {
             if (customStartDate) {
-              const start = new Date(customStartDate).getTime();
+              const start = new Date(customStartDate + 'T00:00:00').getTime();
               if (repTime < start) return false;
             }
             if (customEndDate) {
-              const end = new Date(customEndDate).getTime() + 24 * 60 * 60 * 1000;
+              const end = new Date(customEndDate + 'T23:59:59.999').getTime();
               if (repTime > end) return false;
             }
           }
@@ -522,40 +545,61 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
         {/* Custom Date Range Picker */}
         {dateFilter === 'custom' && (
-          <div className="flex flex-wrap items-center gap-3 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-3 rounded-2xl animate-in fade-in">
-            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-blue-600" />
-              <span>Select Date Interval:</span>
-            </span>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-slate-600">From:</label>
-              <input
-                type="date"
-                value={customStartDate}
-                onChange={(e) => setCustomStartDate(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
-              />
+          <div className="flex flex-col gap-2 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-3 rounded-2xl animate-in fade-in">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-600" />
+                <span>Select Date Interval:</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold text-slate-600">From:</label>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  max={todayStr}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className={`bg-white border rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs ${
+                    (customStartDate && customStartDate > todayStr) || (customStartDate && customEndDate && customStartDate > customEndDate)
+                      ? 'border-rose-400 bg-rose-50/50 text-rose-800'
+                      : 'border-slate-200'
+                  }`}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold text-slate-600">To:</label>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  max={todayStr}
+                  min={customStartDate || undefined}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className={`bg-white border rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs ${
+                    (customEndDate && customEndDate > todayStr) || (customStartDate && customEndDate && customStartDate > customEndDate)
+                      ? 'border-rose-400 bg-rose-50/50 text-rose-800'
+                      : 'border-slate-200'
+                  }`}
+                />
+              </div>
+              {(customStartDate || customEndDate) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomStartDate('');
+                    setCustomEndDate('');
+                  }}
+                  className="text-xs text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
+                >
+                  Clear Dates
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-slate-600">To:</label>
-              <input
-                type="date"
-                value={customEndDate}
-                onChange={(e) => setCustomEndDate(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:ring-1 focus:ring-blue-500 shadow-2xs"
-              />
-            </div>
-            {(customStartDate || customEndDate) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomStartDate('');
-                  setCustomEndDate('');
-                }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
-              >
-                Clear Dates
-              </button>
+
+            {/* Reactive Date Validation Alert */}
+            {dateValidationError && (
+              <div className="w-full flex items-center gap-2 p-2.5 bg-rose-50 border border-rose-300 text-rose-800 rounded-xl text-xs font-bold animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{dateValidationError}</span>
+              </div>
             )}
           </div>
         )}
