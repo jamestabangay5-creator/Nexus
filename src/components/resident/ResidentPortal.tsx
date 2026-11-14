@@ -10,6 +10,8 @@ import {
   OrientalMindoroMunicipality,
   PROVINCE_NAME,
   getBarangayFromCoordinates,
+  BONGABONG_BARANGAYS,
+  BONGABONG_BARANGAY_COORDINATES,
 } from '../../constants/orientalMindoroData';
 import { TRANSLATIONS } from '../../constants/translations';
 import { compressEvidenceImage } from '../../utils/imageUtils';
@@ -255,6 +257,9 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   }, [filteredMyReports, trackingStartIndex, trackingPageSize]);
 
   const getCoordinatesForBarangay = (muni: OrientalMindoroMunicipality, brgyName: string) => {
+    if (BONGABONG_BARANGAY_COORDINATES[brgyName]) {
+      return BONGABONG_BARANGAY_COORDINATES[brgyName];
+    }
     const center = MUNICIPALITY_COORDINATES[muni] || { lat: 12.7508, lng: 121.4864 };
     let hash = 0;
     for (let i = 0; i < brgyName.length; i++) {
@@ -951,19 +956,50 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   </span>
                 </div>
 
-                <div>
-                  <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-                    <Building2 className="w-4 h-4 text-blue-600" />
-                    <span>Municipality (Pilot Exclusive)</span>
-                  </label>
-                  <div className="w-full bg-blue-50/90 border border-blue-200/90 text-blue-900 rounded-xl p-3 text-sm font-black flex items-center justify-between min-h-[46px] shadow-xs">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Bongabong, Oriental Mindoro</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-blue-600" />
+                      <span>Municipality (Pilot Exclusive)</span>
+                    </label>
+                    <div className="w-full bg-blue-50/90 border border-blue-200/90 text-blue-900 rounded-xl p-3 text-sm font-black flex items-center justify-between min-h-[46px] shadow-xs">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span>Bongabong, Oriental Mindoro</span>
+                      </div>
+                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-blue-600 text-white rounded-md">
+                        Pilot Area
+                      </span>
                     </div>
-                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-blue-600 text-white rounded-md">
-                      Pilot Area
-                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-red-600" />
+                        <span>Barangay (32 Official Barangays in Bongabong) <span className="text-red-500">*</span></span>
+                      </span>
+                    </label>
+                    <select
+                      value={barangay}
+                      onChange={(e) => {
+                        const newBrgy = e.target.value;
+                        setBarangay(newBrgy);
+                        if (BONGABONG_BARANGAY_COORDINATES[newBrgy]) {
+                          setCoords(BONGABONG_BARANGAY_COORDINATES[newBrgy]);
+                        } else {
+                          setCoords(getCoordinatesForBarangay('Bongabong', newBrgy));
+                        }
+                      }}
+                      required
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs cursor-pointer"
+                    >
+                      {BONGABONG_BARANGAYS.map((brgy) => (
+                        <option key={`rp-brgy-${brgy}`} value={brgy}>
+                          {brgy}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -1025,11 +1061,6 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             {/* Real-time Interactive Location Verification Map */}
             <IncidentLocationPickerMap
               coords={coords}
-              onCoordinatesChange={(newCoords) => {
-                setCoords(newCoords);
-                const autoBrgy = getBarangayFromCoordinates(newCoords.lat, newCoords.lng);
-                setBarangay(autoBrgy);
-              }}
               barangay={barangay}
               municipality={selectedMunicipality}
               isLocating={isLocating}

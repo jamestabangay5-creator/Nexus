@@ -3,9 +3,7 @@ import L from 'leaflet';
 import {
   MapPin,
   Navigation,
-  Layers,
   Crosshair,
-  Sparkles,
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
@@ -13,7 +11,7 @@ import { BONGABONG_AGENCY_STATIONS, AgencyScope } from '../../constants/oriental
 
 interface IncidentLocationPickerMapProps {
   coords: { lat: number; lng: number };
-  onCoordinatesChange: (newCoords: { lat: number; lng: number }) => void;
+  onCoordinatesChange?: (newCoords: { lat: number; lng: number }) => void;
   barangay?: string;
   municipality?: string;
   isLocating?: boolean;
@@ -37,7 +35,6 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
   const tileLayerRef = useRef<L.TileLayer | null>(null);
 
   const [mapMode, setMapMode] = useState<'street' | 'satellite'>('street');
-  const [hasUserMovedPin, setHasUserMovedPin] = useState(false);
 
   // Custom high-visibility emergency dispatch marker icon
   const createPickerPinIcon = () => {
@@ -49,8 +46,8 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
           <div class="absolute bottom-1 w-10 h-10 rounded-full bg-blue-500/35 animate-ping pointer-events-none"></div>
           <div class="absolute bottom-1 w-5 h-5 rounded-full bg-blue-600/40 animate-pulse pointer-events-none"></div>
 
-          <!-- Pin marker container -->
-          <div class="relative z-10 flex flex-col items-center filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.4)] cursor-grab active:cursor-grabbing">
+          <!-- Pin marker container (Locked to GPS detection) -->
+          <div class="relative z-10 flex flex-col items-center filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.4)] cursor-default">
             <!-- Round Badge -->
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-700 via-indigo-600 to-sky-500 border-2 border-white flex items-center justify-center text-white shadow-md">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -98,11 +95,11 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     }).addTo(map);
     tileLayerRef.current = streetLayer;
 
-    // Draggable Pin Marker
+    // Locked Pin Marker (Position driven exclusively by Detect My Exact GPS & Barangay selection)
     const marker = L.marker([coords.lat, coords.lng], {
-      draggable: true,
+      draggable: false,
       icon: createPickerPinIcon(),
-      title: 'Emergency Dispatch Location (Drag or click map to move)',
+      title: 'Emergency Dispatch Location (Pinned via Detect My Exact GPS)',
     }).addTo(map);
 
     // Accuracy Circle
@@ -119,29 +116,9 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     marker.bindPopup(`
       <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px;">
         <strong style="color: #1e3a8a; display: block; margin-bottom: 2px;">📍 Verified Dispatch Location</strong>
-        <span style="color: #475569;">Drag this pin or tap anywhere on the map to pinpoint your exact spot.</span>
+        <span style="color: #475569;">Pinned via 'Detect My Exact GPS' and Barangay selection.</span>
       </div>
     `);
-
-    // Handle marker dragend
-    marker.on('dragend', () => {
-      const pos = marker.getLatLng();
-      const newLat = Number(pos.lat.toFixed(5));
-      const newLng = Number(pos.lng.toFixed(5));
-      circle.setLatLng(pos);
-      setHasUserMovedPin(true);
-      onCoordinatesChange({ lat: newLat, lng: newLng });
-    });
-
-    // Handle map click
-    map.on('click', (e: L.LeafletMouseEvent) => {
-      const newLat = Number(e.latlng.lat.toFixed(5));
-      const newLng = Number(e.latlng.lng.toFixed(5));
-      marker.setLatLng([newLat, newLng]);
-      circle.setLatLng([newLat, newLng]);
-      setHasUserMovedPin(true);
-      onCoordinatesChange({ lat: newLat, lng: newLng });
-    });
 
     markerRef.current = marker;
     circleRef.current = circle;
@@ -281,15 +258,10 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               <span>GPS Device Synced</span>
             </span>
-          ) : hasUserMovedPin ? (
-            <span className="px-2.5 py-1 bg-blue-500/20 border border-blue-400/30 text-blue-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-2xs">
-              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span>Pinpoint Verified</span>
-            </span>
           ) : (
             <span className="px-2.5 py-1 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-2xs">
               <Crosshair className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Auto-Marked Pin</span>
+              <span>Exact GPS Pinned</span>
             </span>
           )}
 
@@ -355,12 +327,12 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
           )}
         </div>
 
-        {/* Bottom Banner with Pin Instructions */}
+        {/* Bottom Banner with GPS Instructions */}
         <div className="absolute bottom-2 left-2 right-14 sm:right-auto z-[400] pointer-events-none">
           <div className="bg-slate-900/85 backdrop-blur text-white px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-lg text-[11px] font-medium flex items-center gap-2 max-w-sm">
             <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping shrink-0" />
             <span className="truncate">
-              <strong>Drag pin</strong> or <strong>tap map</strong> to verify exact location.
+              📍 Location pinned via <strong>Detect My Exact GPS</strong>
             </span>
           </div>
         </div>
