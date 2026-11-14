@@ -928,43 +928,19 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-blue-600" />
-                      <span>Municipality (Pilot Exclusive)</span>
-                    </label>
-                    <div className="w-full bg-blue-50/90 border border-blue-200/90 text-blue-900 rounded-xl p-3 text-sm font-black flex items-center justify-between min-h-[46px] shadow-xs">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
-                        <span>Bongabong, Oriental Mindoro</span>
-                      </div>
-                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-blue-600 text-white rounded-md">
-                        Pilot Area
-                      </span>
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-blue-600" />
+                    <span>Municipality (Pilot Exclusive)</span>
+                  </label>
+                  <div className="w-full bg-blue-50/90 border border-blue-200/90 text-blue-900 rounded-xl p-3 text-sm font-black flex items-center justify-between min-h-[46px] shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span>Bongabong, Oriental Mindoro</span>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4 text-emerald-600" />
-                        <span>Barangay (Auto-Selected via GPS Location)</span>
-                      </div>
-                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-md flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                        Auto-Detected
-                      </span>
-                    </label>
-                    <div className="w-full bg-emerald-50/80 border border-emerald-200/90 text-emerald-950 rounded-xl p-3 text-sm font-black flex items-center justify-between min-h-[46px] shadow-xs">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span className="text-slate-900 font-extrabold text-sm sm:text-base">Barangay {barangay || 'Poblacion'}</span>
-                      </div>
-                      <span className="text-[11px] font-mono font-bold text-emerald-700 bg-white/90 px-2.5 py-0.5 rounded-lg border border-emerald-200 shadow-2xs">
-                        GPS Verified
-                      </span>
-                    </div>
+                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-blue-600 text-white rounded-md">
+                      Pilot Area
+                    </span>
                   </div>
                 </div>
 

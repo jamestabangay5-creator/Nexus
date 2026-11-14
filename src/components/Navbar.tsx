@@ -280,25 +280,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Right Corner: Auth Status, Profile, GIS Map, Notifications, Mobile Button */}
+        {/* Right Corner: Auth Status, Profile, Notifications, Mobile Button */}
         <div className="flex items-center gap-2 sm:gap-3 ml-auto" ref={notifRef}>
-          {/* GIS Map View Toggle (Only shown on public landing page) */}
-          {onToggleGlobalMap && portalMode === 'landing' && (
-            <button
-              onClick={onToggleGlobalMap}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs ${
-                isGlobalMapActive
-                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-500/20'
-                  : 'bg-white/90 border-slate-200/80 text-emerald-700 hover:bg-emerald-50'
-              }`}
-              title="Open Unified Color-Coded Incident Map & Heatmap"
-            >
-              <Map className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline">Incident Map & Heatmap</span>
-              <span className="xl:hidden">GIS Map</span>
-            </button>
-          )}
-
           {/* Citizen / Resident Authentication & Profile Controls */}
           {portalMode !== 'agency' && (
             <div className="hidden sm:flex items-center gap-2">
