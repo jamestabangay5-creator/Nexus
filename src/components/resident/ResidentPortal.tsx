@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNexus } from '../../context/NexusContext';
 import { Agency, IncidentTypeId, IncidentReport } from '../../types';
 import { INCIDENT_TYPES, AGENCY_DETAILS } from '../../constants/incidentData';
@@ -15,6 +15,7 @@ import { compressEvidenceImage } from '../../utils/imageUtils';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { UserProfileModal } from './UserProfileModal';
 import { RealtimeCameraModal } from './RealtimeCameraModal';
+import { IncidentLocationPickerMap } from './IncidentLocationPickerMap';
 import { AgencyLogo } from '../common/AgencyLogo';
 import { ExportReportsButton } from '../common/ExportReportsButton';
 import {
@@ -230,7 +231,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   }, [filteredMyReports, trackingStartIndex, trackingPageSize]);
 
   const getCoordinatesForBarangay = (muni: OrientalMindoroMunicipality, brgyName: string) => {
-    const center = MUNICIPALITY_COORDINATES[muni] || { lat: 13.4115, lng: 121.1803 };
+    const center = MUNICIPALITY_COORDINATES[muni] || { lat: 12.7508, lng: 121.4864 };
     let hash = 0;
     for (let i = 0; i < brgyName.length; i++) {
       hash = (hash << 5) - hash + brgyName.charCodeAt(i);
@@ -285,19 +286,19 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setCoords({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
+            lat: Number(pos.coords.latitude.toFixed(5)),
+            lng: Number(pos.coords.longitude.toFixed(5)),
           });
           setIsLocating(false);
           setLocationSuccess(true);
           setTimeout(() => setLocationSuccess(false), 3000);
         },
         () => {
-          // Fallback simulation centered on selected Oriental Mindoro municipality
-          const center = MUNICIPALITY_COORDINATES[selectedMunicipality] || { lat: 13.4115, lng: 121.1803 };
+          // Fallback simulation centered on Bongabong
+          const center = MUNICIPALITY_COORDINATES[selectedMunicipality] || { lat: 12.7508, lng: 121.4864 };
           const offsetLat = center.lat + (Math.random() - 0.5) * 0.008;
           const offsetLng = center.lng + (Math.random() - 0.5) * 0.008;
-          setCoords({ lat: offsetLat, lng: offsetLng });
+          setCoords({ lat: Number(offsetLat.toFixed(5)), lng: Number(offsetLng.toFixed(5)) });
           setIsLocating(false);
           setLocationSuccess(true);
           setTimeout(() => setLocationSuccess(false), 3000);
@@ -310,6 +311,15 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       setTimeout(() => setLocationSuccess(false), 3000);
     }
   };
+
+  // Automatically attempt device GPS detection upon accessing the reporting form
+  const hasAttemptedAutoGpsRef = useRef(false);
+  useEffect(() => {
+    if (activeTab === 'report' && !hasAttemptedAutoGpsRef.current) {
+      hasAttemptedAutoGpsRef.current = true;
+      handleDetectGPS();
+    }
+  }, [activeTab]);
 
   const handleCopyTrackingCode = (code: string) => {
     navigator.clipboard?.writeText(code);
@@ -1013,6 +1023,17 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 Responders use these exact coordinates for real-time dispatch navigation and map plotting.
               </p>
             </div>
+
+            {/* Real-time Interactive Location Verification Map */}
+            <IncidentLocationPickerMap
+              coords={coords}
+              onCoordinatesChange={(newCoords) => setCoords(newCoords)}
+              barangay={barangay}
+              municipality={selectedMunicipality}
+              isLocating={isLocating}
+              onDetectGPS={handleDetectGPS}
+              locationSuccess={locationSuccess}
+            />
 
             {/* Terms reminder notice */}
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2">

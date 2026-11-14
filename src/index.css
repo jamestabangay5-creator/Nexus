@@ -14,7 +14,8 @@
 }
 
 /* Custom Leaflet Pin container */
-.custom-incident-pin {
+.custom-incident-pin,
+.location-picker-pin {
   background: transparent;
   border: none;
 }
