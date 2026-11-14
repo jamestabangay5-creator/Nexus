@@ -574,7 +574,7 @@ export const ResidentAuthModal: React.FC<Props> = ({
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight flex items-center gap-2">
-              NEXUS 911 SECURE ACCESS
+              NEXUS SECURE ACCESS
             </h3>
             <p className="text-xs text-slate-500 font-medium">
               Unified portal for Citizens and Official Agency Command Staff.
@@ -734,7 +734,7 @@ export const ResidentAuthModal: React.FC<Props> = ({
                   </>
                 ) : (
                   <>
-                    <span>Sign In to Nexus 911</span>
+                    <span>Sign In to Nexus</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

@@ -213,7 +213,7 @@ export const AgencyAuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 }`}
               >
                 <AgencyLogo agency="CENTRAL" className="w-5 h-5 object-contain" />
-                <span className="text-[11px]">Central 911</span>
+                <span className="text-[11px]">Central Command</span>
               </button>
 
               {/* PNP Police */}
