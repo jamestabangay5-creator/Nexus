@@ -70,12 +70,31 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
     residentUser,
     isAgencyAuthenticated,
     agencyUser,
+    firebaseUser,
   } = useNexus();
 
   const isAgencyViewer =
     portalMode === 'agency' &&
     activeRole !== 'resident' &&
     (isAgencyAuthenticated || agencyUser !== null);
+
+  // Requirement 2: Citizen Heatmap Privacy
+  // If viewing as an Agency / System Admin, display all reported incidents across Bongabong.
+  // If viewing as a Resident Citizen, restrict display strictly to incidents reported by the currently logged-in citizen.
+  const scopedReports = useMemo(() => {
+    if (isAgencyViewer) {
+      return reports;
+    }
+    // Resident Citizen View: strictly my reports
+    return reports.filter((r) => {
+      return Boolean(
+        (residentUser?.id && r.residentId === residentUser.id) ||
+        (residentUser?.name && r.residentName.toLowerCase() === residentUser.name.toLowerCase()) ||
+        (residentUser?.email && r.residentEmail && r.residentEmail.toLowerCase() === residentUser.email.toLowerCase()) ||
+        (firebaseUser?.uid && (r.residentId === firebaseUser.uid || (r as any).residentUid === firebaseUser.uid))
+      );
+    });
+  }, [reports, isAgencyViewer, residentUser, firebaseUser]);
 
   const t = TRANSLATIONS[language];
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -126,7 +145,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       BLUE: 0,
       WHITE: 0,
     };
-    reports.forEach((r) => {
+    scopedReports.forEach((r) => {
       if (!includeRejected && r.status === 'Rejected') return;
       counts.ALL += 1;
       if (counts[r.category] !== undefined) {
@@ -136,7 +155,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       }
     });
     return counts;
-  }, [reports, includeRejected]);
+  }, [scopedReports, includeRejected]);
 
   const handleInspectDossier = (reportId: string) => {
     setSelectedReportId(reportId);
@@ -176,7 +195,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
   const filteredReports = useMemo(() => {
     const now = Date.now();
 
-    return reports.filter((r) => {
+    return scopedReports.filter((r) => {
       // By default exclude rejected unless explicitly toggled
       if (!includeRejected && r.status === 'Rejected') return false;
 
@@ -234,7 +253,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
       return true;
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [reports, includeRejected, selectedCategory, selectedMunicipality, selectedBarangay, selectedStatus, dateFilter, specificDate, startDate, endDate, searchQuery]);
+  }, [scopedReports, includeRejected, selectedCategory, selectedMunicipality, selectedBarangay, selectedStatus, dateFilter, specificDate, startDate, endDate, searchQuery]);
 
   const selectedReport = useMemo(() => {
     return reports.find((r) => r.id === selectedReportId) || null;
@@ -683,7 +702,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
     setSelectedCategory(targetCategory);
 
     // Compute matching reports for bounds fitting
-    const matching = reports.filter((r) => {
+    const matching = scopedReports.filter((r) => {
       if (!includeRejected && r.status === 'Rejected') return false;
       if (targetCategory !== 'ALL' && r.category !== targetCategory) return false;
       if (selectedMunicipality !== 'ALL' && (r.municipality || 'Calapan City') !== selectedMunicipality) return false;
@@ -719,15 +738,15 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
   // Initial auto-fit: frame existing active reports if any exist across the province
   useEffect(() => {
-    if (!mapInstanceRef.current || reports.length === 0 || hasAutoFittedInitial.current) return;
+    if (!mapInstanceRef.current || scopedReports.length === 0 || hasAutoFittedInitial.current) return;
     const timer = setTimeout(() => {
-      if (mapInstanceRef.current && reports.length > 0) {
+      if (mapInstanceRef.current && scopedReports.length > 0) {
         fitMapToReports(filteredReports);
         hasAutoFittedInitial.current = true;
       }
     }, 450);
     return () => clearTimeout(timer);
-  }, [reports.length]);
+  }, [scopedReports.length]);
 
   const renderCategoryPills = (isMobile: boolean) => (
     <div
@@ -890,7 +909,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Real-time spatial visualization of public safety incidents across Oriental Mindoro.
+                Real-time spatial GIS visualization for the Municipality of Bongabong.
               </p>
             </div>
           </div>
@@ -904,18 +923,45 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
             <button
               onClick={() => {
                 setSelectedCategory('ALL');
-                setSelectedMunicipality('ALL');
+                setSelectedMunicipality('Bongabong');
                 setSelectedBarangay('ALL');
-                fitMapToReports(reports);
+                fitMapToReports(scopedReports);
               }}
               className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl font-bold flex items-center gap-1.5 transition cursor-pointer"
-              title="Reset map view and frame all incidents across Oriental Mindoro"
+              title="Reset map view and frame all incidents"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Center</span>
             </button>
           </div>
         </div>
+
+        {/* Requirement 2: Citizen Heatmap Privacy Banner */}
+        {!isAgencyViewer ? (
+          <div className="p-3 bg-blue-50/90 border border-blue-200/80 rounded-2xl flex items-center justify-between text-xs text-blue-900 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>
+                <strong>Citizen Heatmap Privacy:</strong> Displaying strictly your own filed incident reports ({scopedReports.length}) to protect public safety and privacy.
+              </span>
+            </div>
+            <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-blue-600 text-white rounded-md shrink-0">
+              Personal Heatmap
+            </span>
+          </div>
+        ) : (
+          <div className="p-3 bg-purple-50/90 border border-purple-200/80 rounded-2xl flex items-center justify-between text-xs text-purple-900 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-purple-600 shrink-0" />
+              <span>
+                <strong>Agency Master Telemetry:</strong> Full access to all municipal incident pins, heatmaps, and response routes across Bongabong ({scopedReports.length} reports).
+              </span>
+            </div>
+            <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-purple-600 text-white rounded-md shrink-0">
+              Full Agency View
+            </span>
+          </div>
+        )}
 
         {/* Filters Controls Row */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">

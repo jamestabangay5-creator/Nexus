@@ -314,20 +314,20 @@ export const MobileBottomNav: React.FC<Props> = ({
             </span>
           </button>
 
-          {/* 2. Global GIS Map */}
+          {/* 2. Protected Map Layer */}
           <button
-            onClick={onToggleGlobalMap}
-            className={`flex flex-col items-center justify-center gap-0.5 w-full py-1 text-center transition cursor-pointer relative rounded-2xl min-h-[46px] ${
-              isGlobalMapActive
-                ? 'bg-emerald-50/90 text-emerald-700 font-black border border-emerald-200/80 shadow-xs'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50/60 font-medium'
-            }`}
+            onClick={() => {
+              if (firebaseUser) {
+                setPortalMode('resident');
+                setResidentActiveTab('map');
+              } else {
+                openAuthModal('login');
+              }
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 w-full py-1 text-center transition cursor-pointer relative rounded-2xl min-h-[46px] text-slate-500 hover:text-slate-900 hover:bg-slate-50/60 font-medium`}
           >
-            {isGlobalMapActive && (
-              <span className="w-5 h-1 rounded-full bg-emerald-600 -mt-0.5 mb-0.5 shadow-xs" />
-            )}
-            <Map className={`w-5 h-5 ${isGlobalMapActive ? 'text-emerald-600 scale-105' : 'text-slate-500'} transition-transform`} />
-            <span className={`text-[10px] leading-tight ${isGlobalMapActive ? 'font-black' : 'font-medium'}`}>
+            <Map className="w-5 h-5 text-slate-500 transition-transform" />
+            <span className="text-[10px] leading-tight font-medium">
               Live Map
             </span>
           </button>

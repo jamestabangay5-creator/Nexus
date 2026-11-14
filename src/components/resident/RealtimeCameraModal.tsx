@@ -376,3 +376,4 @@ export const RealtimeCameraModal: React.FC<RealtimeCameraModalProps> = ({
     </div>
   );
 };
+

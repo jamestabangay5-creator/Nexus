@@ -253,15 +253,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </button>
               </>
             )}
-
-            {/* Public GIS Map */}
-            <button
-              onClick={onOpenGlobalMap}
-              className="px-5 py-3.5 bg-white/80 hover:bg-white text-slate-700 hover:text-emerald-700 rounded-2xl font-semibold text-sm sm:text-base flex items-center gap-2 border border-slate-200 shadow-sm transition hover:scale-[1.02] cursor-pointer"
-            >
-              <Map className="w-4 h-4 text-emerald-600" />
-              <span>{language === 'fil' ? 'Buksan ang Live Map' : 'Explore Live GIS Map'}</span>
-            </button>
           </div>
 
           {/* Real-Time Live Metrics Ribbon (Modeled after UI Reference Metric Cards) */}
@@ -605,15 +596,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
             <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <Building2 className="w-4 h-4 text-emerald-600" />
-              <span>Select an LGU to inspect coordinates & dispatch coverage:</span>
+              <span>Pilot Operational Coverage · Municipality of Bongabong:</span>
             </span>
-            <button
-              onClick={onOpenGlobalMap}
-              className="text-xs text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1 transition"
-            >
-              <span>View On Interactive GIS Map</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
+            <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">
+              32 Official Barangays
+            </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
@@ -700,9 +687,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shadow-xs">
               <Map className="w-5 h-5" />
             </div>
-            <h4 className="font-bold text-slate-900 text-sm">Leaflet GIS & Heatmap</h4>
+            <h4 className="font-bold text-slate-900 text-sm">Authorized GIS Operations</h4>
             <p className="text-xs text-slate-600 leading-relaxed font-normal">
-              Real OpenStreetMap GIS layer with street and satellite view toggles, marker clustering, and incident intensity heatmaps.
+              Official OpenStreetMap GIS layer with street and satellite view toggles, marker clustering, and incident intensity analytics for authorized responders and verified citizens.
             </p>
           </div>
 
@@ -865,12 +852,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </button>
               </>
             )}
-            <button
-              onClick={onOpenGlobalMap}
-              className="px-6 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer shadow-sm"
-            >
-              Inspect Live Incident Map
-            </button>
           </div>
         </div>
       </section>

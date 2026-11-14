@@ -90,7 +90,7 @@ const AppContent: React.FC = () => {
 
       {/* Main Content Area with Bottom Clearance for Mobile Navigation */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 pb-28 sm:pb-32 md:pb-8">
-        {isGlobalMapActive ? (
+        {isGlobalMapActive && portalMode !== 'landing' ? (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between glass-card p-3 rounded-2xl gap-2.5">
               <button
@@ -119,7 +119,13 @@ const AppContent: React.FC = () => {
               }
             }}
             onOpenAgencyAuth={openAgencyAuthModal}
-            onOpenGlobalMap={() => setIsGlobalMapActive(true)}
+            onOpenGlobalMap={() => {
+              if (firebaseUser) {
+                setPortalMode('resident');
+              } else {
+                openAuthModal('login');
+              }
+            }}
             onSelectReport={(id) => setSelectedReportId(id)}
           />
         ) : portalMode === 'resident' ? (

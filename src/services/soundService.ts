@@ -200,3 +200,111 @@ export function stopContinuousCriticalAlarm(): void {
 export function isCriticalAlarmActive(): boolean {
   return isAlarmRunning && !isAlarmMuted;
 }
+
+// Persistent Continuous Agency Sound Alarm (Requirement 4)
+let persistentAgencyAudioElement: HTMLAudioElement | null = null;
+let persistentAgencyTimer: number | null = null;
+let isPersistentAgencyAlarmRunning = false;
+let isPersistentAgencyAlarmMuted = false;
+
+/**
+ * Requirement 4: Persistent Agency Sound Alerts
+ * Continuous alarm that plays /notification/notification-alert.m4a in a loop
+ * until manually dismissed by Agency Admin or authorized user.
+ */
+export function startPersistentAgencyAlarm(isMuted = false): void {
+  isPersistentAgencyAlarmMuted = isMuted;
+  if (isPersistentAgencyAlarmRunning) {
+    if (persistentAgencyAudioElement && !isMuted) {
+      persistentAgencyAudioElement.muted = false;
+      persistentAgencyAudioElement.play().catch(() => {});
+    }
+    return;
+  }
+
+  isPersistentAgencyAlarmRunning = true;
+  if (typeof window === 'undefined') return;
+
+  try {
+    if (!persistentAgencyAudioElement) {
+      persistentAgencyAudioElement = new Audio(NOTIFICATION_ALERT_AUDIO_PATH);
+      persistentAgencyAudioElement.preload = 'auto';
+    }
+    persistentAgencyAudioElement.loop = true;
+    persistentAgencyAudioElement.volume = 1.0;
+    persistentAgencyAudioElement.muted = isMuted;
+
+    if (!isMuted) {
+      const p = persistentAgencyAudioElement.play();
+      if (p !== undefined) {
+        p.catch((err) => {
+          console.warn('Persistent agency alarm autoplay note, falling back to pulse interval:', err);
+          startPersistentPulseInterval();
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Persistent agency audio error:', err);
+    startPersistentPulseInterval();
+  }
+
+  // Backup loop timer: ensures continuous repeating sound every 2.2s even if loop state was interrupted
+  if (persistentAgencyTimer !== null) {
+    clearInterval(persistentAgencyTimer);
+  }
+  persistentAgencyTimer = window.setInterval(() => {
+    if (!isPersistentAgencyAlarmRunning) {
+      if (persistentAgencyTimer !== null) {
+        clearInterval(persistentAgencyTimer);
+        persistentAgencyTimer = null;
+      }
+      return;
+    }
+    if (!isPersistentAgencyAlarmMuted) {
+      if (persistentAgencyAudioElement) {
+        if (persistentAgencyAudioElement.paused || persistentAgencyAudioElement.ended) {
+          persistentAgencyAudioElement.currentTime = 0;
+          persistentAgencyAudioElement.play().catch(() => playFallbackBeepAlert());
+        }
+      } else {
+        playFallbackBeepAlert();
+      }
+    }
+  }, 2200);
+}
+
+function startPersistentPulseInterval(): void {
+  if (persistentAgencyTimer !== null) return;
+  persistentAgencyTimer = window.setInterval(() => {
+    if (!isPersistentAgencyAlarmRunning) return;
+    if (!isPersistentAgencyAlarmMuted) {
+      playFallbackBeepAlert();
+    }
+  }, 1800);
+}
+
+export function updatePersistentAgencyAlarmMute(isMuted: boolean): void {
+  isPersistentAgencyAlarmMuted = isMuted;
+  if (persistentAgencyAudioElement) {
+    persistentAgencyAudioElement.muted = isMuted;
+  }
+}
+
+export function stopPersistentAgencyAlarm(): void {
+  isPersistentAgencyAlarmRunning = false;
+  if (persistentAgencyTimer !== null) {
+    clearInterval(persistentAgencyTimer);
+    persistentAgencyTimer = null;
+  }
+  if (persistentAgencyAudioElement) {
+    try {
+      persistentAgencyAudioElement.pause();
+      persistentAgencyAudioElement.currentTime = 0;
+      persistentAgencyAudioElement.loop = false;
+    } catch {}
+  }
+}
+
+export function isPersistentAgencyAlarmActive(): boolean {
+  return isPersistentAgencyAlarmRunning && !isPersistentAgencyAlarmMuted;
+}

@@ -27,7 +27,12 @@ import {
   OFFICIAL_AGENCY_ACCOUNTS,
   AGENCY_DETAILS,
 } from '../constants/incidentData';
-import { playEmergencyAlertSound, playSuccessChime, updateContinuousAlarmMute } from '../services/soundService';
+import {
+  playEmergencyAlertSound,
+  playSuccessChime,
+  updateContinuousAlarmMute,
+  stopPersistentAgencyAlarm,
+} from '../services/soundService';
 import {
   auth,
   db,
@@ -375,8 +380,16 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [adminProfiles, setAdminProfiles] = useState<Record<AgencyScope, { name: string; title: string; badgeNumber: string; email?: string; hotline?: string; description?: string }>>(() => {
     try {
-      const saved = localStorage.getItem('nexus_admin_profiles_v1');
-      if (saved) return JSON.parse(saved);
+      localStorage.removeItem('nexus_admin_profiles_v1'); // Purge legacy v1 profiles that had 911 Chief titles
+      const saved = localStorage.getItem('nexus_admin_profiles_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.CENTRAL && (!parsed.CENTRAL.title || parsed.CENTRAL.title.includes('911'))) {
+          parsed.CENTRAL.title = OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.title;
+          parsed.CENTRAL.hotline = AGENCY_DETAILS.CENTRAL.hotline;
+        }
+        return parsed;
+      }
     } catch {}
     return {
       CENTRAL: {
@@ -437,7 +450,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           description: updates.descriptionEn !== undefined ? updates.descriptionEn : prev[agency].description,
         },
       };
-      try { localStorage.setItem('nexus_admin_profiles_v1', JSON.stringify(updated)); } catch {}
+      try { localStorage.setItem('nexus_admin_profiles_v2', JSON.stringify(updated)); } catch {}
       return updated;
     });
 
@@ -524,6 +537,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const agencyLogout = () => {
+    stopPersistentAgencyAlarm();
     try {
       localStorage.removeItem(AGENCY_STORAGE_KEY);
       localStorage.setItem('nexus_portal_mode', 'landing');
@@ -1202,12 +1216,15 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
 
-    // Trigger visual flashing notification and siren alert
-    setIncomingAlert({
-      report,
-      timestamp,
-    });
-    playEmergencyAlertSound(soundMuted);
+    // Requirement 3: Fix notification behavior so successfully submitted citizen reports
+    // trigger immediate alerts on the Agency / System Admin dashboard, NOT the Citizen dashboard.
+    if (portalMode === 'agency') {
+      setIncomingAlert({
+        report,
+        timestamp,
+      });
+      playEmergencyAlertSound(soundMuted);
+    }
 
     return report;
   };

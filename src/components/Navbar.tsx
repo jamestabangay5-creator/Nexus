@@ -4,6 +4,7 @@ import { TRANSLATIONS } from '../constants/translations';
 import { AGENCY_DETAILS } from '../constants/incidentData';
 import { Agency, AgencyScope } from '../types';
 import { AgencyLogo } from './common/AgencyLogo';
+import { stopPersistentAgencyAlarm } from '../services/soundService';
 import {
   ShieldAlert,
   Flame,
@@ -140,6 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const handleExitAgency = () => {
+    stopPersistentAgencyAlarm();
     agencyLogout();
     setMobileMenuOpen(false);
   };
@@ -465,17 +467,38 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
 
                 <div className="max-h-84 overflow-y-auto space-y-2 pr-1">
-                  {reports.length === 0 ? (
-                    <div className="py-8 text-center text-slate-500 space-y-1.5">
-                      <div className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
-                        <Bell className="w-5 h-5" />
-                      </div>
-                      <p className="text-xs font-bold text-slate-700">No Recent Updates</p>
-                      <p className="text-[11px] text-slate-400">Emergency reports and dispatch updates will appear here.</p>
-                    </div>
-                  ) : (
-                    reports.slice(0, 8).map((rep) => {
-                      const isMyReport = rep.residentId === residentUser.id || rep.residentName === residentUser.name;
+                  {(() => {
+                    const scopedNotifications = portalMode === 'resident'
+                      ? reports.filter((r) => {
+                          return Boolean(
+                            (residentUser?.id && r.residentId === residentUser.id) ||
+                            (residentUser?.name && r.residentName.toLowerCase() === residentUser.name.toLowerCase()) ||
+                            (residentUser?.email && r.residentEmail && r.residentEmail.toLowerCase() === residentUser.email.toLowerCase()) ||
+                            (firebaseUser?.uid && (r.residentId === firebaseUser.uid || (r as any).residentUid === firebaseUser.uid))
+                          );
+                        })
+                      : (activeRole === 'CENTRAL'
+                          ? reports
+                          : reports.filter((r) => r.selectedAgency === activeRole || r.assistanceRequests?.some((req) => req.targetAgencies.includes(activeRole as Agency))));
+
+                    if (scopedNotifications.length === 0) {
+                      return (
+                        <div className="py-8 text-center text-slate-500 space-y-1.5">
+                          <div className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+                            <Bell className="w-5 h-5" />
+                          </div>
+                          <p className="text-xs font-bold text-slate-700">No Recent Updates</p>
+                          <p className="text-[11px] text-slate-400">
+                            {portalMode === 'resident'
+                              ? 'Your filed incident reports and response updates will appear here.'
+                              : 'Incoming municipal incident telemetry will appear here.'}
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return scopedNotifications.slice(0, 10).map((rep) => {
+                      const isMyReport = rep.residentId === residentUser?.id || rep.residentName === residentUser?.name;
                       const notifKey = portalMode === 'resident' ? `${rep.id}_${rep.status}` : `${rep.id}_agency_${activeRole}`;
                       const isUnread = portalMode === 'resident'
                         ? (rep.isUnreadForResident !== false && !readNotifKeys.has(notifKey) && !readNotifKeys.has(rep.id) && !readNotifKeys.has(`${rep.id}_resident`))
@@ -546,8 +569,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                           </div>
                         </div>
                       );
-                    })
-                  )}
+                    });
+                  })()}
                 </div>
 
                 <div className="pt-2.5 mt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">

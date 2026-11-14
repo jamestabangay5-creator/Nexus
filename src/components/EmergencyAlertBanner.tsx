@@ -3,6 +3,7 @@ import { useNexus } from '../context/NexusContext';
 import { INCIDENT_TYPES, AGENCY_DETAILS } from '../constants/incidentData';
 import { TRANSLATIONS } from '../constants/translations';
 import { AgencyLogo } from './common/AgencyLogo';
+import { stopPersistentAgencyAlarm } from '../services/soundService';
 import { AlertTriangle, MapPin, Clock, Building2, X, ChevronRight, Volume2 } from 'lucide-react';
 
 interface Props {
@@ -10,10 +11,11 @@ interface Props {
 }
 
 export const EmergencyAlertBanner: React.FC<Props> = ({ onSelectReport }) => {
-  const { incomingAlert, clearIncomingAlert, language, triggerEmergencySound } = useNexus();
+  const { incomingAlert, clearIncomingAlert, language, triggerEmergencySound, portalMode } = useNexus();
   const t = TRANSLATIONS[language];
 
-  if (!incomingAlert) return null;
+  // Strictly guard: Emergency alert banner is for authorized Agency / System Admin operations only
+  if (!incomingAlert || portalMode !== 'agency') return null;
 
   const { report, timestamp } = incomingAlert;
   const typeDef = INCIDENT_TYPES.find(
@@ -107,6 +109,7 @@ export const EmergencyAlertBanner: React.FC<Props> = ({ onSelectReport }) => {
             {onSelectReport && (
               <button
                 onClick={() => {
+                  stopPersistentAgencyAlarm();
                   onSelectReport(report.id);
                   clearIncomingAlert();
                 }}
@@ -118,12 +121,16 @@ export const EmergencyAlertBanner: React.FC<Props> = ({ onSelectReport }) => {
             )}
 
             <button
-              onClick={clearIncomingAlert}
-              className="p-1.5 text-red-300 hover:text-white hover:bg-red-800/80 rounded-xl transition cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
-              title="Dismiss Alert"
+              onClick={() => {
+                stopPersistentAgencyAlarm();
+                clearIncomingAlert();
+              }}
+              className="px-3 py-1.5 bg-black/30 hover:bg-black/50 text-white border border-white/20 rounded-xl transition cursor-pointer min-h-[36px] flex items-center gap-1 text-xs font-bold"
+              title="Dismiss Alert & Stop Siren"
               aria-label="Dismiss Emergency Alert"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
+              <span>Dismiss</span>
             </button>
           </div>
         </div>
