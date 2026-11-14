@@ -275,25 +275,25 @@ export const PnpUserManagementView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner: PNP Exclusive User Management Authority */}
-      <div className="glass-card bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 border border-blue-700/60 rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden">
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md p-2 border border-white/20 flex items-center justify-center shrink-0">
-              <AgencyLogo agency="PNP" className="w-10 h-10 object-contain" />
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-blue-200 p-2.5 flex items-center justify-center shrink-0 shadow-sm">
+              <AgencyLogo agency="PNP" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
                   PNP Exclusive Authority
                 </span>
-                <span className="text-xs text-blue-200 font-mono">
+                <span className="text-xs text-slate-500 font-mono font-bold">
                   Bongabong MPS · Security Division
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight mt-0.5">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
                 Citizen Account & Identity Management Console
               </h2>
-              <p className="text-xs text-blue-200/80 max-w-2xl font-medium">
+              <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1 font-medium leading-relaxed">
                 Mandated under PNP security governance to review citizen identities, verify registered residents in Bongabong, and maintain authentic emergency reporting integrity.
               </p>
             </div>
@@ -303,7 +303,7 @@ export const PnpUserManagementView: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => handleExportUsers('xls')}
-              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-emerald-900/40"
+              className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm hover:shadow active:scale-95"
               title="Download Excel spreadsheet of registered citizens"
             >
               <FileSpreadsheet className="w-4 h-4" />
@@ -311,7 +311,7 @@ export const PnpUserManagementView: React.FC = () => {
             </button>
             <button
               onClick={() => handleExportUsers('doc')}
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-900/40"
+              className="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm hover:shadow active:scale-95"
               title="Download Word document of registered citizens"
             >
               <FileText className="w-4 h-4" />
@@ -319,7 +319,8 @@ export const PnpUserManagementView: React.FC = () => {
             </button>
             <button
               onClick={() => handleExportUsers('csv')}
-              className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm hover:shadow active:scale-95"
+              title="Download CSV spreadsheet"
             >
               <Download className="w-4 h-4" />
               <span>CSV</span>
@@ -329,8 +330,8 @@ export const PnpUserManagementView: React.FC = () => {
 
         {/* Action feedback toast */}
         {actionNotice && (
-          <div className="mt-3 p-3 bg-emerald-500/20 border border-emerald-400/40 rounded-xl text-xs text-emerald-200 font-bold flex items-center gap-2 animate-fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-bold flex items-center gap-2 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{actionNotice}</span>
           </div>
         )}
