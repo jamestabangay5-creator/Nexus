@@ -74,7 +74,8 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
   } = useNexus();
 
   const t = TRANSLATIONS[language];
-  const currentAgency: Agency = activeRole === 'resident' ? 'PNP' : (activeRole as Agency);
+  const isCentralAdmin = activeRole === 'CENTRAL';
+  const currentAgency: Agency = activeRole === 'resident' || isCentralAdmin ? 'PNP' : (activeRole as Agency);
   const currentAdmin = adminProfiles[currentAgency];
 
   const [acknowledgingId, setAcknowledgingId] = useState<string | null>(null);
@@ -218,14 +219,24 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
     });
   });
 
-  // Filter incoming requests targeting current agency (or all for CENTRAL command)
+  // For Agency Admins (PNP, BFP, MDRRMO): incoming requests targeting their agency
   const incomingRequests = allRequests.filter(({ request }) =>
-    currentAgency === 'CENTRAL' ? true : request.targetAgencies.includes(currentAgency)
+    request.targetAgencies.includes(currentAgency)
   );
 
-  // Filter outgoing requests originated by current agency (or all for CENTRAL command)
+  // For Agency Admins: outgoing requests originated by their agency
   const outgoingRequests = allRequests.filter(({ request }) =>
-    currentAgency === 'CENTRAL' ? true : request.fromAgency === currentAgency
+    request.fromAgency === currentAgency
+  );
+
+  // For System Admin (CENTRAL Operations Monitoring):
+  // 1. All active requests awaiting response between agencies
+  const centralActiveRequests = allRequests.filter(({ request }) =>
+    request.status !== 'Acknowledged'
+  );
+  // 2. All acknowledged / deployed mutual aid records
+  const centralAcknowledgedRequests = allRequests.filter(({ request }) =>
+    request.status === 'Acknowledged'
   );
 
   const handleAcknowledge = (reportId: string, requestId: string) => {
@@ -249,20 +260,37 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              {t.coordinationTitle}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                {isCentralAdmin
+                  ? 'Centralized Multi-Agency Fleet & Mutual Aid Monitor'
+                  : t.coordinationTitle}
+              </h2>
+              {isCentralAdmin ? (
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
+                  Central Operations Monitoring
+                </span>
+              ) : (
+                <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded-md">
+                  Agency Coordination Hub
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Unified emergency fleet deployment & synchronized multi-agency mutual aid command across PNP, BFP, and MDRRMO.
+              {isCentralAdmin
+                ? 'Central operational oversight of emergency vehicles and inter-agency mutual aid dispatches exchanged between PNP, BFP, and MDRRMO.'
+                : 'Unified emergency fleet deployment & synchronized multi-agency mutual aid command across PNP, BFP, and MDRRMO.'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 text-xs bg-slate-50 px-4 py-2 rounded-xl border border-slate-200/80 shadow-2xs">
-          <span className="text-slate-500 font-medium">Operating As:</span>
+          <span className="text-slate-500 font-medium">
+            {isCentralAdmin ? 'Monitoring Authority:' : 'Operating As:'}
+          </span>
           <span className="font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
-            <AgencyLogo agency={currentAgency} className="w-4 h-4 object-contain" />
-            {currentAgency} Command
+            <AgencyLogo agency={isCentralAdmin ? 'CENTRAL' : currentAgency} className="w-4 h-4 object-contain" />
+            {isCentralAdmin ? 'CENTRAL COMMAND (SYSTEM ADMIN)' : `${currentAgency} Command`}
           </span>
         </div>
       </div>
@@ -306,6 +334,19 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
             )}
           </div>
         </div>
+
+        {/* System Admin Operational Monitoring Notice */}
+        {isCentralAdmin && (
+          <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-3.5 flex items-start gap-3 text-xs text-blue-900">
+            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <strong className="font-bold text-blue-950 block">Central Operations Monitoring Protocol</strong>
+              <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
+                Emergency vehicle statuses (Standby, On Patrol, Dispatched, Maintenance) are exclusively maintained and updated by responding agencies (Bongabong PNP, BFP, and MDRRMO). System Admin maintains centralized read-only operational oversight of fleet readiness.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Filter Bar: Agency Tabs, Status Pills, and Search */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
@@ -445,6 +486,7 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
                 'border-emerald-200/90 hover:border-emerald-400';
 
               const agencyColor = isPnp ? '#2563eb' : isBfp ? '#ea580c' : '#059669';
+              const canEditUnitStatus = !isCentralAdmin && activeRole === unit.agency;
 
               return (
                 <div
@@ -555,44 +597,83 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
                     </div>
                   )}
 
-                  {/* Interactive Status Switcher (System Admin & Respective Agency Admins) */}
+                  {/* Interactive Status Switcher (Respective Agency Only) OR Read-Only Monitoring Status (System Admin / Partner Agency) */}
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Set Status:
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <Radio className="w-3 h-3 text-slate-400" />
+                      {canEditUnitStatus ? 'Set Status:' : 'Live Status:'}
                     </span>
 
-                    <select
-                      value={unit.status}
-                      onChange={(e) => handleUpdateVehicleStatus(unit, e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-none cursor-pointer"
-                    >
-                      {isPnp && (
-                        <>
-                          <option value="On Patrol">🔵 On Patrol</option>
-                          <option value="Dispatched">🟠 Dispatched</option>
-                          <option value="Standby">🟢 Standby</option>
-                          <option value="Maintenance">⚪ Maintenance</option>
-                        </>
-                      )}
-                      {isBfp && (
-                        <>
-                          <option value="In Station">🟢 In Station (Standby)</option>
-                          <option value="Standby">🟢 Standby</option>
-                          <option value="En Route">🟠 En Route (Dispatched)</option>
-                          <option value="On Scene">🚨 On Scene</option>
-                          <option value="Maintenance">⚪ Maintenance</option>
-                        </>
-                      )}
-                      {isMdrrmo && (
-                        <>
-                          <option value="Available">🟢 Available (Standby)</option>
-                          <option value="Dispatched">🟠 Dispatched</option>
-                          <option value="Patient Transit">🟣 Patient Transit</option>
-                          <option value="Hospital Turnover">🏥 Hospital Turnover</option>
-                          <option value="Maintenance">⚪ Maintenance</option>
-                        </>
-                      )}
-                    </select>
+                    {canEditUnitStatus ? (
+                      <select
+                        value={unit.status}
+                        onChange={(e) => handleUpdateVehicleStatus(unit, e.target.value)}
+                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-none cursor-pointer"
+                      >
+                        {isPnp && (
+                          <>
+                            <option value="On Patrol">🔵 On Patrol</option>
+                            <option value="Dispatched">🟠 Dispatched</option>
+                            <option value="Standby">🟢 Standby</option>
+                            <option value="Maintenance">⚪ Maintenance</option>
+                          </>
+                        )}
+                        {isBfp && (
+                          <>
+                            <option value="In Station">🟢 In Station (Standby)</option>
+                            <option value="Standby">🟢 Standby</option>
+                            <option value="En Route">🟠 En Route (Dispatched)</option>
+                            <option value="On Scene">🚨 On Scene</option>
+                            <option value="Maintenance">⚪ Maintenance</option>
+                          </>
+                        )}
+                        {isMdrrmo && (
+                          <>
+                            <option value="Available">🟢 Available (Standby)</option>
+                            <option value="Dispatched">🟠 Dispatched</option>
+                            <option value="Patient Transit">🟣 Patient Transit</option>
+                            <option value="Hospital Turnover">🏥 Hospital Turnover</option>
+                            <option value="Maintenance">⚪ Maintenance</option>
+                          </>
+                        )}
+                      </select>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center gap-1.5 text-xs font-bold px-2 py-0.5 rounded-lg border ${
+                            unit.normalizedStatus === 'Standby'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              : unit.normalizedStatus === 'On Patrol'
+                              ? 'bg-blue-50 text-blue-800 border-blue-200'
+                              : unit.normalizedStatus === 'Dispatched'
+                              ? 'bg-orange-50 text-orange-800 border-orange-200'
+                              : 'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              unit.normalizedStatus === 'Standby'
+                                ? 'bg-emerald-500'
+                                : unit.normalizedStatus === 'On Patrol'
+                                ? 'bg-blue-600 animate-pulse'
+                                : unit.normalizedStatus === 'Dispatched'
+                                ? 'bg-orange-500'
+                                : 'bg-slate-400'
+                            }`}
+                          />
+                          {unit.status}
+                        </span>
+                        {isCentralAdmin ? (
+                          <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase tracking-tight">
+                            Agency Managed
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase tracking-tight">
+                            {unit.agency} Controlled
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -601,45 +682,38 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
         </div>
       </div>
 
-      {/* Grid: Incoming and Outgoing Assistance Dispatches */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Incoming Requests to Current Agency */}
-        <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
-                <h3 className="text-sm font-black text-slate-900">
-                  Incoming Assistance Dispatches for {currentAgency}
-                </h3>
-              </div>
-              <span className="text-xs font-mono bg-amber-50 px-2.5 py-0.5 rounded-lg text-amber-700 font-bold border border-amber-200">
-                {incomingRequests.length} Active
-              </span>
-            </div>
-
-            <div className="space-y-3.5 max-h-[460px] overflow-y-auto pr-1">
-              {incomingRequests.length === 0 ? (
-                <div className="text-center py-12 text-slate-400 text-xs">
-                  No incoming assistance requests directed to {currentAgency} at this time.
+      {/* Grid: Mutual Aid Coordination Section (System Admin Central Oversight VS Agency Admin Dispatches) */}
+      {isCentralAdmin ? (
+        /* CENTRAL COMMAND / SYSTEM ADMIN OVERSIGHT VIEW */
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Column 1: Active Inter-Agency Mutual Aid Dispatches (All Agencies) */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
+                  <h3 className="text-sm font-black text-slate-900">
+                    Active Inter-Agency Mutual Aid Dispatches
+                  </h3>
                 </div>
-              ) : (
-                incomingRequests.map(({ report, request }) => {
-                  const isAcknowledgedByMe = request.acknowledgments.some(
-                    (a) => a.agency === currentAgency
-                  );
+                <span className="text-xs font-mono bg-amber-50 px-2.5 py-0.5 rounded-lg text-amber-700 font-bold border border-amber-200">
+                  {centralActiveRequests.length} Active
+                </span>
+              </div>
 
-                  return (
+              <div className="space-y-3.5 max-h-[460px] overflow-y-auto pr-1">
+                {centralActiveRequests.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    No active inter-agency mutual aid requests in progress across Bongabong PNP, BFP, or MDRRMO.
+                  </div>
+                ) : (
+                  centralActiveRequests.map(({ report, request }) => (
                     <div
                       key={request.id}
-                      className={`p-4 rounded-2xl border transition ${
-                        isAcknowledgedByMe
-                          ? 'bg-slate-50/80 border-slate-200/80'
-                          : 'bg-amber-50/90 border-amber-300 shadow-md shadow-amber-500/10'
-                      }`}
+                      className="p-4 rounded-2xl border bg-amber-50/70 border-amber-300 shadow-md shadow-amber-500/10 space-y-3"
                     >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
                             {report.trackingCode}
                           </span>
@@ -656,204 +730,407 @@ export const InterAgencyCoordination: React.FC<Props> = ({ onSelectReport }) => 
                           </span>
                         </div>
 
-                        {/* Status Badge */}
-                        <span
-                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
-                            isAcknowledgedByMe
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
-                          }`}
-                        >
-                          {isAcknowledgedByMe ? (
-                            <>
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                              {t.acknowledged}
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="w-3 h-3 text-amber-600" />
-                              {t.pendingAck}
-                            </>
-                          )}
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
+                          <Clock className="w-3 h-3 text-amber-600" />
+                          Awaiting Agency Response
                         </span>
                       </div>
 
-                      <div className="text-xs space-y-2 text-slate-700 mb-3">
-                        <div className="flex items-center gap-1.5 text-slate-500">
-                          <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                          <span>
-                            From: <strong className="text-slate-900">{request.fromAgency}</strong> ({request.requestedBy})
+                      <div className="text-xs space-y-2 text-slate-700">
+                        <div className="flex items-center justify-between text-slate-600 text-[11px] bg-white p-2.5 rounded-xl border border-slate-200/80">
+                          <span className="flex items-center gap-1">
+                            <strong className="text-slate-900 font-bold">Requesting:</strong> {request.fromAgency} ({request.requestedBy})
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <strong className="text-slate-900 font-bold">Summoned:</strong> {request.targetAgencies.join(', ')}
                           </span>
                         </div>
+
                         <div className="p-3 bg-white rounded-xl border border-slate-200/80 text-slate-800">
                           <span className="block text-[10px] uppercase font-bold text-slate-400 mb-0.5 tracking-wider">
-                            Mutual Aid Note:
+                            Field Assistance Note:
                           </span>
                           <p className="text-xs italic font-medium">"{request.note}"</p>
                         </div>
+
                         <div className="text-[11px] text-slate-500 flex items-center justify-between font-medium">
                           <span>Location: {report.barangay}</span>
                           <span>{new Date(request.requestedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
 
-                      {/* Action buttons */}
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-200/80">
-                        {onSelectReport && (
+                      {onSelectReport && (
+                        <div className="pt-2 border-t border-slate-200/80 flex justify-end">
                           <button
                             onClick={() => onSelectReport(report.id)}
                             className="text-[11px] text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 cursor-pointer"
                           >
-                            <span>Inspect Full Report Details</span>
+                            <span>Inspect Incident Details</span>
                             <ExternalLink className="w-3 h-3" />
                           </button>
-                        )}
-
-                        {!isAcknowledgedByMe ? (
-                          acknowledgingId === request.id ? (
-                            <div className="flex flex-col gap-2 w-full mt-2">
-                              <input
-                                type="text"
-                                placeholder="Response note (e.g. Unit 3 en route)..."
-                                value={ackNote}
-                                onChange={(e) => setAckNote(e.target.value)}
-                                className="bg-white border border-slate-300 text-slate-900 rounded-xl p-2 text-xs focus:ring-2 focus:ring-blue-500/20"
-                              />
-                              <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => setAcknowledgingId(null)}
-                                  className="px-3 py-1.5 text-slate-500 hover:text-slate-900 text-xs font-semibold cursor-pointer"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={() => handleAcknowledge(report.id, request.id)}
-                                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer"
-                                >
-                                  Confirm & Acknowledge
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setAcknowledgingId(request.id)}
-                              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition cursor-pointer"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>{t.acknowledge}</span>
-                            </button>
-                          )
-                        ) : (
-                          <span className="text-[11px] text-emerald-700 font-bold">
-                            ✓ Confirmed by {currentAdmin?.name}
-                          </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
-                  );
-                })
-              )}
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+              ℹ️ Mutual aid requests are directly initiated and responded to between operational agencies.
             </div>
           </div>
-        </div>
 
-        {/* Outgoing Requests Sent by Current Agency */}
-        <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
-                <h3 className="text-sm font-black text-slate-900">
-                  Outgoing Requests Dispatched by {currentAgency}
-                </h3>
-              </div>
-              <span className="text-xs font-mono bg-blue-50 px-2.5 py-0.5 rounded-lg text-blue-700 font-bold border border-blue-200">
-                {outgoingRequests.length} Dispatched
-              </span>
-            </div>
-
-            <div className="space-y-3.5 max-h-[460px] overflow-y-auto pr-1">
-              {outgoingRequests.length === 0 ? (
-                <div className="text-center py-12 text-slate-400 text-xs">
-                  {currentAgency} has not dispatched any assistance requests yet. You can request assistance from any incident report card or table row.
+          {/* Column 2: Acknowledged & Deployed Mutual Aid Records */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                  <h3 className="text-sm font-black text-slate-900">
+                    Acknowledged & Deployed Mutual Aid Records
+                  </h3>
                 </div>
-              ) : (
-                outgoingRequests.map(({ report, request }) => (
-                  <div
-                    key={request.id}
-                    className="p-4 rounded-2xl border bg-slate-50/80 border-slate-200/80 space-y-3"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
+                <span className="text-xs font-mono bg-emerald-50 px-2.5 py-0.5 rounded-lg text-emerald-700 font-bold border border-emerald-200">
+                  {centralAcknowledgedRequests.length} Deployed
+                </span>
+              </div>
+
+              <div className="space-y-3.5 max-h-[460px] overflow-y-auto pr-1">
+                {centralAcknowledgedRequests.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    No acknowledged mutual aid deployments recorded in the current session.
+                  </div>
+                ) : (
+                  centralAcknowledgedRequests.map(({ report, request }) => (
+                    <div
+                      key={request.id}
+                      className="p-4 rounded-2xl border bg-slate-50/80 border-slate-200/80 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
                             {report.trackingCode}
                           </span>
-                          <span className="text-xs text-slate-500 font-medium">
-                            → Requested: <strong className="text-slate-900">{request.targetAgencies.join(' & ')}</strong>
+                          <span className="text-xs text-slate-600 font-medium">
+                            {request.fromAgency} → <strong className="text-slate-900">{request.targetAgencies.join(' & ')}</strong>
                           </span>
                         </div>
+
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          Deployed & Confirmed
+                        </span>
                       </div>
 
-                      <span
-                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
-                          request.status === 'Acknowledged'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}
-                      >
-                        {request.status === 'Acknowledged' ? (
-                          <>
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                            Acknowledged
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-3 h-3 text-amber-600" />
-                            Pending Response
-                          </>
-                        )}
-                      </span>
-                    </div>
+                      <p className="text-xs text-slate-700 bg-white p-3 rounded-xl border border-slate-200/80 italic font-medium">
+                        "{request.note}"
+                      </p>
 
-                    <p className="text-xs text-slate-700 bg-white p-3 rounded-xl border border-slate-200/80 italic font-medium">
-                      "{request.note}"
-                    </p>
+                      <div className="text-[11px] space-y-1.5 pt-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                          Responding Agency Deployment Log:
+                        </span>
+                        {request.targetAgencies.map((agency) => {
+                          const ack = request.acknowledgments.find((a) => a.agency === agency);
+                          return (
+                            <div
+                              key={agency}
+                              className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl bg-white border border-slate-200/60"
+                            >
+                              <span className="font-bold text-slate-800">{agency}:</span>
+                              {ack ? (
+                                <span className="text-emerald-700 flex items-center gap-1 font-semibold">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  {ack.acknowledgedBy} ({new Date(ack.acknowledgedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                                </span>
+                              ) : (
+                                <span className="text-amber-600 italic text-[11px] font-medium">
+                                  Awaiting response...
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
 
-                    {/* Acknowledgment history */}
-                    <div className="text-[11px] space-y-1.5 pt-1">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                        Agency Acknowledgment Status:
-                      </span>
-                      {request.targetAgencies.map((agency) => {
-                        const ack = request.acknowledgments.find((a) => a.agency === agency);
-                        return (
-                          <div
-                            key={agency}
-                            className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl bg-white border border-slate-200/60"
+                      {onSelectReport && (
+                        <div className="pt-2 border-t border-slate-200/80 flex justify-end">
+                          <button
+                            onClick={() => onSelectReport(report.id)}
+                            className="text-[11px] text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 cursor-pointer"
                           >
-                            <span className="font-bold text-slate-800">{agency}:</span>
-                            {ack ? (
-                              <span className="text-emerald-700 flex items-center gap-1 font-semibold">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                {ack.acknowledgedBy} ({new Date(ack.acknowledgedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
-                              </span>
-                            ) : (
-                              <span className="text-amber-600 italic text-[11px] font-medium">
-                                Awaiting response...
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
+                            <span>Inspect Incident Details</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+              Live Central Command audit feed of all multi-agency field collaborations.
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* AGENCY ADMIN VIEW (PNP / BFP / MDRRMO) */
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Incoming Requests to Current Agency */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
+                  <h3 className="text-sm font-black text-slate-900">
+                    Incoming Assistance Dispatches for {currentAgency}
+                  </h3>
+                </div>
+                <span className="text-xs font-mono bg-amber-50 px-2.5 py-0.5 rounded-lg text-amber-700 font-bold border border-amber-200">
+                  {incomingRequests.length} Active
+                </span>
+              </div>
+
+              <div className="space-y-3.5 max-h-[460px] overflow-y-auto pr-1">
+                {incomingRequests.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    No incoming assistance requests directed to {currentAgency} at this time.
+                  </div>
+                ) : (
+                  incomingRequests.map(({ report, request }) => {
+                    const isAcknowledgedByMe = request.acknowledgments.some(
+                      (a) => a.agency === currentAgency
+                    );
+
+                    return (
+                      <div
+                        key={request.id}
+                        className={`p-4 rounded-2xl border transition ${
+                          isAcknowledgedByMe
+                            ? 'bg-slate-50/80 border-slate-200/80'
+                            : 'bg-amber-50/90 border-amber-300 shadow-md shadow-amber-500/10'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
+                              {report.trackingCode}
+                            </span>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                                request.urgency === 'Critical'
+                                  ? 'bg-red-50 text-red-700 border border-red-200'
+                                  : request.urgency === 'Urgent'
+                                  ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                                  : 'bg-blue-50 text-blue-700 border border-blue-200'
+                              }`}
+                            >
+                              {request.urgency}
+                            </span>
+                          </div>
+
+                          {/* Status Badge */}
+                          <span
+                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                              isAcknowledgedByMe
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
+                            }`}
+                          >
+                            {isAcknowledgedByMe ? (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                {t.acknowledged}
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                {t.pendingAck}
+                              </>
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="text-xs space-y-2 text-slate-700 mb-3">
+                          <div className="flex items-center gap-1.5 text-slate-500">
+                            <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                            <span>
+                              From: <strong className="text-slate-900">{request.fromAgency}</strong> ({request.requestedBy})
+                            </span>
+                          </div>
+                          <div className="p-3 bg-white rounded-xl border border-slate-200/80 text-slate-800">
+                            <span className="block text-[10px] uppercase font-bold text-slate-400 mb-0.5 tracking-wider">
+                              Mutual Aid Note:
+                            </span>
+                            <p className="text-xs italic font-medium">"{request.note}"</p>
+                          </div>
+                          <div className="text-[11px] text-slate-500 flex items-center justify-between font-medium">
+                            <span>Location: {report.barangay}</span>
+                            <span>{new Date(request.requestedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-200/80">
+                          {onSelectReport && (
+                            <button
+                              onClick={() => onSelectReport(report.id)}
+                              className="text-[11px] text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>Inspect Full Report Details</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </button>
+                          )}
+
+                          {!isAcknowledgedByMe ? (
+                            acknowledgingId === request.id ? (
+                              <div className="flex flex-col gap-2 w-full mt-2">
+                                <input
+                                  type="text"
+                                  placeholder="Response note (e.g. Unit 3 en route)..."
+                                  value={ackNote}
+                                  onChange={(e) => setAckNote(e.target.value)}
+                                  className="bg-white border border-slate-300 text-slate-900 rounded-xl p-2 text-xs focus:ring-2 focus:ring-blue-500/20"
+                                />
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={() => setAcknowledgingId(null)}
+                                    className="px-3 py-1.5 text-slate-500 hover:text-slate-900 text-xs font-semibold cursor-pointer"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={() => handleAcknowledge(report.id, request.id)}
+                                    className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer"
+                                  >
+                                    Confirm & Acknowledge
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setAcknowledgingId(request.id)}
+                                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>{t.acknowledge}</span>
+                              </button>
+                            )
+                          ) : (
+                            <span className="text-[11px] text-emerald-700 font-bold">
+                              ✓ Confirmed by {currentAdmin?.name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Outgoing Requests Sent by Current Agency */}
+          <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+                  <h3 className="text-sm font-black text-slate-900">
+                    Outgoing Requests Dispatched by {currentAgency}
+                  </h3>
+                </div>
+                <span className="text-xs font-mono bg-blue-50 px-2.5 py-0.5 rounded-lg text-blue-700 font-bold border border-blue-200">
+                  {outgoingRequests.length} Dispatched
+                </span>
+              </div>
+
+              <div className="space-y-3.5 max-h-[460px] overflow-y-auto pr-1">
+                {outgoingRequests.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    {currentAgency} has not dispatched any assistance requests yet. You can request assistance from any incident report card or table row.
+                  </div>
+                ) : (
+                  outgoingRequests.map(({ report, request }) => (
+                    <div
+                      key={request.id}
+                      className="p-4 rounded-2xl border bg-slate-50/80 border-slate-200/80 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
+                              {report.trackingCode}
+                            </span>
+                            <span className="text-xs text-slate-500 font-medium">
+                              → Requested: <strong className="text-slate-900">{request.targetAgencies.join(' & ')}</strong>
+                            </span>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                            request.status === 'Acknowledged'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
+                        >
+                          {request.status === 'Acknowledged' ? (
+                            <>
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Acknowledged
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3 text-amber-600" />
+                              Pending Response
+                            </>
+                          )}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-700 bg-white p-3 rounded-xl border border-slate-200/80 italic font-medium">
+                        "{request.note}"
+                      </p>
+
+                      {/* Acknowledgment history */}
+                      <div className="text-[11px] space-y-1.5 pt-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                          Agency Acknowledgment Status:
+                        </span>
+                        {request.targetAgencies.map((agency) => {
+                          const ack = request.acknowledgments.find((a) => a.agency === agency);
+                          return (
+                            <div
+                              key={agency}
+                              className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl bg-white border border-slate-200/60"
+                            >
+                              <span className="font-bold text-slate-800">{agency}:</span>
+                              {ack ? (
+                                <span className="text-emerald-700 flex items-center gap-1 font-semibold">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  {ack.acknowledgedBy} ({new Date(ack.acknowledgedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                                </span>
+                              ) : (
+                                <span className="text-amber-600 italic text-[11px] font-medium">
+                                  Awaiting response...
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

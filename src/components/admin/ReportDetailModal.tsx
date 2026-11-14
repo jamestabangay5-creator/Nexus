@@ -921,18 +921,20 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                   </div>
                 )}
 
-                {/* CASE 3: Active Ongoing / Pending Cases -> Request Assistance & Reject allowed */}
+                {/* CASE 3: Active Ongoing / Pending Cases -> Request Assistance (Agencies Only) & Reject allowed */}
                 {report.status !== 'Rejected' && report.status !== 'Resolved' && (
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      {/* Request Assistance Button */}
-                      <button
-                        onClick={() => setIsAssistanceModalOpen(true)}
-                        className="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer min-h-[42px] shadow-xs"
-                      >
-                        <Users className="w-4 h-4 text-indigo-600" />
-                        <span>{t.requestAssistance}</span>
-                      </button>
+                      {/* Request Assistance Button (Only responding agencies can request mutual aid, not System Admin) */}
+                      {activeRole !== 'CENTRAL' && (
+                        <button
+                          onClick={() => setIsAssistanceModalOpen(true)}
+                          className="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer min-h-[42px] shadow-xs"
+                        >
+                          <Users className="w-4 h-4 text-indigo-600" />
+                          <span>{t.requestAssistance}</span>
+                        </button>
+                      )}
                     </div>
 
                     {/* Status Update Action Pipeline: Accept -> Ongoing -> Resolved / Reject */}

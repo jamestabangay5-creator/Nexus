@@ -749,8 +749,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                           </button>
                         )}
 
-                        {/* Inter-Agency Request (only when not resolved) */}
-                        {!isResolved && (
+                        {/* Inter-Agency Request (Only responding agencies can request assistance, not System Admin) */}
+                        {!isResolved && activeRole !== 'CENTRAL' && (
                           <button
                             onClick={() => setAssistanceReport(report)}
                             title="Request Assistance"
@@ -932,8 +932,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                         <div className="flex items-center justify-end gap-1.5">
                           {canManage ? (
                             <>
-                              {/* Quick Assistance (only when not resolved) */}
-                              {!isResolved && (
+                              {/* Quick Assistance (Only responding agencies can request assistance, not System Admin) */}
+                              {!isResolved && activeRole !== 'CENTRAL' && (
                                 <button
                                   onClick={() => setAssistanceReport(report)}
                                   title="Request Inter-Agency Assistance"

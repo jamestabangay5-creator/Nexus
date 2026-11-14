@@ -171,10 +171,10 @@ export const CentralDashboardView: React.FC<Props> = ({
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-indigo-700 font-black text-xs uppercase tracking-wider">
             <Users className="w-4 h-4 text-indigo-600 animate-pulse" />
-            <span>Unified Inter-Agency Mutual Aid Command</span>
+            <span>Unified Inter-Agency Fleet & Mutual Aid Command Monitor</span>
           </div>
           <p className="text-xs text-slate-600 leading-relaxed max-w-2xl font-medium">
-            Coordinate synchronized multi-agency deployments across PNP Police, BFP Fire Protection, and MDRRMO Emergency Rescue.
+            Centralized operations monitoring of emergency vehicles (Standby, Dispatched, Patrol) and mutual aid dispatches coordinated across PNP Police, BFP Fire Protection, and MDRRMO Emergency Rescue.
           </p>
         </div>
         <button
@@ -182,8 +182,8 @@ export const CentralDashboardView: React.FC<Props> = ({
           onClick={onRequestAssistance}
           className="w-full md:w-auto px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 cursor-pointer shrink-0"
         >
-          <Users className="w-3.5 h-3.5" />
-          <span>Launch Inter-Agency Mutual Aid</span>
+          <Car className="w-3.5 h-3.5" />
+          <span>Monitor Inter-Agency Fleet & Mutual Aid</span>
         </button>
       </div>
 
@@ -409,8 +409,8 @@ export const CentralDashboardView: React.FC<Props> = ({
               onClick={onRequestAssistance}
               className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20"
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>Mutual Aid Hub</span>
+              <Car className="w-3.5 h-3.5" />
+              <span>Fleet & Mutual Aid Monitor</span>
             </button>
           </div>
         </div>
