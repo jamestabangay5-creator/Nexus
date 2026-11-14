@@ -4,6 +4,7 @@ import { collection, onSnapshot, doc, updateDoc, setDoc, getDocs, query, orderBy
 import { UserProfile } from '../../../types';
 import { BONGABONG_BARANGAYS, PILOT_MUNICIPALITY, PROVINCE_NAME } from '../../../constants/orientalMindoroData';
 import { AgencyLogo } from '../../common/AgencyLogo';
+import { useNexus } from '../../../context/NexusContext';
 import {
   Users,
   Search,
@@ -27,10 +28,13 @@ import {
   ExternalLink,
   MapPin,
   Lock,
-  UserX
+  UserX,
+  AlertOctagon,
+  AlertTriangle
 } from 'lucide-react';
 
 export const PnpUserManagementView: React.FC = () => {
+  const { reactivateCitizenAccount } = useNexus();
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -43,6 +47,21 @@ export const PnpUserManagementView: React.FC = () => {
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
+
+  const handleReactivateAccount = async (user: UserProfile) => {
+    if (!confirm(`Are you sure you want to reactivate the citizen reporting account for ${user.name}?`)) return;
+    setUpdatingUserId(user.uid || user.id);
+    try {
+      await reactivateCitizenAccount(user.uid || user.id, 'PMAJ. M. Santos (Bongabong PNP Admin)', 'Citizen account reactivated following administrative appeal review.');
+      setUsersList((prev) => prev.map((u) => (u.id === user.id || u.uid === user.uid ? { ...u, accountStatus: 'active' } : u)));
+      setSelectedUserForDossier((prev) => prev ? { ...prev, accountStatus: 'active' } : null);
+      setActionNotice(`Citizen account for ${user.name} was successfully reactivated.`);
+    } catch (err: any) {
+      alert(`Error reactivating account: ${err.message || 'Operation failed'}`);
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
 
   // Real-time listener for Firestore /users collection
   useEffect(() => {
@@ -416,7 +435,8 @@ export const PnpUserManagementView: React.FC = () => {
                 <th className="py-3.5 px-4 sm:px-6">Citizen Profile</th>
                 <th className="py-3.5 px-4">Contact Details</th>
                 <th className="py-3.5 px-4">Location in Bongabong</th>
-                <th className="py-3.5 px-4">Verification Status</th>
+                <th className="py-3.5 px-4">Verification</th>
+                <th className="py-3.5 px-4">Account Standing</th>
                 <th className="py-3.5 px-4">Registered Date</th>
                 <th className="py-3.5 px-4 sm:px-6 text-right">PNP Actions</th>
               </tr>
@@ -424,7 +444,7 @@ export const PnpUserManagementView: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
                       <span className="font-semibold text-xs">Loading registered citizen accounts...</span>
@@ -433,7 +453,7 @@ export const PnpUserManagementView: React.FC = () => {
                 </tr>
               ) : paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 font-semibold">
+                  <td colSpan={7} className="py-12 text-center text-slate-400 font-semibold">
                     No registered citizens match your search or filter criteria.
                   </td>
                 </tr>
@@ -502,7 +522,27 @@ export const PnpUserManagementView: React.FC = () => {
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
                           <XCircle className="w-3.5 h-3.5 text-amber-600" />
-                          <span>Pending Verification</span>
+                          <span>Pending</span>
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Account Standing & False Alarm Violation Status */}
+                    <td className="py-3.5 px-4">
+                      {user.accountStatus === 'deactivated' || (user.falseAlarmCount && user.falseAlarmCount >= 2) ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs">
+                          <AlertOctagon className="w-3 h-3 text-rose-600" />
+                          <span>Revoked ({user.falseAlarmCount || 2} Alarms)</span>
+                        </span>
+                      ) : user.accountStatus === 'warned' || (user.falseAlarmCount && user.falseAlarmCount === 1) ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs">
+                          <AlertTriangle className="w-3 h-3 text-amber-600" />
+                          <span>Warned (1 Offense)</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>Good Standing</span>
                         </span>
                       )}
                     </td>
@@ -666,6 +706,72 @@ export const PnpUserManagementView: React.FC = () => {
               </div>
             </div>
 
+            {/* Account Standing & False Alarm Violations Section */}
+            <div className={`p-4 rounded-2xl border text-xs space-y-2.5 ${
+              selectedUserForDossier.accountStatus === 'deactivated' || (selectedUserForDossier.falseAlarmCount && selectedUserForDossier.falseAlarmCount >= 2)
+                ? 'bg-rose-50/90 border-rose-300 text-rose-950'
+                : selectedUserForDossier.accountStatus === 'warned' || (selectedUserForDossier.falseAlarmCount && selectedUserForDossier.falseAlarmCount === 1)
+                ? 'bg-amber-50/90 border-amber-300 text-amber-950'
+                : 'bg-emerald-50/60 border-emerald-200 text-emerald-950'
+            }`}>
+              <div className="flex items-center justify-between">
+                <span className="font-bold flex items-center gap-1.5">
+                  <ShieldAlert className="w-4 h-4 text-slate-700" />
+                  <span>Public Safety Violation Record & Standing</span>
+                </span>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
+                  selectedUserForDossier.accountStatus === 'deactivated'
+                    ? 'bg-rose-600 text-white'
+                    : selectedUserForDossier.accountStatus === 'warned'
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-emerald-600 text-white'
+                }`}>
+                  {selectedUserForDossier.accountStatus === 'deactivated'
+                    ? 'Account Deactivated'
+                    : selectedUserForDossier.accountStatus === 'warned'
+                    ? 'Official Warning Issued'
+                    : 'Good Standing'}
+                </span>
+              </div>
+
+              <div className="text-[11px] space-y-1">
+                <div className="flex justify-between py-0.5">
+                  <span className="text-slate-600">Total Confirmed False Alarms:</span>
+                  <span className="font-bold font-mono">{selectedUserForDossier.falseAlarmCount || 0}</span>
+                </div>
+                {selectedUserForDossier.deactivatedAt && (
+                  <div className="flex justify-between py-0.5 text-rose-800">
+                    <span>Deactivation Date:</span>
+                    <span className="font-mono">{new Date(selectedUserForDossier.deactivatedAt).toLocaleString()}</span>
+                  </div>
+                )}
+                {selectedUserForDossier.deactivationReason && (
+                  <div className="pt-1 text-rose-900 italic">
+                    <strong>Reason:</strong> {selectedUserForDossier.deactivationReason}
+                  </div>
+                )}
+              </div>
+
+              {/* Warning history if any */}
+              {selectedUserForDossier.warnings && selectedUserForDossier.warnings.length > 0 && (
+                <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+                  <span className="text-[10px] uppercase font-black tracking-wider text-slate-600 block">
+                    Recorded Violation Warnings ({selectedUserForDossier.warnings.length}):
+                  </span>
+                  {selectedUserForDossier.warnings.map((w, idx) => (
+                    <div key={w.id || idx} className="p-2 bg-white/80 rounded-xl border border-slate-200 text-[11px] space-y-0.5">
+                      <div className="flex justify-between font-bold text-slate-800">
+                        <span>Offense #{idx + 1} · {w.trackingCode}</span>
+                        <span className="text-slate-500 font-mono text-[10px]">{new Date(w.issuedAt).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-slate-600">{w.reason}</p>
+                      <span className="text-[9px] text-slate-400 font-semibold block">Issued by: {w.issuedBy} ({w.agency})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="p-4 bg-slate-50 rounded-2xl space-y-2.5 text-xs">
               <div className="flex justify-between py-1 border-b border-slate-200/60">
                 <span className="text-slate-500 font-bold">Account UID:</span>
@@ -693,16 +799,32 @@ export const PnpUserManagementView: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <button
-                onClick={() => {
-                  handleToggleVerification(selectedUserForDossier);
-                  setSelectedUserForDossier((prev) => prev ? { ...prev, isVerifiedIdentity: !prev.isVerifiedIdentity } : null);
-                }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black transition cursor-pointer shadow-md"
-              >
-                {selectedUserForDossier.isVerifiedIdentity ? 'Revoke Verification' : 'Verify Identity Now'}
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    handleToggleVerification(selectedUserForDossier);
+                    setSelectedUserForDossier((prev) => prev ? { ...prev, isVerifiedIdentity: !prev.isVerifiedIdentity } : null);
+                  }}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black transition cursor-pointer shadow-md"
+                >
+                  {selectedUserForDossier.isVerifiedIdentity ? 'Revoke Verification' : 'Verify Identity Now'}
+                </button>
+
+                {/* Reactivate Account Button if Deactivated */}
+                {selectedUserForDossier.accountStatus === 'deactivated' && (
+                  <button
+                    onClick={() => handleReactivateAccount(selectedUserForDossier)}
+                    disabled={updatingUserId === (selectedUserForDossier.uid || selectedUserForDossier.id)}
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-black transition cursor-pointer shadow-md flex items-center gap-1.5"
+                    title="Reactivate citizen reporting access following administrative appeal review"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Reactivate Account</span>
+                  </button>
+                )}
+              </div>
+
               <button
                 onClick={() => setSelectedUserForDossier(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"

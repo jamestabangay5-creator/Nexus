@@ -30,7 +30,10 @@ import {
   ExternalLink,
   Maximize2,
   Check,
-  ShieldCheck
+  ShieldCheck,
+  ShieldAlert,
+  UserX,
+  AlertCircle
 } from 'lucide-react';
 
 interface Props {
@@ -50,6 +53,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
     updateIncidentStatus,
     rejectIncidentReport,
     restoreRejectedReport,
+    markIncidentAsFalseAlarm,
     adminProfiles,
     language,
     triggerSuccessModal,
@@ -70,6 +74,12 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
   const [rejectReason, setRejectReason] = useState('');
   const [isAssistanceModalOpen, setIsAssistanceModalOpen] = useState(false);
   const [customActionNote, setCustomActionNote] = useState('');
+
+  // False Alarm Confirmation Modal States (Requirements 1, 2, 3, 4)
+  const [isFalseAlarmModalOpen, setIsFalseAlarmModalOpen] = useState(false);
+  const [falseAlarmReason, setFalseAlarmReason] = useState('');
+  const [isSubmittingFalseAlarm, setIsSubmittingFalseAlarm] = useState(false);
+  const [isConfirmChecked, setIsConfirmChecked] = useState(false);
 
   // Close on Escape key
   React.useEffect(() => {
@@ -199,6 +209,44 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
       actionType: 'reject',
       details: `Justification: "${savedReason}". Recorded in immutable agency log.`
     });
+  };
+
+  const handleConfirmFalseAlarm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!report || !falseAlarmReason.trim() || !isConfirmChecked) return;
+
+    setIsSubmittingFalseAlarm(true);
+    try {
+      const result = await markIncidentAsFalseAlarm(
+        report.id,
+        falseAlarmReason.trim(),
+        currentAdmin?.name || `${currentAgency} Admin`,
+        currentAgency
+      );
+
+      setIsFalseAlarmModalOpen(false);
+      setFalseAlarmReason('');
+      setIsConfirmChecked(false);
+      onClose();
+
+      triggerSuccessModal({
+        title: 'Incident Classified as False Alarm',
+        message: `Report ${report.trackingCode} has been marked as a false alarm and archived.`,
+        trackingCode: report.trackingCode,
+        agency: currentAgency,
+        statusBadge: 'Confirmed False Alarm',
+        actionType: 'reject',
+        details: `Violation #${result.offenseNumber} recorded against ${result.reporterName}. Penalty: ${
+          result.actionTaken === 'warning_issued'
+            ? '⚠️ Official First-Time Offense Warning Issued'
+            : '🚨 Repeated Offense — Citizen Account Deactivated & Revoked'
+        }. Field findings: "${falseAlarmReason.trim()}"`,
+      });
+    } catch (err: any) {
+      alert(`Error marking report as false alarm: ${err.message || 'Operation failed'}`);
+    } finally {
+      setIsSubmittingFalseAlarm(false);
+    }
   };
 
   return (
@@ -692,6 +740,46 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
               </div>
             </div>
 
+            {/* Confirmed False Alarm Alert Banner (if classified) */}
+            {report.isFalseAlarm && (
+              <div className="p-4 bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 border-2 border-red-300 rounded-2xl text-xs space-y-2.5 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-red-600 text-white shrink-0">
+                      <ShieldAlert className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-black text-sm text-red-950 uppercase tracking-wide block">
+                        🚨 Confirmed False Alarm · Offense #{report.falseAlarmDetails?.offenseNumber || 1}
+                      </span>
+                      <span className="text-[11px] text-red-700 font-medium">
+                        Verified non-existent / prank incident. Citizen penalty enforced.
+                      </span>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider ${
+                    report.falseAlarmDetails?.actionTaken === 'account_deactivated'
+                      ? 'bg-red-700 text-white shadow-xs'
+                      : 'bg-amber-500 text-white shadow-xs'
+                  }`}>
+                    {report.falseAlarmDetails?.actionTaken === 'account_deactivated'
+                      ? 'Account Deactivated & Revoked'
+                      : '1st Offense Official Warning Issued'}
+                  </span>
+                </div>
+                <div className="p-2.5 bg-white/80 rounded-xl border border-red-200/80 text-slate-800">
+                  <span className="font-bold text-red-900 block mb-0.5">Field Investigation Finding / Reason:</span>
+                  <p className="text-xs text-slate-700 italic">
+                    "{report.falseAlarmDetails?.reason || report.rejection?.reason || 'Confirmed false alarm by emergency responders.'}"
+                  </p>
+                </div>
+                <div className="text-[10px] text-red-800/80 pt-1 border-t border-red-200/70 flex items-center justify-between font-medium">
+                  <span>Classified by: <strong>{report.falseAlarmDetails?.flaggedBy || 'Agency Officer'}</strong> ({report.falseAlarmDetails?.agency || report.selectedAgency})</span>
+                  <span>{report.falseAlarmDetails?.flaggedAt ? new Date(report.falseAlarmDetails.flaggedAt).toLocaleString() : ''}</span>
+                </div>
+              </div>
+            )}
+
             {/* Rejection Form Box (Only Lead Agency / Central Command Admins) */}
             {canManageReport && isRejectOpen && (
               <form
@@ -837,6 +925,19 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                         <AlertOctagon className="w-4 h-4" />
                         <span>{t.reject}</span>
                       </button>
+
+                      {/* Requirement 1: Mark as False Alarm Button */}
+                      {!report.isFalseAlarm && (
+                        <button
+                          type="button"
+                          onClick={() => setIsFalseAlarmModalOpen(true)}
+                          className="px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition cursor-pointer min-h-[42px] shadow-sm shadow-red-600/30 active:scale-95"
+                          title="Confirm as prank, fabricated, or non-existent incident and issue citizen penalty"
+                        >
+                          <ShieldAlert className="w-4 h-4" />
+                          <span>Mark as False Alarm</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -932,6 +1033,136 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
           isOpen={isAssistanceModalOpen}
           onClose={() => setIsAssistanceModalOpen(false)}
         />
+      )}
+
+      {/* Requirement 1, 2, 3, 4: False Alarm Classification & Penalty Confirmation Modal */}
+      {isFalseAlarmModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border-2 border-red-500 space-y-4 text-slate-800 relative">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-red-100 border border-red-200 text-red-700 flex items-center justify-center shrink-0">
+                  <ShieldAlert className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-red-950 uppercase tracking-tight">
+                    Confirm False Alarm Classification
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Tracking Code: <strong className="font-mono text-slate-900">{report.trackingCode}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFalseAlarmModalOpen(false);
+                  setFalseAlarmReason('');
+                  setIsConfirmChecked(false);
+                }}
+                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmFalseAlarm} className="space-y-4">
+              {/* Reporter Information Card */}
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5">
+                <span className="text-[10px] uppercase font-black tracking-wider text-slate-500 block">
+                  Reporting Citizen Information
+                </span>
+                <div className="flex items-center justify-between text-slate-800 font-bold">
+                  <span>{report.residentName}</span>
+                  <span className="font-mono text-slate-600">{report.residentPhone}</span>
+                </div>
+                <div className="text-[11px] text-slate-500 flex items-center justify-between">
+                  <span>Location: Barangay {report.barangay}, Bongabong</span>
+                  <span className="font-mono text-[10px] text-slate-400">ID: {report.residentId}</span>
+                </div>
+              </div>
+
+              {/* Penalty Level Notice */}
+              <div className="p-3.5 bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 border border-red-200 rounded-2xl text-xs space-y-2">
+                <div className="flex items-center gap-2">
+                  <AlertOctagon className="w-4 h-4 text-red-600 shrink-0" />
+                  <span className="font-black text-red-900 uppercase">
+                    Account Penalty Enforcement
+                  </span>
+                </div>
+                <p className="text-xs text-red-800 leading-relaxed font-medium">
+                  Under municipal safety policy, classifying this incident report as a verified false alarm, prank, or fabricated emergency will record an official violation against this citizen's account:
+                </p>
+                <ul className="text-[11px] text-slate-700 space-y-1 list-disc pl-4 font-semibold">
+                  <li><strong className="text-amber-800">1st Offense:</strong> An official warning notice is issued directly to the citizen.</li>
+                  <li><strong className="text-red-700">2nd Offense (Repeated):</strong> The citizen account is automatically <strong>DEACTIVATED & REVOKED</strong>, preventing further emergency reports.</li>
+                </ul>
+              </div>
+
+              {/* Mandatory Investigation Finding / Reason */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-900 block">
+                  Mandatory Field Investigation Justification <span className="text-red-600">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={falseAlarmReason}
+                  onChange={(e) => setFalseAlarmReason(e.target.value)}
+                  placeholder="Detail ocular/investigation findings (e.g. MDRRMO ocular inspection confirmed no fire or casualty; resident admitted prank call; non-existent incident at specified coordinates)..."
+                  className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 font-medium"
+                />
+              </div>
+
+              {/* Confirmation Checkbox */}
+              <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer text-xs font-semibold text-slate-800">
+                <input
+                  type="checkbox"
+                  required
+                  checked={isConfirmChecked}
+                  onChange={(e) => setIsConfirmChecked(e.target.checked)}
+                  className="mt-0.5 rounded text-red-600 focus:ring-red-500 h-4 w-4 shrink-0"
+                />
+                <span>
+                  I confirm that an official responder investigation was conducted and this incident report has been verified as a false alarm / fabricated emergency.
+                </span>
+              </label>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  disabled={isSubmittingFalseAlarm}
+                  onClick={() => {
+                    setIsFalseAlarmModalOpen(false);
+                    setFalseAlarmReason('');
+                    setIsConfirmChecked(false);
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingFalseAlarm || !isConfirmChecked || !falseAlarmReason.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white text-xs font-black shadow-md shadow-red-600/30 transition cursor-pointer disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
+                >
+                  {isSubmittingFalseAlarm ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Enforcing Penalty...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldAlert className="w-4 h-4" />
+                      <span>Confirm False Alarm & Issue Penalty</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </>
   );

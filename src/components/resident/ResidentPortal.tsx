@@ -229,26 +229,6 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     return filteredMyReports.slice(trackingStartIndex, trackingStartIndex + trackingPageSize);
   }, [filteredMyReports, trackingStartIndex, trackingPageSize]);
 
-  // Handle Photo preset pick
-  const samplePhotoPresets = [
-    {
-      title: 'Structural / Fire Smoke',
-      url: 'https://images.unsplash.com/photo-1542385151-efd9000785a0?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      title: 'Road / Vehicle Incident',
-      url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      title: 'Water Flood / Creek',
-      url: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      title: 'CCTV / Security Capture',
-      url: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80',
-    },
-  ];
-
   const getCoordinatesForBarangay = (muni: OrientalMindoroMunicipality, brgyName: string) => {
     const center = MUNICIPALITY_COORDINATES[muni] || { lat: 13.4115, lng: 121.1803 };
     let hash = 0;
@@ -339,6 +319,11 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (residentUser.accountStatus === 'deactivated') {
+      alert('Your citizen reporting privileges have been deactivated due to repeated false alarm violations. You cannot file new emergency reports.');
+      return;
+    }
 
     if (!selectedAgency) {
       setShowAgencyRequiredError(true);
@@ -513,6 +498,56 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
         </div>
       )}
 
+      {/* Requirement 3: Citizen Account Deactivated / Revoked Notice */}
+      {residentUser?.accountStatus === 'deactivated' && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-red-950 via-rose-950 to-red-900 text-white border-2 border-red-500 shadow-2xl space-y-3 animate-in fade-in">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-red-600/90 border border-red-400 flex items-center justify-center shrink-0">
+              <AlertOctagon className="w-6 h-6 text-white animate-pulse" />
+            </div>
+            <div>
+              <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-widest bg-red-600 text-white rounded border border-red-400 shadow-xs">
+                Reporting Account Deactivated & Revoked
+              </span>
+              <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                Citizen Reporting Privileges Suspended — Repeated False Alarms
+              </h3>
+            </div>
+          </div>
+          <p className="text-xs sm:text-sm text-red-100 font-medium leading-relaxed">
+            Your emergency reporting access has been deactivated due to repeated confirmed false alarm violations ({residentUser.falseAlarmCount || 2} confirmed prank / fabricated reports). Submitting false alarms wastes vital emergency resources and is punishable under municipal and national penal laws.
+          </p>
+          <div className="p-3 bg-red-900/60 rounded-xl border border-red-400/30 text-xs text-red-200">
+            <strong>Need to appeal?</strong> Contact the Philippine National Police (PNP) Bongabong Municipal Police Station at <span className="font-mono font-bold text-white">(043) 283-5192 / 0998-598-6086</span> for account review.
+          </div>
+        </div>
+      )}
+
+      {/* Requirement 2: First-Time Offense Official Warning Banner */}
+      {residentUser?.accountStatus === 'warned' && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-amber-500/10 border-2 border-amber-500/70 text-amber-950 shadow-lg space-y-2.5 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <AlertTriangle className="w-5 h-5 text-white animate-pulse" />
+            </div>
+            <div>
+              <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-widest bg-amber-500 text-white rounded shadow-xs">
+                Official Municipal Warning · 1st Offense
+              </span>
+              <h4 className="text-sm sm:text-base font-black text-amber-950 mt-0.5">
+                False Alarm Violation Notice Logged on Your Account
+              </h4>
+            </div>
+          </div>
+          <p className="text-xs text-amber-900 leading-relaxed font-medium">
+            An incident report previously filed from this account was verified as a false alarm / fabricated report by emergency responders. Submitting prank or fictitious emergency dispatches is strictly prohibited.
+          </p>
+          <div className="p-2.5 bg-amber-100/80 rounded-xl border border-amber-300 text-xs text-amber-950 font-bold">
+            ⚠️ Caution: Any repeated false alarm violation will result in the immediate and permanent deactivation of your citizen reporting account.
+          </div>
+        </div>
+      )}
+
       {/* Tabs: File Report vs Track My Reports vs Map View */}
       <div className="overflow-x-auto no-scrollbar pb-1">
         <div className="glass-card-subtle bg-white/70 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 flex items-center gap-1.5 min-w-max shadow-sm">
@@ -559,8 +594,109 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
       {/* TAB 1: INCIDENT REPORTING FORM */}
       {activeTab === 'report' && (
-        <form ref={reportFormRef} onSubmit={handleFormSubmit} className="space-y-6">
-          {/* Requirement 10: Three Box Buttons for Agency Selection */}
+        residentUser?.accountStatus === 'deactivated' ? (
+          <div className="glass-card bg-white/95 backdrop-blur-xl border-2 border-red-300 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-xl max-w-xl mx-auto my-6 animate-in fade-in">
+            <div className="w-16 h-16 rounded-3xl bg-red-100 text-red-600 mx-auto flex items-center justify-center shadow-md">
+              <AlertOctagon className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-black text-red-950 uppercase tracking-tight">
+              Emergency Reporting Privileges Revoked
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+              You cannot file incident reports because your citizen account has been deactivated following repeated confirmed false alarm violations ({residentUser.falseAlarmCount || 2} confirmed false alarms). For life-threatening emergencies, call Bongabong emergency hotlines directly.
+            </p>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab('tracking')}
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+              >
+                Inspect My Past Incidents
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form ref={reportFormRef} onSubmit={handleFormSubmit} className="space-y-6">
+            {/* Photo Evidence & Live Camera (Placed on TOP when submitting a report) */}
+            <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-200/50 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2.5 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center shrink-0 shadow-xs">
+                    <Camera className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                      <span>Photo Evidence & Live Camera</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-bold uppercase tracking-wider">
+                        Live
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Capture live photo of the incident or upload an image (Optional)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Photo preview if present */}
+              {photoUrl && (
+                <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-950/95 max-w-sm shadow-md flex flex-col items-center justify-center">
+                  <img
+                    src={photoUrl}
+                    alt="Captured incident evidence"
+                    className="w-full max-h-60 object-contain mx-auto"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhotoUrl('');
+                      setPhotoCaption('');
+                    }}
+                    className="absolute top-2 right-2 bg-slate-900/90 text-white hover:bg-slate-900 px-2.5 py-1 rounded-lg text-xs font-bold shadow transition cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                  {photoCaption && (
+                    <div className="w-full p-2 text-xs text-slate-300 bg-slate-900/90 border-t border-slate-800 truncate font-medium">
+                      {photoCaption}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Real-Time Live Camera & Upload Controls (Device Camera & Presets Removed) */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Button 1: Real-time Live Camera Viewfinder Modal */}
+                <button
+                  type="button"
+                  onClick={() => setIsCameraModalOpen(true)}
+                  className="flex-1 sm:flex-none px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-emerald-600/20 active:scale-95 min-h-[46px]"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Live Camera Capture</span>
+                  <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-white/20 font-black uppercase tracking-wider">
+                    Live
+                  </span>
+                </button>
+
+                {/* Button 2: Upload from Gallery / Files */}
+                <label className={`flex-1 sm:flex-none px-5 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[46px] shadow-xs ${
+                  compressingEvidence ? 'opacity-60 pointer-events-none' : ''
+                }`}>
+                  <ImageIcon className="w-4 h-4 text-indigo-600" />
+                  <span>{compressingEvidence ? 'Optimizing Photo...' : 'Upload Image'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={compressingEvidence}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Requirement 10: Three Box Buttons for Agency Selection */}
           <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-200/50 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
@@ -878,114 +1014,6 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
               </p>
             </div>
 
-            {/* Photo Evidence & Real-Time Camera Capture (Requirement 2 & 11) */}
-            <div className="space-y-3.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <label className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-                  <Camera className="w-4 h-4 text-emerald-600" />
-                  <span>Photo Evidence & Live Camera (Optional)</span>
-                </label>
-                <span className="text-[11px] text-slate-500 font-semibold">
-                  Capture live photo or select image
-                </span>
-              </div>
-
-              {/* Photo preview if present */}
-              {photoUrl && (
-                <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-950/95 max-w-sm shadow-md flex flex-col items-center justify-center">
-                  <img
-                    src={photoUrl}
-                    alt="Uploaded evidence"
-                    className="w-full max-h-60 object-contain mx-auto"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPhotoUrl('');
-                      setPhotoCaption('');
-                    }}
-                    className="absolute top-2 right-2 bg-slate-900/90 text-white hover:bg-slate-900 px-2.5 py-1 rounded-lg text-xs font-bold shadow transition cursor-pointer"
-                  >
-                    Remove
-                  </button>
-                  {photoCaption && (
-                    <div className="w-full p-2 text-xs text-slate-300 bg-slate-900/90 border-t border-slate-800 truncate font-medium">
-                      {photoCaption}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Real-Time Camera & Upload Controls */}
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {/* Button 1: Real-time Live Camera Viewfinder Modal */}
-                  <button
-                    type="button"
-                    onClick={() => setIsCameraModalOpen(true)}
-                    className="flex-1 sm:flex-none px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-emerald-600/20 active:scale-95 min-h-[46px]"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>Live Camera Capture</span>
-                    <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-white/20 font-black uppercase tracking-wider">
-                      Live
-                    </span>
-                  </button>
-
-                  {/* Button 2: Native Mobile Camera Direct Snap */}
-                  <label className="flex-1 sm:flex-none px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[46px] shadow-xs">
-                    <Camera className="w-4 h-4 text-blue-600" />
-                    <span>Device Camera</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={handleFileUpload}
-                      disabled={compressingEvidence}
-                      className="hidden"
-                    />
-                  </label>
-
-                  {/* Button 3: Upload from Gallery / Files */}
-                  <label className={`flex-1 sm:flex-none px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[46px] shadow-xs ${
-                    compressingEvidence ? 'opacity-60 pointer-events-none' : ''
-                  }`}>
-                    <ImageIcon className="w-4 h-4 text-indigo-600" />
-                    <span>{compressingEvidence ? 'Optimizing Photo...' : 'Upload Image'}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      disabled={compressingEvidence}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {/* Quick testing presets */}
-                <div className="pt-1">
-                  <span className="text-slate-500 text-[11px] block mb-1.5 font-bold uppercase tracking-wider">
-                    Quick Sample Evidence Presets:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {samplePhotoPresets.map((preset, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          setPhotoUrl(preset.url);
-                          setPhotoCaption(preset.title);
-                        }}
-                        className="px-2.5 py-1 text-xs bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg text-slate-700 transition cursor-pointer font-bold shadow-2xs"
-                      >
-                        {preset.title}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Terms reminder notice */}
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="flex items-center gap-2 font-medium">
@@ -1026,7 +1054,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             </div>
           </div>
         </form>
-      )}
+      ))}
 
       {/* TAB 2: RESIDENT REPORT STATUS TRACKING */}
       {activeTab === 'tracking' && (

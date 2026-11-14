@@ -134,6 +134,15 @@ export interface IncidentReport {
     rejectedByAdmin: string;
     agency: Agency;
   };
+  isFalseAlarm?: boolean;
+  falseAlarmDetails?: {
+    flaggedAt: string;
+    flaggedBy: string;
+    agency: AgencyScope;
+    reason: string;
+    actionTaken: 'warning_issued' | 'account_deactivated';
+    offenseNumber: number;
+  };
   resolution?: {
     resolvedAt: string;
     resolvedByAdmin: string;
@@ -166,6 +175,20 @@ export interface UserProfile {
   termsAcceptedAt?: string;
   isVerifiedIdentity?: boolean;
   authProvider?: 'google' | 'password' | 'demo';
+  falseAlarmCount?: number;
+  warnings?: Array<{
+    id: string;
+    reportId: string;
+    trackingCode: string;
+    reason: string;
+    issuedAt: string;
+    issuedBy: string;
+    agency: AgencyScope;
+  }>;
+  accountStatus?: 'active' | 'warned' | 'deactivated';
+  deactivatedAt?: string;
+  deactivationReason?: string;
+  deactivatedBy?: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  ShieldAlert,
 } from 'lucide-react';
 
 interface Props {
@@ -412,29 +413,61 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
                   </span>
                 </div>
 
-                {/* Documented Rejection Reason Box (for Rejected) */}
+                {/* Documented Rejection / False Alarm Reason Box */}
                 {isRejected && (
-                  <div className="p-4 bg-rose-50/90 border border-rose-200 rounded-2xl text-xs space-y-2 text-rose-950">
-                    <div className="flex items-center gap-2 text-rose-800 font-bold">
-                      <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span>Documented Justification & Archive Reason:</span>
-                    </div>
-                    <p className="text-rose-900 pl-6 text-xs leading-relaxed font-medium">
-                      "{report.rejection?.reason || 'Report rejected by dispatch authority.'}"
-                    </p>
+                  report.isFalseAlarm ? (
+                    <div className="p-4 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-300 rounded-2xl text-xs space-y-2 text-red-950">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-red-800 font-black">
+                          <ShieldAlert className="w-4 h-4 text-red-600 shrink-0" />
+                          <span className="uppercase tracking-wide">🚨 Confirmed False Alarm · Offense #{report.falseAlarmDetails?.offenseNumber || 1}</span>
+                        </div>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          report.falseAlarmDetails?.actionTaken === 'account_deactivated'
+                            ? 'bg-red-700 text-white'
+                            : 'bg-amber-500 text-white'
+                        }`}>
+                          {report.falseAlarmDetails?.actionTaken === 'account_deactivated' ? 'Account Deactivated & Revoked' : 'Official Warning Issued'}
+                        </span>
+                      </div>
+                      <p className="text-red-900 pl-6 text-xs leading-relaxed font-medium">
+                        "{report.falseAlarmDetails?.reason || report.rejection?.reason || 'Verified false alarm by emergency responders.'}"
+                      </p>
 
-                    <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pl-6 pt-1 border-t border-rose-200/80">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3.5 h-3.5 text-rose-600" />
-                        <span>Rejected by: <strong className="text-slate-800">{report.rejection?.rejectedByAdmin || 'Command Officer'}</strong> ({report.rejection?.agency || report.selectedAgency})</span>
-                      </span>
-
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-rose-600" />
-                        <span>Archived at: <strong className="text-slate-800">{new Date(report.rejection?.rejectedAt || report.updatedAt).toLocaleString()}</strong></span>
-                      </span>
+                      <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pl-6 pt-1 border-t border-red-200">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3.5 h-3.5 text-red-600" />
+                          <span>Flagged by: <strong className="text-slate-800">{report.falseAlarmDetails?.flaggedBy || report.rejection?.rejectedByAdmin || 'Command Officer'}</strong> ({report.falseAlarmDetails?.agency || report.selectedAgency})</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-red-600" />
+                          <span>Classified at: <strong className="text-slate-800">{new Date(report.falseAlarmDetails?.flaggedAt || report.rejection?.rejectedAt || report.updatedAt).toLocaleString()}</strong></span>
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="p-4 bg-rose-50/90 border border-rose-200 rounded-2xl text-xs space-y-2 text-rose-950">
+                      <div className="flex items-center gap-2 text-rose-800 font-bold">
+                        <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>Documented Justification & Archive Reason:</span>
+                      </div>
+                      <p className="text-rose-900 pl-6 text-xs leading-relaxed font-medium">
+                        "{report.rejection?.reason || 'Report rejected by dispatch authority.'}"
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pl-6 pt-1 border-t border-rose-200/80">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3.5 h-3.5 text-rose-600" />
+                          <span>Rejected by: <strong className="text-slate-800">{report.rejection?.rejectedByAdmin || 'Command Officer'}</strong> ({report.rejection?.agency || report.selectedAgency})</span>
+                        </span>
+
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-rose-600" />
+                          <span>Archived at: <strong className="text-slate-800">{new Date(report.rejection?.rejectedAt || report.updatedAt).toLocaleString()}</strong></span>
+                        </span>
+                      </div>
+                    </div>
+                  )
                 )}
 
                 {/* Resolution Summary Box (for Resolved) */}

@@ -173,6 +173,22 @@ interface NexusContextType {
   simulateIncomingIncident: () => void;
   purgeAllSimulatedReports: () => Promise<void>;
   restoreRejectedReport: (reportId: string, adminName: string, agency: AgencyScope) => void;
+  markIncidentAsFalseAlarm: (
+    reportId: string,
+    justification: string,
+    adminName: string,
+    agency: AgencyScope
+  ) => Promise<{
+    offenseNumber: number;
+    actionTaken: 'warning_issued' | 'account_deactivated';
+    reporterName: string;
+    accountStatus: 'warned' | 'deactivated';
+  }>;
+  reactivateCitizenAccount: (
+    userId: string,
+    adminName: string,
+    notes?: string
+  ) => Promise<void>;
 }
 
 const NexusContext = createContext<NexusContextType | undefined>(undefined);
@@ -1478,6 +1494,259 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
+  // Mark incident as False Alarm with automatic citizen penalty enforcement (Requirements 1, 2, 3, 4)
+  const markIncidentAsFalseAlarm = async (
+    reportId: string,
+    justification: string,
+    adminName: string,
+    agency: AgencyScope
+  ): Promise<{
+    offenseNumber: number;
+    actionTaken: 'warning_issued' | 'account_deactivated';
+    reporterName: string;
+    accountStatus: 'warned' | 'deactivated';
+  }> => {
+    const now = new Date().toISOString();
+    const targetReport = reports.find((r) => r.id === reportId);
+    if (!targetReport) {
+      throw new Error(`Report ${reportId} not found.`);
+    }
+
+    // Authority enforcement: Only designated agency or CENTRAL can mark false alarm
+    if (agency !== 'CENTRAL' && agency !== targetReport.selectedAgency) {
+      throw new Error(`[Authority Restriction] Agency "${agency}" is not authorized to penalize report "${targetReport.trackingCode}".`);
+    }
+
+    const reporterId = targetReport.residentId || (targetReport as any).residentUid || targetReport.residentEmail || targetReport.residentPhone || 'anonymous';
+    const reporterName = targetReport.residentName || 'Resident Reporter';
+
+    // 1. Fetch user data to determine current violation history
+    let existingUser: UserProfile | null = null;
+    if (targetReport.residentId) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', targetReport.residentId));
+        if (userDoc.exists()) {
+          existingUser = userDoc.data() as UserProfile;
+        }
+      } catch (err) {
+        console.warn('Could not read user profile from Firestore:', err);
+      }
+    }
+
+    if (!existingUser) {
+      try {
+        const localCache = JSON.parse(localStorage.getItem('nexus_registered_users_cache') || '[]');
+        existingUser = localCache.find((u: UserProfile) => u.id === targetReport.residentId || u.uid === targetReport.residentId || (targetReport.residentEmail && u.email === targetReport.residentEmail)) || null;
+      } catch {}
+    }
+
+    if (!existingUser && residentUser && (residentUser.id === targetReport.residentId || (targetReport.residentEmail && residentUser.email === targetReport.residentEmail))) {
+      existingUser = residentUser;
+    }
+
+    const priorViolationsCount = existingUser?.falseAlarmCount || 0;
+    const offenseNumber = priorViolationsCount + 1;
+    const actionTaken: 'warning_issued' | 'account_deactivated' = offenseNumber === 1 ? 'warning_issued' : 'account_deactivated';
+    const accountStatus: 'warned' | 'deactivated' = offenseNumber === 1 ? 'warned' : 'deactivated';
+
+    const warningRecord = {
+      id: `warn-${reportId}-${Date.now()}`,
+      reportId,
+      trackingCode: targetReport.trackingCode,
+      reason: justification,
+      issuedAt: now,
+      issuedBy: adminName,
+      agency,
+    };
+
+    const updatedWarnings = [...(existingUser?.warnings || []), warningRecord];
+
+    // 2. Update user profile with penalty & violation tracking
+    const userUpdates: Partial<UserProfile> = {
+      falseAlarmCount: offenseNumber,
+      warnings: updatedWarnings,
+      accountStatus,
+      updatedAt: now,
+    };
+
+    if (actionTaken === 'account_deactivated') {
+      userUpdates.deactivatedAt = now;
+      userUpdates.deactivationReason = `Repeated confirmed false alarm violations (${offenseNumber} confirmed offenses). Reporting privileges revoked by ${agency} (${adminName}).`;
+      userUpdates.deactivatedBy = adminName;
+    }
+
+    // Persist user update to Firestore
+    if (targetReport.residentId) {
+      try {
+        await setDoc(doc(db, 'users', targetReport.residentId), userUpdates, { merge: true });
+      } catch (err) {
+        console.warn('Could not write updated user status to Firestore:', err);
+      }
+    }
+
+    // Persist dedicated false alarm violation record for audit trail
+    try {
+      await setDoc(doc(db, 'false_alarm_violations', `viol-${reportId}-${Date.now()}`), {
+        reportId,
+        trackingCode: targetReport.trackingCode,
+        reporterId,
+        reporterName,
+        reporterPhone: targetReport.residentPhone,
+        reporterEmail: targetReport.residentEmail || '',
+        barangay: targetReport.barangay,
+        municipality: targetReport.municipality || 'Bongabong',
+        incidentType: targetReport.verifiedTypeId || targetReport.initialTypeId,
+        agency,
+        adminName,
+        justification,
+        offenseNumber,
+        actionTaken,
+        timestamp: now,
+      });
+    } catch (err) {
+      console.warn('Could not write to false_alarm_violations:', err);
+    }
+
+    // Update local cache of registered users
+    try {
+      const localCache: UserProfile[] = JSON.parse(localStorage.getItem('nexus_registered_users_cache') || '[]');
+      const updatedCache = localCache.map((u) => {
+        if (u.id === targetReport.residentId || u.uid === targetReport.residentId || (targetReport.residentEmail && u.email === targetReport.residentEmail)) {
+          return { ...u, ...userUpdates };
+        }
+        return u;
+      });
+      localStorage.setItem('nexus_registered_users_cache', JSON.stringify(updatedCache));
+    } catch {}
+
+    // If currently logged-in resident matches this reporter, update residentUser immediately
+    if (residentUser && (residentUser.id === targetReport.residentId || (targetReport.residentEmail && residentUser.email === targetReport.residentEmail))) {
+      setResidentUser((prev) => {
+        const next = { ...prev, ...userUpdates };
+        try { localStorage.setItem(RESIDENT_STORAGE_KEY, JSON.stringify(next)); } catch {}
+        return next;
+      });
+    }
+
+    // 3. Update the incident report itself
+    const auditEntry = {
+      id: `hist-${Date.now()}`,
+      timestamp: now,
+      adminName,
+      agency,
+      action: 'Classified as False Alarm',
+      details: `Incident confirmed as false alarm/prank (Offense #${offenseNumber}). Penalty: ${actionTaken === 'warning_issued' ? 'Official Citizen Warning Issued' : 'Account Deactivated & Revoked'}. Justification: "${justification}"`,
+      previousStatus: targetReport.status,
+      newStatus: 'Rejected' as IncidentStatus,
+    };
+
+    setReports((prev) => {
+      const next = prev.map((rep) => {
+        if (rep.id !== reportId) return rep;
+        return {
+          ...rep,
+          status: 'Rejected' as IncidentStatus,
+          isFalseAlarm: true,
+          falseAlarmDetails: {
+            flaggedAt: now,
+            flaggedBy: adminName,
+            agency,
+            reason: justification,
+            actionTaken,
+            offenseNumber,
+          },
+          rejection: {
+            reason: `Confirmed False Alarm: ${justification}`,
+            rejectedAt: now,
+            rejectedByAdmin: adminName,
+            agency: (agency === 'CENTRAL' ? rep.selectedAgency : agency) as Agency,
+          },
+          updatedAt: now,
+          history: [auditEntry, ...rep.history],
+        };
+      });
+      next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    // Write to Firestore reports collection
+    try {
+      await updateDoc(doc(db, 'reports', reportId), {
+        status: 'Rejected',
+        isFalseAlarm: true,
+        falseAlarmDetails: {
+          flaggedAt: now,
+          flaggedBy: adminName,
+          agency,
+          reason: justification,
+          actionTaken,
+          offenseNumber,
+        },
+        rejection: {
+          reason: `Confirmed False Alarm: ${justification}`,
+          rejectedAt: now,
+          rejectedByAdmin: adminName,
+          agency: (agency === 'CENTRAL' ? targetReport.selectedAgency : agency),
+        },
+        updatedAt: now,
+        history: [auditEntry, ...targetReport.history],
+      });
+    } catch (err) {
+      console.warn('Could not update report in Firestore:', err);
+    }
+
+    return {
+      offenseNumber,
+      actionTaken,
+      reporterName,
+      accountStatus,
+    };
+  };
+
+  // Reactivate a deactivated citizen account (upon appeal or resolution by PNP Admin)
+  const reactivateCitizenAccount = async (
+    userId: string,
+    adminName: string,
+    notes?: string
+  ): Promise<void> => {
+    const now = new Date().toISOString();
+    const updates: Partial<UserProfile> = {
+      accountStatus: 'active',
+      updatedAt: now,
+    };
+
+    try {
+      await setDoc(doc(db, 'users', userId), updates, { merge: true });
+    } catch (err) {
+      console.warn('Could not reactivate user in Firestore:', err);
+    }
+
+    try {
+      await setDoc(doc(db, 'user_status_audit', `audit-${userId}-${Date.now()}`), {
+        userId,
+        action: 'Account Reactivated',
+        adminName,
+        notes: notes || 'Account reactivated following administrative review.',
+        timestamp: now,
+      });
+    } catch {}
+
+    try {
+      const localCache: UserProfile[] = JSON.parse(localStorage.getItem('nexus_registered_users_cache') || '[]');
+      const updated = localCache.map((u) => (u.id === userId || u.uid === userId ? { ...u, accountStatus: 'active' as const } : u));
+      localStorage.setItem('nexus_registered_users_cache', JSON.stringify(updated));
+    } catch {}
+
+    if (residentUser && (residentUser.id === userId || (residentUser as any).uid === userId)) {
+      setResidentUser((prev) => {
+        const next = { ...prev, accountStatus: 'active' as const };
+        try { localStorage.setItem(RESIDENT_STORAGE_KEY, JSON.stringify(next)); } catch {}
+        return next;
+      });
+    }
+  };
+
   // Reclassify incident report
   const reclassifyIncidentReport = (
     reportId: string,
@@ -1905,6 +2174,8 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         simulateIncomingIncident,
         purgeAllSimulatedReports,
         restoreRejectedReport,
+        markIncidentAsFalseAlarm,
+        reactivateCitizenAccount,
         patrolUnits,
         updatePatrolStatus,
         savePatrolUnit,

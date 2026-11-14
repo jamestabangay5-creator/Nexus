@@ -184,7 +184,15 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
     return <Shield className="w-4 h-4 text-slate-600 shrink-0" />;
   };
 
-  const getStatusBadge = (status: IncidentStatus, translatedText: string) => {
+  const getStatusBadge = (status: IncidentStatus, translatedText: string, isFalseAlarm?: boolean) => {
+    if (isFalseAlarm) {
+      return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-black px-3 py-1 rounded-full border bg-red-100 text-red-800 border-red-300 shadow-2xs">
+          <ShieldAlert className="w-3.5 h-3.5 text-red-600 shrink-0" />
+          <span>False Alarm</span>
+        </span>
+      );
+    }
     if (status === 'Resolved') {
       return (
         <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
@@ -622,7 +630,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                       {report.category}
                     </span>
 
-                    {getStatusBadge(report.status, t[report.status] || report.status)}
+                    {getStatusBadge(report.status, t[report.status] || report.status, report.isFalseAlarm)}
                   </div>
                 </div>
 
@@ -869,7 +877,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
                       {/* Status using Lucide Icon badge */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        {getStatusBadge(report.status, t[report.status] || report.status)}
+                        {getStatusBadge(report.status, t[report.status] || report.status, report.isFalseAlarm)}
                       </td>
 
                       {/* Actions */}
