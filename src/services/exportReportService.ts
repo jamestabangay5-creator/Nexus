@@ -74,26 +74,26 @@ export const getAgencyHeaderInfo = (scope: AgencyScope | 'RESIDENT'): AgencyHead
       return {
         republicTitle: 'Republic of the Philippines',
         departmentTitle: 'PROVINCE OF ORIENTAL MINDORO · MUNICIPALITY OF BONGABONG',
-        agencyName: 'NEXUS 911 UNIFIED EMERGENCY DISPATCH COMMAND',
+        agencyName: 'NEXUS UNIFIED EMERGENCY RESPONSE COMMAND',
         stationName: 'INTER-AGENCY OPERATIONS CENTER (PNP · BFP · MDRRMO)',
-        contactInfo: 'Bongabong Central Command & Dispatch Center | Emergency Hotline: 911',
+        contactInfo: 'Bongabong Central Command Operations Center | Municipal Emergency Network',
         logoUrl: `${origin}/logos/central.png`,
         primaryColor: '#7c3aed',
-        dutyRoleTitle: 'Unified 911 Dispatch Commander',
+        dutyRoleTitle: 'Unified Operations Commander',
         certifyingOfficerTitle: 'Joint Inter-Agency Operations Commander',
       };
     case 'RESIDENT':
     default:
       return {
         republicTitle: 'Republic of the Philippines · Province of Oriental Mindoro',
-        departmentTitle: 'MUNICIPALITY OF BONGABONG · PUBLIC SAFETY & DISPATCH SERVICES',
-        agencyName: 'NEXUS 911 CITIZEN RESIDENT PORTAL',
+        departmentTitle: 'MUNICIPALITY OF BONGABONG · PUBLIC SAFETY & EMERGENCY SERVICES',
+        agencyName: 'NEXUS CITIZEN RESIDENT PORTAL',
         stationName: 'OFFICIAL CITIZEN INCIDENT REPORT SUMMARY DOSSIER',
-        contactInfo: 'Bongabong Emergency Network | Citizen Emergency Access: 911',
+        contactInfo: 'Bongabong Emergency Network | Citizen Emergency Access',
         logoUrl: `${origin}/logos/central.png`,
         primaryColor: '#2563eb',
         dutyRoleTitle: 'Verified Resident Citizen',
-        certifyingOfficerTitle: 'NEXUS 911 Automated Records Verification Officer',
+        certifyingOfficerTitle: 'NEXUS Automated Records Verification Officer',
       };
   }
 };
@@ -406,7 +406,7 @@ export const exportReportToPdf = async (options: ExportReportOptions): Promise<v
           ${documentTitle || 'OFFICIAL EMERGENCY INCIDENT SUMMARY REPORT'}
         </h2>
         <span style="font-size: 9.5px; color: #64748b; font-weight: 600;">
-          CENTRALIZED 911 DISPATCH RECORDS & AUDIT DOSSIER
+          CENTRALIZED EMERGENCY RECORDS & AUDIT DOSSIER
         </span>
       </div>
 
@@ -545,7 +545,7 @@ export const exportReportToPdf = async (options: ExportReportOptions): Promise<v
       </div>
 
       <div class="footer-note">
-        This document is an official government extraction from the NEXUS 911 Unified Emergency Dispatch Database. Unauthorized alteration, forging, or tampering is strictly penalized under Republic Act No. 10175 and Revised Penal Code of the Philippines.
+        This document is an official government extraction from the NEXUS Unified Emergency Incident Database. Unauthorized alteration, forging, or tampering is strictly penalized under Republic Act No. 10175 and Revised Penal Code of the Philippines.
       </div>
     </body>
     </html>
@@ -697,7 +697,7 @@ export const exportReportToExcel = async (options: ExportReportOptions): Promise
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `NEXUS-911-${agencyScope}-Report-${now.toISOString().slice(0, 10)}.xls`;
+  a.download = `NEXUS-Bongabong-${agencyScope}-Report-${now.toISOString().slice(0, 10)}.xls`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -824,7 +824,7 @@ export const exportReportToWord = async (options: ExportReportOptions): Promise<
         </table>
 
         <p style="text-align: center; font-size: 8pt; color: #94a3b8; margin-top: 20px;">
-          This document is an official government extraction from the NEXUS 911 Unified Emergency Dispatch Database.
+          This document is an official government extraction from the NEXUS Unified Emergency Incident Database.
         </p>
       </div>
     </body>
@@ -835,7 +835,7 @@ export const exportReportToWord = async (options: ExportReportOptions): Promise<
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `NEXUS-911-${agencyScope}-Report-${now.toISOString().slice(0, 10)}.doc`;
+  a.download = `NEXUS-Bongabong-${agencyScope}-Report-${now.toISOString().slice(0, 10)}.doc`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -903,7 +903,7 @@ export const exportReportToCsv = (options: ExportReportOptions): void => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `NEXUS-911-${agencyScope}-Report-${now.toISOString().slice(0, 10)}.csv`;
+  a.download = `NEXUS-Bongabong-${agencyScope}-Report-${now.toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

@@ -139,7 +139,7 @@ export const MobileBottomNav: React.FC<Props> = ({
             <span className={`text-xs mt-0.5 uppercase tracking-tight ${
               residentActiveTab === 'report' ? 'font-black text-rose-600' : 'font-bold text-rose-600/90'
             }`}>
-              Report 911
+              Report Emergency
             </span>
           </button>
 
@@ -348,7 +348,7 @@ export const MobileBottomNav: React.FC<Props> = ({
               <AlertTriangle className="w-5 h-5 animate-pulse" />
             </div>
             <span className="text-[10px] font-black text-rose-600 mt-0.5 uppercase tracking-tight">
-              Report 911
+              Report Emergency
             </span>
           </button>
 

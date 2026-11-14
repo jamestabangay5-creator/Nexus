@@ -124,20 +124,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const faqs = [
     {
-      qEn: 'What is NEXUS 911 and what problem does it solve?',
-      qFil: 'Ano ang NEXUS 911 at ano ang layunin nito?',
+      qEn: 'What is NEXUS and what problem does it solve?',
+      qFil: 'Ano ang NEXUS at ano ang layunin nito?',
       aEn:
-        'NEXUS 911 is a unified multi-agency emergency incident management and centralized dispatch platform for Oriental Mindoro. Historically, citizens had to call separate numbers for Police (PNP), Fire (BFP), and Medical/Disaster (MDRRMO), causing delay and miscommunication. NEXUS 911 consolidates emergency reporting into a single cloud ecosystem with real-time GIS mapping, synchronized alerts, and automated multi-agency dispatch.',
+        'NEXUS is a unified multi-agency emergency incident management and operations platform pilot-tested for the Municipality of Bongabong, Oriental Mindoro. Historically, citizens had to call separate numbers for Police (PNP), Fire (BFP), and Medical/Disaster (MDRRMO), causing delay and miscommunication. NEXUS consolidates emergency reporting into a single cloud ecosystem with real-time GIS mapping, synchronized alerts, and automated multi-agency response.',
       aFil:
-        'Ang NEXUS 911 ay isang pinag-isang sistema ng pamamahala sa emergency sa Oriental Mindoro. Pinagsasama nito ang Pulisya (PNP), Bumbero (BFP), at Disaster/Medikal (MDRRMO) sa iisang plataporma upang mabilis na maaksyunan ang bawat sakuna.',
+        'Ang NEXUS ay isang pinag-isang sistema ng pamamahala sa emergency para sa Bayan ng Bongabong, Oriental Mindoro. Pinagsasama nito ang Pulisya (PNP), Bumbero (BFP), at Disaster/Medikal (MDRRMO) sa iisang plataporma upang mabilis na maaksyunan ang bawat sakuna.',
     },
     {
       qEn: 'Who can use the Resident Citizen Portal?',
       qFil: 'Sino ang maaaring gumamit ng Resident Citizen Portal?',
       aEn:
-        'Any resident, visitor, or tourist within the 15 municipalities of Oriental Mindoro can access the portal to report emergencies, view safety bulletins, and track their filed reports. Residents can sign in with Google or Email and complete their verified profile with photo upload to eliminate prank reports and ensure swift responder recognition.',
+        'Any resident, visitor, or worker within the 32 barangays of Bongabong, Oriental Mindoro can access the portal to report emergencies, view safety bulletins, and track their filed reports. Residents can sign in with Google or Email and complete their verified profile with photo upload to eliminate prank reports and ensure swift responder recognition.',
       aFil:
-        'Lahat ng residente o bisita sa Oriental Mindoro ay maaaring mag-ulat ng emergency, mag-upload ng litrato, at subaybayan ang pagtugon ng mga ahensya gamit ang kanilang verified account.',
+        'Lahat ng residente sa 32 barangay ng Bongabong ay maaaring mag-ulat ng emergency, mag-upload ng litrato, at subaybayan ang pagtugon ng mga ahensya gamit ang kanilang verified account.',
     },
     {
       qEn: 'How does Centralized Agency Command work?',
@@ -145,23 +145,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       aEn:
         'Agency dispatchers and commanders log in via official credentials (e.g. systemadmin@nexus.gov.ph). The Centralized Command view displays all incoming incidents across police, fire, and disaster scopes simultaneously. Agency tabs (Central, PNP, BFP, MDRRMO) allow filtered operational views, dispatching responder units, issuing inter-agency assistance requests, and reclassifying incident priorities.',
       aFil:
-        'Ang mga opisyal na dispatcher ay may access sa Centralized Dashboard kung saan sabay-sabay nilang nakikita ang lahat ng insidente sa pulisya, bumbero, at rescue, at mabilis na nakakapagpadala ng mga tauhan.',
+        'Ang mga opisyal na responder ay may access sa Centralized Dashboard kung saan sabay-sabay nilang nakikita ang lahat ng insidente sa pulisya, bumbero, at rescue, at mabilis na nakakapagpadala ng mga tauhan.',
     },
     {
-      qEn: 'Is Leaflet GIS Map accurate for Oriental Mindoro?',
-      qFil: 'Wasto ba ang Leaflet GIS Map para sa Oriental Mindoro?',
+      qEn: 'Is Leaflet GIS Map accurate for Bongabong?',
+      qFil: 'Wasto ba ang Leaflet GIS Map para sa Bongabong?',
       aEn:
-        'Yes. NEXUS 911 integrates Leaflet OpenStreetMap with custom coordinates for all 15 municipalities from Puerto Galera in the north to Bulalacao in the south. It supports street and satellite view layers, live density heatmaps, and interactive marker clustering.',
+        'Yes. NEXUS integrates Leaflet OpenStreetMap with custom coordinates for all 32 barangays in the Municipality of Bongabong, Oriental Mindoro. It supports street and satellite view layers, live density heatmaps, and interactive marker clustering.',
       aFil:
-        'Oo. May kumpletong coordinates ang sistema mula Puerto Galera hanggang Bulalacao, may street at satellite layer, at live heatmap ng mga insidente.',
+        'Oo. May kumpletong coordinates ang sistema para sa lahat ng 32 barangay ng Bongabong, may street at satellite layer, at live heatmap ng mga insidente.',
     },
     {
-      qEn: 'What are the official emergency hotlines in Oriental Mindoro?',
-      qFil: 'Ano ang mga opisyal na emergency hotlines sa Oriental Mindoro?',
+      qEn: 'What are the official emergency hotlines in Bongabong?',
+      qFil: 'Ano ang mga opisyal na emergency hotlines sa Bongabong?',
       aEn:
-        'National Emergency Hotline: 911 | PNP Police Emergency: 911 / (02) 8722-0650 | BFP Fire Protection: 160 / (02) 8426-0219 | MDRRMO / Disaster & Medical: 122 / (02) 8928-1111 | Philippine Red Cross: 143 | Coast Guard: (02) 8527-8481.',
+        'PNP Bongabong Police Station: 0998-598-5918 / (043) 283-5190 | BFP Bongabong Fire Station: 0917-814-3119 | MDRRMO Bongabong Emergency Rescue: 0915-288-8880 / (043) 283-5334 | Philippine Red Cross: 143.',
       aFil:
-        'National Emergency: 911 | PNP: 911 / (02) 8722-0650 | BFP: 160 / (02) 8426-0219 | MDRRMO: 122 | Red Cross: 143 | Coast Guard: (02) 8527-8481.',
+        'PNP Bongabong: 0998-598-5918 / (043) 283-5190 | BFP Bongabong: 0917-814-3119 | MDRRMO Bongabong: 0915-288-8880 / (043) 283-5334 | Red Cross: 143.',
     },
   ];
 
@@ -184,7 +184,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             />
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] sm:text-xs font-bold tracking-wider uppercase text-slate-700">
-              MIMAROPA Region IV-B · Oriental Mindoro 911 Public Safety Cloud
+              Municipality of Bongabong · Emergency Response & Public Safety Operations
             </span>
           </div>
 
@@ -192,15 +192,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.15]">
             Unified Multi-Agency <br />
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-rose-600 bg-clip-text text-transparent">
-              Emergency Dispatch & Incident Management
+              Emergency Response & Public Safety Operations
             </span>
           </h1>
 
           {/* Subtitle / System Purpose */}
           <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
             {language === 'fil'
-              ? 'Ang NEXUS 911 ay ang sentralisadong tulay sa pagitan ng mamamayan ng Oriental Mindoro at ng Pambansang Pulisya (PNP), Bumbero (BFP), at Tanggapan ng Sakuna at Medikal (MDRRMO) para sa mabilis at ligtas na pagtugon.'
-              : 'NEXUS 911 is the centralized public safety link bridging citizens across Oriental Mindoro with the Philippine National Police (PNP), Bureau of Fire Protection (BFP), and Disaster Management (MDRRMO) for synchronized, zero-delay emergency response.'}
+              ? 'Ang NEXUS ay ang sentralisadong tulay sa pagitan ng mamamayan ng Bongabong at ng Pambansang Pulisya (PNP), Bumbero (BFP), at Tanggapan ng Sakuna at Medikal (MDRRMO) para sa mabilis at ligtas na pagtugon.'
+              : 'NEXUS is the centralized public safety link bridging citizens across the Municipality of Bongabong with the Philippine National Police (PNP), Bureau of Fire Protection (BFP), and Disaster Management (MDRRMO) for synchronized, zero-delay emergency response.'}
           </p>
 
           {/* Call to Actions (Hero CTAs) - Strictly Gated Behind Genuine Authentication */}
@@ -349,7 +349,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <span>Operational Architecture</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-            {language === 'fil' ? 'Paano Gumagana ang NEXUS 911' : 'How the NEXUS 911 System Works'}
+            {language === 'fil' ? 'Paano Gumagana ang NEXUS' : 'How the NEXUS System Works'}
           </h2>
           <p className="text-sm text-slate-600 font-normal">
             {language === 'fil'
@@ -551,7 +551,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
             <div>
               <h4 className="text-sm font-bold text-slate-900">
-                Multi-Agency Command Portals · Central 911, PNP, BFP & MDRRMO
+                Multi-Agency Command Portals · Central Joint Command, PNP, BFP & MDRRMO
               </h4>
               <p className="text-xs text-slate-600 font-medium">
                 Independent department command consoles powered by a unified centralized operations network with zero silos.

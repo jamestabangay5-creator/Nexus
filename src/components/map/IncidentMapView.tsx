@@ -87,10 +87,13 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
   // Filters state with Oriental Mindoro Municipality & Barangay
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  const [selectedMunicipality, setSelectedMunicipality] = useState<string>('ALL');
+  const [selectedMunicipality, setSelectedMunicipality] = useState<string>('Bongabong');
   const [selectedBarangay, setSelectedBarangay] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
-  const [dateFilter, setDateFilter] = useState<'ALL' | '24h' | '7d' | '30d'>('ALL');
+  const [dateFilter, setDateFilter] = useState<'ALL' | '24h' | '7d' | '30d' | 'specific' | 'range'>('ALL');
+  const [specificDate, setSpecificDate] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [includeRejected, setIncludeRejected] = useState<boolean>(false);
 
@@ -189,13 +192,27 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       // Status filter
       if (selectedStatus !== 'ALL' && r.status !== selectedStatus) return false;
 
-      // Date filter
+      // Date filter (Requirement 8)
       if (dateFilter !== 'ALL') {
-        const repTime = new Date(r.createdAt).getTime();
+        const repTime = new Date(r.createdAt || r.dateTime).getTime();
         const diffHours = (now - repTime) / (1000 * 60 * 60);
         if (dateFilter === '24h' && diffHours > 24) return false;
         if (dateFilter === '7d' && diffHours > 24 * 7) return false;
         if (dateFilter === '30d' && diffHours > 24 * 30) return false;
+        if (dateFilter === 'specific' && specificDate) {
+          const repDate = new Date(r.createdAt || r.dateTime).toISOString().slice(0, 10);
+          if (repDate !== specificDate) return false;
+        }
+        if (dateFilter === 'range') {
+          if (startDate) {
+            const startMs = new Date(startDate).getTime();
+            if (repTime < startMs) return false;
+          }
+          if (endDate) {
+            const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000;
+            if (repTime > endMs) return false;
+          }
+        }
       }
 
       // Search query - Privacy Shield (RA 10173):
@@ -217,7 +234,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
       return true;
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [reports, includeRejected, selectedCategory, selectedMunicipality, selectedBarangay, selectedStatus, dateFilter, searchQuery]);
+  }, [reports, includeRejected, selectedCategory, selectedMunicipality, selectedBarangay, selectedStatus, dateFilter, specificDate, startDate, endDate, searchQuery]);
 
   const selectedReport = useMemo(() => {
     return reports.find((r) => r.id === selectedReportId) || null;
@@ -260,8 +277,8 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
-        center: [13.05, 121.3],
-        zoom: 9,
+        center: [12.7508, 121.4864],
+        zoom: 13,
         zoomControl: false,
         attributionControl: false,
       });
@@ -270,7 +287,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
       // Attribution in bottom right with clear branding
       L.control.attribution({ position: 'bottomright' })
-        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> | Esri Satellite | Nexus 911 GIS')
+        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> | Esri Satellite | Bongabong Emergency GIS Operations')
         .addTo(map);
 
       // Base tile layer group added first so pins & heatmaps render on top
@@ -674,11 +691,25 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       if (selectedStatus !== 'ALL' && r.status !== selectedStatus) return false;
       if (dateFilter !== 'ALL') {
         const now = Date.now();
-        const repTime = new Date(r.createdAt).getTime();
+        const repTime = new Date(r.createdAt || r.dateTime).getTime();
         const diffHours = (now - repTime) / (1000 * 60 * 60);
         if (dateFilter === '24h' && diffHours > 24) return false;
         if (dateFilter === '7d' && diffHours > 24 * 7) return false;
         if (dateFilter === '30d' && diffHours > 24 * 30) return false;
+        if (dateFilter === 'specific' && specificDate) {
+          const repDate = new Date(r.createdAt || r.dateTime).toISOString().slice(0, 10);
+          if (repDate !== specificDate) return false;
+        }
+        if (dateFilter === 'range') {
+          if (startDate) {
+            const startMs = new Date(startDate).getTime();
+            if (repTime < startMs) return false;
+          }
+          if (endDate) {
+            const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000;
+            if (repTime > endMs) return false;
+          }
+        }
       }
       return true;
     });
@@ -916,57 +947,71 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
               <option value="WHITE">WHITE — Other ({categoryCounts.WHITE})</option>
             </select>
 
-            {/* Oriental Mindoro Municipality Filter */}
-            <select
-              value={selectedMunicipality}
-              onChange={(e) => {
-                const newMuni = e.target.value;
-                setSelectedMunicipality(newMuni);
-                setSelectedBarangay('ALL');
-                if (newMuni !== 'ALL' && mapInstanceRef.current) {
-                  const targetCoord = MUNICIPALITY_COORDINATES[newMuni as OrientalMindoroMunicipality];
-                  if (targetCoord) {
-                    mapInstanceRef.current.setView([targetCoord.lat, targetCoord.lng], 13, { animate: true });
-                  }
-                }
-              }}
-              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
-            >
-              <option value="ALL">All Municipalities (Oriental Mindoro)</option>
-              {ORIENTAL_MINDORO_MUNICIPALITIES.map((muni) => (
-                <option key={muni} value={muni}>
-                  {muni}
-                </option>
-              ))}
-            </select>
+            {/* Pilot Municipality Badge (Exclusive Operational Scope - Requirement 3) */}
+            <div className="bg-blue-50 border border-blue-200/90 text-blue-900 rounded-xl px-3 py-1.5 text-xs font-black flex items-center gap-1.5 shrink-0 shadow-2xs">
+              <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <span>Bongabong (Pilot Exclusive)</span>
+            </div>
 
             {/* Barangay Filter */}
             <select
               value={selectedBarangay}
               onChange={(e) => setSelectedBarangay(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer max-w-[150px] truncate"
+              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer max-w-[170px] truncate"
             >
-              <option value="ALL">
-                {selectedMunicipality === 'ALL' ? 'All Barangays' : `All Barangays in ${selectedMunicipality}`}
-              </option>
-              {getAllBarangaysForFilter(selectedMunicipality).map((brgy, idx) => (
-                <option key={`map-brgy-${selectedMunicipality}-${brgy}-${idx}`} value={brgy}>
+              <option value="ALL">All 32 Bongabong Barangays</option>
+              {getAllBarangaysForFilter('Bongabong').map((brgy, idx) => (
+                <option key={`map-brgy-bongabong-${brgy}-${idx}`} value={brgy}>
                   {brgy}
                 </option>
               ))}
             </select>
 
-            {/* Date Filter */}
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as any)}
-              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
-            >
-              <option value="ALL">All Time</option>
-              <option value="24h">Past 24 Hours (Daily)</option>
-              <option value="7d">Past 7 Days (Weekly)</option>
-              <option value="30d">Past 30 Days (Monthly)</option>
-            </select>
+            {/* Date Filter & Range Pickers (Requirement 8) */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as any)}
+                className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer"
+              >
+                <option value="ALL">All Dates</option>
+                <option value="24h">Past 24 Hours</option>
+                <option value="7d">Past 7 Days</option>
+                <option value="30d">Past 30 Days</option>
+                <option value="specific">Specific Date</option>
+                <option value="range">Date Range</option>
+              </select>
+
+              {dateFilter === 'specific' && (
+                <input
+                  type="date"
+                  value={specificDate}
+                  onChange={(e) => setSpecificDate(e.target.value)}
+                  className="bg-white border border-blue-300 text-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono font-bold focus:ring-2 focus:ring-blue-500/30 focus:outline-none shadow-2xs"
+                  title="Filter incidents on this specific calendar date"
+                />
+              )}
+
+              {dateFilter === 'range' && (
+                <div className="flex items-center gap-1 bg-white border border-blue-300 rounded-xl px-2 py-0.5 shadow-2xs text-xs">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="font-mono text-xs text-slate-800 focus:outline-none py-1"
+                    title="From Date"
+                  />
+                  <span className="text-slate-400 font-bold px-0.5">to</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="font-mono text-xs text-slate-800 focus:outline-none py-1"
+                    title="To Date"
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Status Filter */}
             <select
@@ -1491,7 +1536,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                               </span>
                             </div>
                             <p className="text-[11px] text-slate-500 leading-snug">
-                              Contact credentials confidential. Restricted to designated 911 dispatch authorities and report author.
+                              Contact credentials confidential. Restricted to designated municipal emergency authorities and report author.
                             </p>
                           </div>
                         </div>

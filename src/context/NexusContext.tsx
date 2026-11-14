@@ -113,8 +113,8 @@ interface NexusContextType {
   // Mobile Navigation & View State Synchronization
   residentActiveTab: 'report' | 'tracking' | 'map';
   setResidentActiveTab: (tab: 'report' | 'tracking' | 'map') => void;
-  agencyActiveTab: 'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive';
-  setAgencyActiveTab: (tab: 'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive') => void;
+  agencyActiveTab: 'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive' | 'users';
+  setAgencyActiveTab: (tab: 'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive' | 'users') => void;
   reportFormScrollTrigger: number;
   triggerScrollToReportForm: () => void;
   isHotlinesModalOpen: boolean;
@@ -333,7 +333,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Mobile Tab & Scroll Synchronization
   const [residentActiveTab, setResidentActiveTab] = useState<'report' | 'tracking' | 'map'>('report');
-  const [agencyActiveTab, setAgencyActiveTab] = useState<'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive'>('command');
+  const [agencyActiveTab, setAgencyActiveTab] = useState<'command' | 'reports' | 'map' | 'analytics' | 'coordination' | 'archive' | 'users'>('command');
   const [reportFormScrollTrigger, setReportFormScrollTrigger] = useState<number>(0);
   const triggerScrollToReportForm = () => {
     setResidentActiveTab('report');
@@ -550,9 +550,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       email: '',
       phone: '0917-000-0000',
       province: 'Oriental Mindoro',
-      municipality: 'Calapan City',
-      barangay: 'Ibaba East',
-      address: 'Poblacion',
+      municipality: 'Bongabong',
+      barangay: 'Poblacion',
+      address: 'Poblacion, Bongabong',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       termsAccepted: true,
       termsAcceptedAt: new Date().toISOString(),
@@ -752,9 +752,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       email: 'juan.delacruz@citizen.gov.ph',
       phone: '0917-555-1204',
       province: 'Oriental Mindoro',
-      municipality: 'Calapan City',
-      barangay: 'Ibaba East',
-      address: 'Purok 3, Rizal Street',
+      municipality: 'Bongabong',
+      barangay: 'Poblacion',
+      address: 'Purok 3, Rizal Street, Poblacion, Bongabong',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       termsAccepted: true,
       termsAcceptedAt: '2026-10-15T10:00:00',
@@ -985,9 +985,9 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             email: user.email || existingData?.email || '',
             phone: existingData?.phone || user.phoneNumber || residentUser.phone || '0917-000-0000',
             province: existingData?.province || residentUser.province || 'Oriental Mindoro',
-            municipality: existingData?.municipality || residentUser.municipality || 'Calapan City',
-            barangay: existingData?.barangay || residentUser.barangay || 'Ibaba East',
-            address: existingData?.address || residentUser.address || 'Poblacion',
+            municipality: existingData?.municipality || (residentUser.municipality === 'Calapan City' ? 'Bongabong' : residentUser.municipality) || 'Bongabong',
+            barangay: existingData?.barangay || (residentUser.barangay === 'Ibaba East' ? 'Poblacion' : residentUser.barangay) || 'Poblacion',
+            address: existingData?.address || residentUser.address || 'Poblacion, Bongabong',
             avatarUrl: finalAvatar,
             role: 'resident',
             termsAccepted: existingData?.termsAccepted ?? true,

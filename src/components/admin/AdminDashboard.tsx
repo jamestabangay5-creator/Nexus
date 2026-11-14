@@ -13,7 +13,9 @@ import { PnpDashboardView } from './agency/PnpDashboardView';
 import { BfpDashboardView } from './agency/BfpDashboardView';
 import { MdrrmoDashboardView } from './agency/MdrrmoDashboardView';
 import { CentralDashboardView } from './agency/CentralDashboardView';
+import { PnpUserManagementView } from './agency/PnpUserManagementView';
 import { AgencyLogo } from '../common/AgencyLogo';
+import { playNotificationAlertSound } from '../../services/soundService';
 import {
   ShieldAlert,
   Flame,
@@ -28,6 +30,8 @@ import {
   Clock,
   Sparkles,
   Shield,
+  ShieldCheck,
+  AlertTriangle,
   LayoutDashboard,
   Settings
 } from 'lucide-react';
@@ -54,12 +58,44 @@ export const AdminDashboard: React.FC<Props> = ({
     setActiveRole,
     agencyActiveTab,
     setAgencyActiveTab,
+    soundMuted,
   } = useNexus();
   const t = TRANSLATIONS[language];
 
   const activeTab = agencyActiveTab;
   const setActiveTab = setAgencyActiveTab;
   const tabContentRef = React.useRef<HTMLDivElement>(null);
+
+  // Super Admin Real-Time Alert Tracker (Requirements 5, 7, 10)
+  const prevReportsCountRef = React.useRef<number>(reports.length);
+  const [recentSuperAdminAlert, setRecentSuperAdminAlert] = useState<{
+    id: string;
+    trackingCode: string;
+    incidentType: string;
+    barangay: string;
+    agency: Agency;
+    time: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (reports.length > prevReportsCountRef.current) {
+      // New incident report arrived in the system
+      const latestReport = reports[0];
+      if (latestReport) {
+        setRecentSuperAdminAlert({
+          id: latestReport.id,
+          trackingCode: latestReport.trackingCode,
+          incidentType: latestReport.verifiedTypeId || latestReport.initialTypeId,
+          barangay: latestReport.barangay,
+          agency: latestReport.selectedAgency,
+          time: new Date().toLocaleTimeString(),
+        });
+        // Play notification alert sound from public/notification/notification-alert.m4a
+        playNotificationAlertSound(soundMuted);
+      }
+    }
+    prevReportsCountRef.current = reports.length;
+  }, [reports, soundMuted]);
 
   // Auto-scroll on mobile when tab changes from bottom navigation
   React.useEffect(() => {
@@ -100,6 +136,51 @@ export const AdminDashboard: React.FC<Props> = ({
 
   return (
     <div className="space-y-6">
+      {/* Super Admin Dashboard Real-Time Incoming Report Alert (Requirements 5, 7, 10) */}
+      {recentSuperAdminAlert && (
+        <div className="bg-gradient-to-r from-red-600 via-rose-600 to-indigo-700 text-white p-4 sm:p-5 rounded-3xl shadow-xl shadow-red-500/25 border-2 border-red-300 animate-pulse-glow flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-6 h-6 text-white animate-bounce" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-white text-red-700 font-black uppercase tracking-wider shadow-xs">
+                  🚨 New Incident Report
+                </span>
+                <span className="font-mono text-xs font-bold text-red-100 bg-red-950/40 px-2 py-0.5 rounded-md border border-red-400/30">
+                  {recentSuperAdminAlert.trackingCode} · {recentSuperAdminAlert.time}
+                </span>
+              </div>
+              <h4 className="text-sm sm:text-base font-black text-white mt-0.5">
+                {recentSuperAdminAlert.incidentType} reported in Barangay {recentSuperAdminAlert.barangay}, Bongabong
+              </h4>
+              <p className="text-xs text-red-100/90 font-medium">
+                Primary Assigned Unit: <strong className="text-white font-bold">{recentSuperAdminAlert.agency}</strong> · Direct Bongabong municipal emergency telemetry
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+            <button
+              onClick={() => {
+                setSelectedReportId(recentSuperAdminAlert.id);
+                setRecentSuperAdminAlert(null);
+              }}
+              className="px-4 py-2 bg-white text-red-700 hover:bg-red-50 rounded-xl text-xs font-black transition cursor-pointer shadow-md"
+            >
+              Inspect Details
+            </button>
+            <button
+              onClick={() => setRecentSuperAdminAlert(null)}
+              className="px-3 py-2 bg-black/20 hover:bg-black/40 text-white rounded-xl text-xs font-bold transition cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Agency Command Banner - Luminous Frosted Neo-Aero Glass */}
       <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
@@ -279,11 +360,32 @@ export const AdminDashboard: React.FC<Props> = ({
               {archivedCount}
             </span>
           </button>
+
+          {/* Requirement 6: User Account Management assigned exclusively to PNP Admin */}
+          {agency === 'PNP' && (
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer min-h-[42px] shrink-0 ${
+                activeTab === 'users'
+                  ? 'bg-white text-blue-700 shadow-md shadow-slate-200/70 border border-slate-100 font-black'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-semibold'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              <span>User Management</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-blue-100 text-blue-800 font-black uppercase tracking-wider">
+                PNP Exclusive
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Tab Contents */}
       <div>
+        {activeTab === 'users' && agency === 'PNP' && (
+          <PnpUserManagementView />
+        )}
         {activeTab === 'command' && (
           agency === 'PNP' ? (
             <PnpDashboardView

@@ -156,7 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <Database className="w-3 h-3 text-emerald-600" />
                 <span className="hidden xs:inline">{t.centralizedDatabaseBadge}</span>
-                <span className="xs:hidden">Live 911 Cloud</span>
+                <span className="xs:hidden">Live Cloud</span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-amber-600 font-bold shrink-0">
@@ -245,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div
             onClick={() => setPortalMode('landing')}
             className="flex items-center gap-2.5 cursor-pointer group"
-            title="Return to NEXUS 911 Main Landing Page"
+            title="Return to NEXUS Main Landing Page"
           >
             <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-slate-950 p-0.5 shadow-md shadow-indigo-100/50 border border-slate-800/80 shrink-0 group-hover:scale-105 transition flex items-center justify-center overflow-hidden">
               <img
@@ -260,7 +260,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   NEXUS
                 </span>
                 <span className="text-[9px] sm:text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/60 rounded-full shadow-xs">
-                  911 Dispatch
+                  Bongabong OPS
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block truncate max-w-[200px] md:max-w-[260px] font-medium">
@@ -670,7 +670,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       {AGENCY_DETAILS[activeRole as AgencyScope]?.name} Department Console
                     </span>
                   </div>
-                  <span className="text-[10px] text-emerald-600 font-medium">911 Synced</span>
+                  <span className="text-[10px] text-emerald-600 font-medium">Ops Synced</span>
                 </div>
               )}
 

@@ -1,9 +1,12 @@
 /**
- * Emergency Alert Sound Generator using Web Audio API
- * Generates an authoritative emergency dispatch chime / siren beep.
+ * Emergency Alert Sound Generator & Custom Notification Audio Player
+ * Path: /notification/notification-alert.m4a
  */
 
+export const NOTIFICATION_ALERT_AUDIO_PATH = '/notification/notification-alert.m4a';
+
 let audioCtx: AudioContext | null = null;
+let notificationAudioElement: HTMLAudioElement | null = null;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -19,16 +22,50 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-export function playEmergencyAlertSound(isMuted = false): void {
-  if (isMuted) return;
+/**
+ * Primary notification alert sound using the user's custom audio file
+ * Path: public/notification/notification-alert.m4a
+ */
+export function playNotificationAlertSound(isMuted = false): void {
+  if (isMuted || typeof window === 'undefined') return;
 
+  try {
+    if (!notificationAudioElement) {
+      notificationAudioElement = new Audio(NOTIFICATION_ALERT_AUDIO_PATH);
+      notificationAudioElement.preload = 'auto';
+    }
+    notificationAudioElement.currentTime = 0;
+    notificationAudioElement.volume = 1.0;
+    const playPromise = notificationAudioElement.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('Direct notification-alert.m4a playback notice:', err);
+        playFallbackBeepAlert();
+      });
+    }
+  } catch {
+    playFallbackBeepAlert();
+  }
+}
+
+/**
+ * Emergency alert sound: plays the official notification-alert.m4a sound
+ */
+export function playEmergencyAlertSound(isMuted = false): void {
+  playNotificationAlertSound(isMuted);
+}
+
+/**
+ * Web Audio API fallback in case media audio element is blocked by browser policy
+ */
+function playFallbackBeepAlert(): void {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
 
     const now = ctx.currentTime;
     
-    // Play a sequence of 3 rapid high-urgency beeps (880Hz -> 1174Hz)
+    // Play rapid high-urgency chime
     const playBeep = (startTime: number, freq1: number, freq2: number, duration: number) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -48,12 +85,11 @@ export function playEmergencyAlertSound(isMuted = false): void {
       osc.stop(startTime + duration);
     };
 
-    // Staccato dual-tone alert sequence
     playBeep(now, 880, 1174, 0.18);
     playBeep(now + 0.22, 880, 1174, 0.18);
     playBeep(now + 0.44, 987, 1318, 0.28);
   } catch {
-    // Graceful fallback if audio context not allowed
+    // Graceful fallback
   }
 }
 

@@ -14,6 +14,7 @@ import { TRANSLATIONS } from '../../constants/translations';
 import { compressEvidenceImage } from '../../utils/imageUtils';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { UserProfileModal } from './UserProfileModal';
+import { RealtimeCameraModal } from './RealtimeCameraModal';
 import { AgencyLogo } from '../common/AgencyLogo';
 import { ExportReportsButton } from '../common/ExportReportsButton';
 import {
@@ -108,30 +109,25 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   const [dateTime, setDateTime] = useState<string>(() => {
     return new Date().toISOString().slice(0, 16);
   });
-  const [selectedMunicipality, setSelectedMunicipality] = useState<OrientalMindoroMunicipality>(
-    () => (residentUser.municipality as OrientalMindoroMunicipality) || 'Calapan City'
-  );
+  const [selectedMunicipality, setSelectedMunicipality] = useState<OrientalMindoroMunicipality>('Bongabong');
   const [barangay, setBarangay] = useState<string>(
-    () => residentUser.barangay || getBarangaysForMunicipality('Calapan City')[0]
+    () => residentUser.barangay || getBarangaysForMunicipality('Bongabong')[0] || 'Poblacion'
   );
   const [locationDetails, setLocationDetails] = useState('');
   const [coords, setCoords] = useState<{ lat: number; lng: number }>(() => {
-    const muni = (residentUser.municipality as OrientalMindoroMunicipality) || 'Calapan City';
-    return MUNICIPALITY_COORDINATES[muni] || { lat: 13.4115, lng: 121.1803 };
+    return MUNICIPALITY_COORDINATES['Bongabong'] || { lat: 12.7508, lng: 121.4864 };
   });
 
   // Sync address defaults with resident profile if updated
   useEffect(() => {
-    if (residentUser.municipality) {
-      setSelectedMunicipality(residentUser.municipality as OrientalMindoroMunicipality);
-    }
+    setSelectedMunicipality('Bongabong');
     if (residentUser.barangay) {
       setBarangay(residentUser.barangay);
       if (!locationSuccess) {
-        setCoords(getCoordinatesForBarangay((residentUser.municipality as OrientalMindoroMunicipality) || 'Calapan City', residentUser.barangay));
+        setCoords(getCoordinatesForBarangay('Bongabong', residentUser.barangay));
       }
     }
-  }, [residentUser.municipality, residentUser.barangay]);
+  }, [residentUser.barangay]);
 
   const [isLocating, setIsLocating] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState(false);
@@ -139,6 +135,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [photoCaption, setPhotoCaption] = useState<string>('');
   const [compressingEvidence, setCompressingEvidence] = useState(false);
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [submittedReport, setSubmittedReport] = useState<IncidentReport | null>(null);
   const [showAgencyRequiredError, setShowAgencyRequiredError] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -361,6 +358,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     }
 
     const typeDef = INCIDENT_TYPES.find((t) => t.id === selectedIncidentType)!;
+    const autoDescription = `${typeDef.en} (${typeDef.fil}) incident reported at ${locationDetails ? locationDetails + ', ' : ''}Barangay ${barangay}, Bongabong, Oriental Mindoro.`;
 
     const newReport = submitIncidentReport({
       residentId: residentUser.id,
@@ -371,11 +369,11 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       category: typeDef.category,
       dateTime,
       province: PROVINCE_NAME,
-      municipality: selectedMunicipality,
+      municipality: 'Bongabong',
       barangay,
-      locationDetails: locationDetails || `Near ${barangay}, ${selectedMunicipality}`,
+      locationDetails: locationDetails || `Barangay ${barangay}, Bongabong`,
       coordinates: coords,
-      description,
+      description: autoDescription,
       photoUrl: photoUrl || undefined,
       photoCaption: photoCaption || undefined,
     });
@@ -770,15 +768,15 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 />
               </div>
 
-              {/* Oriental Mindoro Administrative Area Selector */}
+              {/* Bongabong Pilot Operational Location Selector */}
               <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-sm font-black text-slate-900 flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-indigo-600" />
-                    <span>Oriental Mindoro Incident Location</span>
+                    <span>Pilot Incident Location (Bongabong, Oriental Mindoro)</span>
                   </span>
                   <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
-                    Province: Oriental Mindoro (Region IV-B)
+                    Province: Oriental Mindoro · Pilot Scope
                   </span>
                 </div>
 
@@ -786,26 +784,23 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   <div>
                     <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
                       <Building2 className="w-4 h-4 text-blue-600" />
-                      <span>Select Municipality / City <span className="text-red-500">*</span></span>
+                      <span>Municipality (Pilot Exclusive)</span>
                     </label>
-                    <select
-                      value={selectedMunicipality}
-                      onChange={(e) => handleMunicipalityChange(e.target.value as OrientalMindoroMunicipality)}
-                      required
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs"
-                    >
-                      {ORIENTAL_MINDORO_MUNICIPALITIES.map((muni) => (
-                        <option key={muni} value={muni}>
-                          {muni}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="w-full bg-blue-50/90 border border-blue-200/90 text-blue-900 rounded-xl p-3 text-sm font-black flex items-center justify-between min-h-[46px] shadow-xs">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span>Bongabong, Oriental Mindoro</span>
+                      </div>
+                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-blue-600 text-white rounded-md">
+                        Pilot Area
+                      </span>
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
                       <MapPin className="w-4 h-4 text-red-600" />
-                      <span>{t.barangayLabel} ({getBarangaysForMunicipality(selectedMunicipality).length} in {selectedMunicipality}) <span className="text-red-500">*</span></span>
+                      <span>Barangay (32 Official Barangays in Bongabong) <span className="text-red-500">*</span></span>
                     </label>
                     <select
                       value={barangay}
@@ -813,14 +808,14 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                         const newBrgy = e.target.value;
                         setBarangay(newBrgy);
                         if (!locationSuccess) {
-                          setCoords(getCoordinatesForBarangay(selectedMunicipality, newBrgy));
+                          setCoords(getCoordinatesForBarangay('Bongabong', newBrgy));
                         }
                       }}
                       required
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs"
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs cursor-pointer"
                     >
-                      {getBarangaysForMunicipality(selectedMunicipality).map((brgy, idx) => (
-                        <option key={`rp-brgy-${selectedMunicipality}-${brgy}-${idx}`} value={brgy}>
+                      {getBarangaysForMunicipality('Bongabong').map((brgy, idx) => (
+                        <option key={`rp-brgy-bongabong-${brgy}-${idx}`} value={brgy}>
                           {brgy}
                         </option>
                       ))}
@@ -838,7 +833,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     value={locationDetails}
                     onChange={(e) => setLocationDetails(e.target.value)}
                     required
-                    placeholder="e.g. Purok 5, across Jollibee, near basketball court..."
+                    placeholder="e.g. Purok 5, across market, near barangay hall, beside school..."
                     className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] shadow-xs font-medium"
                   />
                 </div>
@@ -847,7 +842,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 <div className="p-3 bg-indigo-50/90 border border-indigo-200 rounded-xl text-xs sm:text-sm text-indigo-950 font-medium flex items-center gap-2 shadow-xs">
                   <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
                   <span className="truncate">
-                    Dispatch Destination: <strong className="text-slate-900">{locationDetails || 'Specific Landmark'}, {barangay}, {selectedMunicipality}, Oriental Mindoro</strong>
+                    Dispatch Destination: <strong className="text-slate-900">{locationDetails || 'Specific Landmark'}, {barangay}, Bongabong, Oriental Mindoro</strong>
                   </span>
                 </div>
               </div>
@@ -883,30 +878,15 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
               </p>
             </div>
 
-            {/* Incident Narrative / Description */}
-            <div>
-              <label className="block text-sm sm:text-base font-black text-slate-900 mb-2">
-                {t.descriptionLabel} <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                rows={4}
-                placeholder="Describe what happened, any casualties, weapons, number of suspects or victims involved..."
-                className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm sm:text-base placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none leading-relaxed shadow-xs font-medium"
-              />
-            </div>
-
-            {/* Photo Evidence (Requirement 11) */}
-            <div className="space-y-3">
+            {/* Photo Evidence & Real-Time Camera Capture (Requirement 2 & 11) */}
+            <div className="space-y-3.5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                  <Camera className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{t.photoEvidenceLabel}</span>
+                <label className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                  <Camera className="w-4 h-4 text-emerald-600" />
+                  <span>Photo Evidence & Live Camera (Optional)</span>
                 </label>
-                <span className="text-[11px] text-slate-500">
-                  Upload evidence or pick quick sample
+                <span className="text-[11px] text-slate-500 font-semibold">
+                  Capture live photo or select image
                 </span>
               </div>
 
@@ -936,24 +916,57 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 </div>
               )}
 
-              {/* Upload input + Presets */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <label className={`px-5 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[46px] shadow-xs ${
-                  compressingEvidence ? 'opacity-60 pointer-events-none' : ''
-                }`}>
-                  <Camera className="w-4 h-4 text-indigo-600" />
-                  <span>{compressingEvidence ? 'Optimizing Photo...' : 'Upload from Device'}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    disabled={compressingEvidence}
-                    className="hidden"
-                  />
-                </label>
+              {/* Real-Time Camera & Upload Controls */}
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {/* Button 1: Real-time Live Camera Viewfinder Modal */}
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraModalOpen(true)}
+                    className="flex-1 sm:flex-none px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-emerald-600/20 active:scale-95 min-h-[46px]"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Live Camera Capture</span>
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-white/20 font-black uppercase tracking-wider">
+                      Live
+                    </span>
+                  </button>
 
-                <div className="flex-1">
-                  <span className="text-slate-600 text-xs block mb-1.5 font-semibold">or quick sample presets:</span>
+                  {/* Button 2: Native Mobile Camera Direct Snap */}
+                  <label className="flex-1 sm:flex-none px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[46px] shadow-xs">
+                    <Camera className="w-4 h-4 text-blue-600" />
+                    <span>Device Camera</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileUpload}
+                      disabled={compressingEvidence}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {/* Button 3: Upload from Gallery / Files */}
+                  <label className={`flex-1 sm:flex-none px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition min-h-[46px] shadow-xs ${
+                    compressingEvidence ? 'opacity-60 pointer-events-none' : ''
+                  }`}>
+                    <ImageIcon className="w-4 h-4 text-indigo-600" />
+                    <span>{compressingEvidence ? 'Optimizing Photo...' : 'Upload Image'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      disabled={compressingEvidence}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Quick testing presets */}
+                <div className="pt-1">
+                  <span className="text-slate-500 text-[11px] block mb-1.5 font-bold uppercase tracking-wider">
+                    Quick Sample Evidence Presets:
+                  </span>
                   <div className="flex flex-wrap gap-2">
                     {samplePhotoPresets.map((preset, idx) => (
                       <button
@@ -963,7 +976,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                           setPhotoUrl(preset.url);
                           setPhotoCaption(preset.title);
                         }}
-                        className="px-3 py-1.5 text-xs bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg text-slate-800 transition cursor-pointer font-bold shadow-2xs"
+                        className="px-2.5 py-1 text-xs bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg text-slate-700 transition cursor-pointer font-bold shadow-2xs"
                       >
                         {preset.title}
                       </button>
@@ -995,7 +1008,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                 <div>
                   <strong className="block font-bold">Offline Emergency Filing Active</strong>
                   <span className="text-xs sm:text-sm text-amber-900 font-medium">
-                    Your report will be immediately registered and securely cached on your device. Once connection returns, it automatically transmits to 911 dispatch.
+                    Your report will be immediately registered and securely cached on your device. Once connection returns, it automatically transmits to Bongabong emergency response teams.
                   </span>
                 </div>
               </div>
@@ -1579,6 +1592,16 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       <UserProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
+      />
+
+      {/* Real-Time Live Camera Capture Modal */}
+      <RealtimeCameraModal
+        isOpen={isCameraModalOpen}
+        onClose={() => setIsCameraModalOpen(false)}
+        onCapture={(dataUrl, caption) => {
+          setPhotoUrl(dataUrl);
+          if (caption) setPhotoCaption(caption);
+        }}
       />
 
       {/* Full Dossier Inspector Modal (When standalone) */}

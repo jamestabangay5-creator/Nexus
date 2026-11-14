@@ -395,7 +395,7 @@ export const AnalyticsView: React.FC = () => {
                 Unified Incident Intelligence & Analytics
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Executive Command Center Telemetry · MIMAROPA Region IV-B Oriental Mindoro Provincial Grid
+                Executive Command Center Telemetry · Municipality of Bongabong Operations Grid
               </p>
             </div>
           </div>
@@ -403,27 +403,19 @@ export const AnalyticsView: React.FC = () => {
 
         {/* Global Filter Toolbar */}
         <div className="flex flex-wrap items-center gap-2.5 text-xs w-full lg:w-auto">
-          {/* Municipality Selector */}
-          <select
-            value={selectedMunicipality}
-            onChange={(e) => setSelectedMunicipality(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer"
-          >
-            <option value="ALL">All 15 LGUs (Mindoro)</option>
-            {ORIENTAL_MINDORO_MUNICIPALITIES.map((muni) => (
-              <option key={muni} value={muni}>
-                {muni}
-              </option>
-            ))}
-          </select>
+          {/* Pilot Municipality Indicator (Requirement 3) */}
+          <div className="bg-blue-50 border border-blue-200/90 text-blue-900 rounded-xl px-3 py-2 text-xs font-black flex items-center gap-1.5 shadow-2xs">
+            <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+            <span>Bongabong (Pilot)</span>
+          </div>
 
           {/* Barangay Selector */}
           <select
             value={selectedBarangay}
             onChange={(e) => setSelectedBarangay(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none max-w-[150px] cursor-pointer truncate"
+            className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none max-w-[170px] cursor-pointer truncate"
           >
-            <option value="ALL">All Barangays</option>
+            <option value="ALL">All 32 Bongabong Barangays</option>
             {ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS.map((brgy, idx) => (
               <option key={`an-brgy-${brgy}-${idx}`} value={brgy}>
                 {brgy}

@@ -381,7 +381,7 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                       </span>
                       <h4 className="text-sm sm:text-base font-black tracking-tight mt-0.5">
                         {report.status === 'Pending Verification' &&
-                          (language === 'fil' ? 'Naka-pending para sa Beripikasyon ng Dispatch' : 'Pending Verification & Dispatch Triage')}
+                          (language === 'fil' ? 'Naka-pending para sa Beripikasyon' : 'Pending Verification & Response Triage')}
                         {report.status === 'Accepted' &&
                           (language === 'fil' ? `Tinanggap ng ${report.selectedAgency} Command` : `Accepted by ${report.selectedAgency} Command`)}
                         {report.status === 'Ongoing' &&
@@ -416,8 +416,8 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                 <p className="text-xs sm:text-sm leading-relaxed font-semibold text-slate-800 mt-2.5 pt-2.5 border-t border-slate-200/60">
                   {report.status === 'Pending Verification' &&
                     (language === 'fil'
-                      ? 'Natanggap na ng central 911 dispatch queue ang iyong ulat. Sinusuri ng duty officer ang iyong lokasyon para sa pagtatalaga ng pinakamalapit na patrol o emergency responder.'
-                      : 'Your emergency report has been received in the central 911 queue. Officers are verifying your location coordinates to assign the nearest field unit.')}
+                      ? 'Natanggap na ng central emergency queue ang iyong ulat. Sinusuri ng duty officer ang iyong lokasyon para sa pagtatalaga ng pinakamalapit na patrol o emergency responder.'
+                      : 'Your emergency report has been received in the central emergency queue. Officers are verifying your location coordinates to assign the nearest field unit.')}
                   {report.status === 'Accepted' &&
                     (language === 'fil'
                       ? `Kinumpirma ng ${report.selectedAgency} ang iyong ulat. Inihahanda na ang kaukulang kagamitan at mga tauhan para sa mabilisang deployment sa iyong lokasyon.`
@@ -432,15 +432,15 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                       : `The field response has concluded and the incident was officially verified resolved at ${new Date(report.resolution?.resolvedAt || report.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Thank you for your alert and community vigilance.`)}
                   {report.status === 'Rejected' &&
                     (language === 'fil'
-                      ? `Dokumentadong dahilan ng Dispatcher: "${report.rejection?.reason || 'Minarkahan bilang hindi kwalipikado o false alarm.'}"`
-                      : `Dispatcher Justification: "${report.rejection?.reason || 'Marked as unverified or false alarm.'}"`)}
+                      ? `Dokumentadong dahilan ng Opisyal: "${report.rejection?.reason || 'Minarkahan bilang hindi kwalipikado o false alarm.'}"`
+                      : `Officer Review Justification: "${report.rejection?.reason || 'Marked as unverified or false alarm.'}"`)}
                 </p>
 
-                {/* 4-Stage Dispatch Pipeline Visualizer (if not rejected) */}
+                {/* 4-Stage Response Pipeline Visualizer (if not rejected) */}
                 {report.status !== 'Rejected' && (
                   <div className="pt-3 mt-3 border-t border-slate-200/60">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">
-                      {language === 'fil' ? 'Progreso ng Operasyon' : 'Dispatch Response Pipeline'}
+                      {language === 'fil' ? 'Progreso ng Operasyon' : 'Incident Response Pipeline'}
                     </span>
                     <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-center">
                       {/* Step 1: Submitted */}

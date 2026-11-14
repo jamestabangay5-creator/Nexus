@@ -75,7 +75,7 @@ export const CentralDashboardView: React.FC<Props> = ({
         <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-              Total 911 Incidents
+              Total Active Incidents
             </span>
             <div className="w-10 h-10 rounded-2xl bg-white border border-indigo-200/80 flex items-center justify-center shrink-0 shadow-2xs p-1">
               <AgencyLogo agency="CENTRAL" className="w-7 h-7 object-contain" animate />
@@ -98,7 +98,7 @@ export const CentralDashboardView: React.FC<Props> = ({
         <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-              911 Triage Queue
+              Verification Queue
             </span>
             <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center shrink-0 shadow-2xs">
               <Clock className="w-5 h-5" />
@@ -169,7 +169,7 @@ export const CentralDashboardView: React.FC<Props> = ({
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-indigo-700 font-black text-xs uppercase tracking-wider">
             <Users className="w-4 h-4 text-indigo-600 animate-pulse" />
-            <span>Unified 911 Inter-Agency Mutual Aid Command</span>
+            <span>Unified Inter-Agency Mutual Aid Command</span>
           </div>
           <p className="text-xs text-slate-600 leading-relaxed max-w-2xl font-medium">
             Coordinate synchronized multi-agency deployments across PNP Police, BFP Fire Protection, and MDRRMO Emergency Rescue.
@@ -324,7 +324,7 @@ export const CentralDashboardView: React.FC<Props> = ({
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-indigo-600 animate-pulse" />
             <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">
-              Central 911 Unified Triage & Incoming Dispatch Stream
+              Central Unified Triage & Incoming Response Stream
             </h2>
           </div>
 

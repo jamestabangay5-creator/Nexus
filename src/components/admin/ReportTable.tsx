@@ -370,7 +370,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                   : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300'
               }`}
             >
-              Unified 911 Provincial Registry ({activeReports.length})
+              Unified Bongabong Municipal Registry ({activeReports.length})
             </button>
           </div>
         )}
