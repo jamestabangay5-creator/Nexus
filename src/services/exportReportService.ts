@@ -65,7 +65,7 @@ export const getAgencyHeaderInfo = (scope: AgencyScope | 'RESIDENT'): AgencyHead
         agencyName: 'MUNICIPAL DISASTER RISK REDUCTION AND MANAGEMENT OFFICE',
         stationName: 'BONGABONG EMERGENCY OPERATIONS CENTER (EOC)',
         contactInfo: 'Municipal Hall Compound, Bongabong, Oriental Mindoro | Emergency Hotline: 911 · 0915-288-8880',
-        logoUrl: `${origin}/logos/mdrrmo.svg`,
+        logoUrl: `${origin}/logos/mdrrmo.jpg`,
         primaryColor: '#059669',
         dutyRoleTitle: 'MDRRM Officer / EOC Commander',
         certifyingOfficerTitle: 'Municipal Disaster Risk Reduction & Management Officer',

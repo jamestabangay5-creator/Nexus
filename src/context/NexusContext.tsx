@@ -83,7 +83,7 @@ interface NexusContextType {
   setResidentUser: React.Dispatch<React.SetStateAction<UserProfile>>;
   updateResidentUser: (updates: Partial<UserProfile>) => void;
   acceptTerms: () => void;
-  adminProfiles: Record<AgencyScope, { name: string; title: string; badgeNumber: string; email?: string; hotline?: string; description?: string }>;
+  adminProfiles: Record<AgencyScope, { name: string; title: string; badgeNumber: string; email?: string; hotline?: string; description?: string; stationAddress?: string }>;
   agencyDetails: typeof AGENCY_DETAILS;
 
   // Single Unified Auth Modal State (Citizen Register + Unified Sign In)
@@ -415,6 +415,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         email: OFFICIAL_AGENCY_ACCOUNTS.CENTRAL.email,
         hotline: AGENCY_DETAILS.CENTRAL.hotline,
         description: AGENCY_DETAILS.CENTRAL.descriptionEn,
+        stationAddress: 'Bongabong Emergency Operations Command, Municipal Hall, Bongabong',
       },
       PNP: {
         name: OFFICIAL_AGENCY_ACCOUNTS.PNP.name,
@@ -423,6 +424,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         email: OFFICIAL_AGENCY_ACCOUNTS.PNP.email,
         hotline: AGENCY_DETAILS.PNP.hotline,
         description: AGENCY_DETAILS.PNP.descriptionEn,
+        stationAddress: 'PNP Municipal Police Station, Poblacion, Bongabong',
       },
       BFP: {
         name: OFFICIAL_AGENCY_ACCOUNTS.BFP.name,
@@ -431,6 +433,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         email: OFFICIAL_AGENCY_ACCOUNTS.BFP.email,
         hotline: AGENCY_DETAILS.BFP.hotline,
         description: AGENCY_DETAILS.BFP.descriptionEn,
+        stationAddress: 'BFP Fire Station Bongabong, Poblacion, Bongabong',
       },
       MDRRMO: {
         name: OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.name,
@@ -439,6 +442,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         email: OFFICIAL_AGENCY_ACCOUNTS.MDRRMO.email,
         hotline: AGENCY_DETAILS.MDRRMO.hotline,
         description: AGENCY_DETAILS.MDRRMO.descriptionEn,
+        stationAddress: 'MDRRMO Operations Center, Municipal Hall Compound, Bongabong',
       },
     };
   });
@@ -464,6 +468,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           email: updates.email !== undefined ? updates.email : prev[agency].email,
           hotline: updates.hotline !== undefined ? updates.hotline : prev[agency].hotline,
           description: updates.descriptionEn !== undefined ? updates.descriptionEn : prev[agency].description,
+          stationAddress: updates.stationAddress !== undefined ? updates.stationAddress : prev[agency].stationAddress,
         },
       };
       try { localStorage.setItem('nexus_admin_profiles_v2', JSON.stringify(updated)); } catch {}
@@ -522,6 +527,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 email: data.email || prev[ag].email,
                 hotline: data.hotline || prev[ag].hotline,
                 description: data.descriptionEn || prev[ag].description,
+                stationAddress: data.stationAddress || prev[ag].stationAddress,
               },
             }));
             setAgencyDetails((prev) => ({

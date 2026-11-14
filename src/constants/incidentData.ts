@@ -484,7 +484,7 @@ export const AGENCY_DETAILS: Record<AgencyScope, {
     descriptionEn: 'Natural disasters, flood/landslide evacuation, search & rescue, and community paramedic response in Bongabong.',
     descriptionFil: 'Paghahanda at pagtugon sa bagyo, lindol, baha, landslide, at medikal na emerhensiya sa Bongabong.',
     iconName: 'Activity',
-    logo: '/logos/mdrrmo.svg',
+    logo: '/logos/mdrrmo.jpg',
   },
 };
 

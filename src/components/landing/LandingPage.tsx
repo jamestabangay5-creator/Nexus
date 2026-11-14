@@ -47,7 +47,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenAgencyAuth,
   onOpenGlobalMap,
 }) => {
-  const { reports, language, simulateIncomingIncident, firebaseUser, agencyUser, openAuthModal, setPortalMode } = useNexus();
+  const {
+    reports,
+    language,
+    simulateIncomingIncident,
+    firebaseUser,
+    agencyUser,
+    openAuthModal,
+    setPortalMode,
+    agencyDetails,
+    adminProfiles,
+  } = useNexus();
   const t = TRANSLATIONS[language];
 
   // Active step in interactive "How it works"
@@ -785,29 +795,110 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div className="p-4 bg-white/90 rounded-2xl border border-slate-200/80 space-y-1 shadow-xs">
-            <span className="font-bold text-blue-700 block">PNP Provincial Police</span>
-            <span className="font-mono text-slate-900 text-sm font-extrabold block">911 / (02) 8722-0650</span>
-            <span className="text-[10px] text-slate-500 block font-medium">Camp Efigenio C Navarro, Calapan</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          {/* PNP Card */}
+          <div className="p-5 bg-white/95 rounded-2xl border border-slate-200/90 space-y-3 shadow-xs hover:shadow-md transition">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 p-1 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-center shrink-0">
+                <AgencyLogo agency="PNP" className="w-8 h-8 object-contain" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-extrabold text-blue-900 text-sm block truncate">
+                  {agencyDetails?.PNP?.fullNameEn || 'Philippine National Police'}
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium block truncate">
+                  {adminProfiles?.PNP?.title ? `${adminProfiles.PNP.name} · ${adminProfiles.PNP.title}` : 'Bongabong Police Station'}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-xl space-y-1">
+              <span className="text-[10px] uppercase font-bold text-blue-700 tracking-wider block">Official Emergency Hotline:</span>
+              <span className="font-mono text-slate-900 text-sm sm:text-base font-black block tracking-tight">
+                {agencyDetails?.PNP?.hotline || adminProfiles?.PNP?.hotline || '911 / (043) 283-5192'}
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-600 space-y-1 font-medium pt-1 border-t border-slate-100">
+              <div className="flex items-start gap-1.5">
+                <span className="text-slate-400 font-bold shrink-0">HQ:</span>
+                <span className="text-slate-700">{adminProfiles?.PNP?.stationAddress || 'Municipal Police Station, Poblacion, Bongabong'}</span>
+              </div>
+              <div className="flex items-center gap-1.5 truncate">
+                <span className="text-slate-400 font-bold shrink-0">Email:</span>
+                <span className="truncate text-slate-700">{adminProfiles?.PNP?.email || 'pnp.admin@nexus.gov.ph'}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="p-4 bg-white/90 rounded-2xl border border-slate-200/80 space-y-1 shadow-xs">
-            <span className="font-bold text-amber-700 block">BFP Provincial Fire Office</span>
-            <span className="font-mono text-slate-900 text-sm font-extrabold block">160 / (02) 8426-0219</span>
-            <span className="text-[10px] text-slate-500 block font-medium">Calapan City Fire Station & 14 LGUs</span>
+          {/* BFP Card */}
+          <div className="p-5 bg-white/95 rounded-2xl border border-slate-200/90 space-y-3 shadow-xs hover:shadow-md transition">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 p-1 rounded-xl bg-orange-50 border border-orange-200/80 flex items-center justify-center shrink-0">
+                <AgencyLogo agency="BFP" className="w-8 h-8 object-contain" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-extrabold text-orange-900 text-sm block truncate">
+                  {agencyDetails?.BFP?.fullNameEn || 'Bureau of Fire Protection'}
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium block truncate">
+                  {adminProfiles?.BFP?.title ? `${adminProfiles.BFP.name} · ${adminProfiles.BFP.title}` : 'Bongabong Fire Station'}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-orange-50/70 border border-orange-100 rounded-xl space-y-1">
+              <span className="text-[10px] uppercase font-bold text-orange-700 tracking-wider block">Official Emergency Hotline:</span>
+              <span className="font-mono text-slate-900 text-sm sm:text-base font-black block tracking-tight">
+                {agencyDetails?.BFP?.hotline || adminProfiles?.BFP?.hotline || '160 / (043) 283-5161'}
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-600 space-y-1 font-medium pt-1 border-t border-slate-100">
+              <div className="flex items-start gap-1.5">
+                <span className="text-slate-400 font-bold shrink-0">HQ:</span>
+                <span className="text-slate-700">{adminProfiles?.BFP?.stationAddress || 'BFP Fire Station, Poblacion, Bongabong'}</span>
+              </div>
+              <div className="flex items-center gap-1.5 truncate">
+                <span className="text-slate-400 font-bold shrink-0">Email:</span>
+                <span className="truncate text-slate-700">{adminProfiles?.BFP?.email || 'bfp.admin@nexus.gov.ph'}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="p-4 bg-white/90 rounded-2xl border border-slate-200/80 space-y-1 shadow-xs">
-            <span className="font-bold text-emerald-700 block">PDRRMO / MDRRMO Operations</span>
-            <span className="font-mono text-slate-900 text-sm font-extrabold block">122 / (02) 8928-1111</span>
-            <span className="text-[10px] text-slate-500 block font-medium">Capitol Complex, Camilmil, Calapan</span>
-          </div>
+          {/* MDRRMO Card */}
+          <div className="p-5 bg-white/95 rounded-2xl border border-slate-200/90 space-y-3 shadow-xs hover:shadow-md transition">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 p-1 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center shrink-0">
+                <AgencyLogo agency="MDRRMO" className="w-8 h-8 object-contain" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-extrabold text-emerald-900 text-sm block truncate">
+                  {agencyDetails?.MDRRMO?.fullNameEn || 'MDRRMO Bongabong'}
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium block truncate">
+                  {adminProfiles?.MDRRMO?.title ? `${adminProfiles.MDRRMO.name} · ${adminProfiles.MDRRMO.title}` : 'Disaster Risk Reduction & Management'}
+                </span>
+              </div>
+            </div>
 
-          <div className="p-4 bg-white/90 rounded-2xl border border-slate-200/80 space-y-1 shadow-xs">
-            <span className="font-bold text-rose-700 block">Philippine Red Cross</span>
-            <span className="font-mono text-slate-900 text-sm font-extrabold block">143 / (043) 288-2144</span>
-            <span className="text-[10px] text-slate-500 block font-medium">Oriental Mindoro Chapter</span>
+            <div className="p-3 bg-emerald-50/70 border border-emerald-100 rounded-xl space-y-1">
+              <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider block">Official Emergency Hotline:</span>
+              <span className="font-mono text-slate-900 text-sm sm:text-base font-black block tracking-tight">
+                {agencyDetails?.MDRRMO?.hotline || adminProfiles?.MDRRMO?.hotline || '(043) 283-5353 / 0966-476-8806'}
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-600 space-y-1 font-medium pt-1 border-t border-slate-100">
+              <div className="flex items-start gap-1.5">
+                <span className="text-slate-400 font-bold shrink-0">HQ:</span>
+                <span className="text-slate-700">{adminProfiles?.MDRRMO?.stationAddress || 'MDRRMO Operations Center, Municipal Hall Compound, Bongabong'}</span>
+              </div>
+              <div className="flex items-center gap-1.5 truncate">
+                <span className="text-slate-400 font-bold shrink-0">Email:</span>
+                <span className="truncate text-slate-700">{adminProfiles?.MDRRMO?.email || 'mdrrmo.admin@nexus.gov.ph'}</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

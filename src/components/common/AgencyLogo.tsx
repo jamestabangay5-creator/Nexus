@@ -5,7 +5,7 @@ import { ShieldAlert, Flame, Activity, Radio } from 'lucide-react';
 export const AGENCY_LOGOS: Record<AgencyScope, string> = {
   PNP: '/logos/pnp.svg',
   BFP: '/logos/bfp.png',
-  MDRRMO: '/logos/mdrrmo.svg',
+  MDRRMO: '/logos/mdrrmo.jpg',
   CENTRAL: '/logos/central.png',
 };
 

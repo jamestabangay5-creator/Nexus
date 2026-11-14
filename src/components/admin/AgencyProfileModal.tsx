@@ -64,7 +64,7 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [hotline, setHotline] = useState(currentDetails?.hotline || '');
   const [descriptionEn, setDescriptionEn] = useState(currentDetails?.descriptionEn || '');
   const [descriptionFil, setDescriptionFil] = useState(currentDetails?.descriptionFil || '');
-  const [stationAddress, setStationAddress] = useState('Provincial Headquarters, Oriental Mindoro');
+  const [stationAddress, setStationAddress] = useState(currentProfile?.stationAddress || 'Bongabong, Oriental Mindoro');
 
   // Password Update Fields
   const [newPassword, setNewPassword] = useState('');
@@ -87,6 +87,7 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
       setHotline(currentDetails.hotline || '');
       setDescriptionEn(currentDetails.descriptionEn || '');
       setDescriptionFil(currentDetails.descriptionFil || '');
+      setStationAddress(currentProfile.stationAddress || 'Bongabong, Oriental Mindoro');
     }
     setErrorMsg(null);
     setSuccessMsg(null);
