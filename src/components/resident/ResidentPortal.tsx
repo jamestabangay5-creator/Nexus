@@ -9,6 +9,7 @@ import {
   MUNICIPALITY_COORDINATES,
   OrientalMindoroMunicipality,
   PROVINCE_NAME,
+  getBarangayFromCoordinates,
 } from '../../constants/orientalMindoroData';
 import { TRANSLATIONS } from '../../constants/translations';
 import { compressEvidenceImage } from '../../utils/imageUtils';
@@ -112,7 +113,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   });
   const [selectedMunicipality, setSelectedMunicipality] = useState<OrientalMindoroMunicipality>('Bongabong');
   const [barangay, setBarangay] = useState<string>(
-    () => residentUser.barangay || getBarangaysForMunicipality('Bongabong')[0] || 'Poblacion'
+    () => residentUser.barangay || getBarangayFromCoordinates(12.7508, 121.4864) || 'Poblacion'
   );
   const [locationDetails, setLocationDetails] = useState('');
   const [coords, setCoords] = useState<{ lat: number; lng: number }>(() => {
@@ -285,10 +286,14 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          const detectedLat = Number(pos.coords.latitude.toFixed(5));
+          const detectedLng = Number(pos.coords.longitude.toFixed(5));
           setCoords({
-            lat: Number(pos.coords.latitude.toFixed(5)),
-            lng: Number(pos.coords.longitude.toFixed(5)),
+            lat: detectedLat,
+            lng: detectedLng,
           });
+          const autoBrgy = getBarangayFromCoordinates(detectedLat, detectedLng);
+          setBarangay(autoBrgy);
           setIsLocating(false);
           setLocationSuccess(true);
           setTimeout(() => setLocationSuccess(false), 3000);
@@ -296,9 +301,11 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
         () => {
           // Fallback simulation centered on Bongabong
           const center = MUNICIPALITY_COORDINATES[selectedMunicipality] || { lat: 12.7508, lng: 121.4864 };
-          const offsetLat = center.lat + (Math.random() - 0.5) * 0.008;
-          const offsetLng = center.lng + (Math.random() - 0.5) * 0.008;
-          setCoords({ lat: Number(offsetLat.toFixed(5)), lng: Number(offsetLng.toFixed(5)) });
+          const offsetLat = Number((center.lat + (Math.random() - 0.5) * 0.008).toFixed(5));
+          const offsetLng = Number((center.lng + (Math.random() - 0.5) * 0.008).toFixed(5));
+          setCoords({ lat: offsetLat, lng: offsetLng });
+          const autoBrgy = getBarangayFromCoordinates(offsetLat, offsetLng);
+          setBarangay(autoBrgy);
           setIsLocating(false);
           setLocationSuccess(true);
           setTimeout(() => setLocationSuccess(false), 3000);
@@ -720,11 +727,6 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   Select the primary emergency response agency for your concern.
                 </p>
               </div>
-
-              {/* Requirement 10: Centralized visibility note */}
-              <span className="text-xs sm:text-sm text-blue-800 bg-blue-50/90 border border-blue-200 px-3.5 py-2 rounded-xl font-semibold max-w-md self-start sm:self-auto shadow-xs">
-                ℹ️ {t.agencyNotice}
-              </span>
             </div>
 
             {showAgencyRequiredError && !selectedAgency && (
@@ -944,28 +946,25 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-red-600" />
-                      <span>Barangay (32 Official Barangays in Bongabong) <span className="text-red-500">*</span></span>
+                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-emerald-600" />
+                        <span>Barangay (Auto-Selected via GPS Location)</span>
+                      </div>
+                      <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-md flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                        Auto-Detected
+                      </span>
                     </label>
-                    <select
-                      value={barangay}
-                      onChange={(e) => {
-                        const newBrgy = e.target.value;
-                        setBarangay(newBrgy);
-                        if (!locationSuccess) {
-                          setCoords(getCoordinatesForBarangay('Bongabong', newBrgy));
-                        }
-                      }}
-                      required
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs cursor-pointer"
-                    >
-                      {getBarangaysForMunicipality('Bongabong').map((brgy, idx) => (
-                        <option key={`rp-brgy-bongabong-${brgy}-${idx}`} value={brgy}>
-                          {brgy}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="w-full bg-emerald-50/80 border border-emerald-200/90 text-emerald-950 rounded-xl p-3 text-sm font-black flex items-center justify-between min-h-[46px] shadow-xs">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="text-slate-900 font-extrabold text-sm sm:text-base">Barangay {barangay || 'Poblacion'}</span>
+                      </div>
+                      <span className="text-[11px] font-mono font-bold text-emerald-700 bg-white/90 px-2.5 py-0.5 rounded-lg border border-emerald-200 shadow-2xs">
+                        GPS Verified
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -1027,7 +1026,11 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             {/* Real-time Interactive Location Verification Map */}
             <IncidentLocationPickerMap
               coords={coords}
-              onCoordinatesChange={(newCoords) => setCoords(newCoords)}
+              onCoordinatesChange={(newCoords) => {
+                setCoords(newCoords);
+                const autoBrgy = getBarangayFromCoordinates(newCoords.lat, newCoords.lng);
+                setBarangay(autoBrgy);
+              }}
               barangay={barangay}
               municipality={selectedMunicipality}
               isLocating={isLocating}
