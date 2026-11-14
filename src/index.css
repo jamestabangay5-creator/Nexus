@@ -15,7 +15,9 @@
 
 /* Custom Leaflet Pin container */
 .custom-incident-pin,
-.location-picker-pin {
+.location-picker-pin,
+.agency-station-marker,
+.dispatch-route-badge {
   background: transparent;
   border: none;
 }

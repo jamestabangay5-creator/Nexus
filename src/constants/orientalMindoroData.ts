@@ -3,6 +3,8 @@
  * Pilot Implementation Scope: Exclusive to the Municipality of Bongabong, Oriental Mindoro
  */
 
+import { AgencyScope } from '../types';
+
 export const PROVINCE_NAME = 'Oriental Mindoro';
 export const PILOT_MUNICIPALITY = 'Bongabong';
 
@@ -15,6 +17,125 @@ export type OrientalMindoroMunicipality = typeof ORIENTAL_MINDORO_MUNICIPALITIES
 // Official Municipal Coordinates for Bongabong, Oriental Mindoro for incident response & map centering
 export const MUNICIPALITY_COORDINATES: Record<OrientalMindoroMunicipality, { lat: number; lng: number }> = {
   'Bongabong': { lat: 12.7508, lng: 121.4864 },
+};
+
+export interface AgencyStationLocation {
+  agency: AgencyScope;
+  name: string;
+  shortName: string;
+  fullName: string;
+  lat: number;
+  lng: number;
+  address: string;
+  hotline: string;
+  email: string;
+  color: string;
+  borderColor: string;
+  logo: string;
+  officerInCharge: string;
+  dutyChief: string;
+}
+
+// Official Actual Coordinates for Emergency Agencies in Bongabong, Oriental Mindoro
+export const BONGABONG_AGENCY_STATIONS: Record<AgencyScope, AgencyStationLocation> = {
+  PNP: {
+    agency: 'PNP',
+    name: 'Bongabong Police Station',
+    shortName: 'PNP Station',
+    fullName: 'Philippine National Police — Bongabong Municipal Police Station',
+    lat: 12.748707,
+    lng: 121.487856,
+    address: 'National Highway, Poblacion, Bongabong, Oriental Mindoro (Near KLM Eureka College & Ebreo Beach)',
+    hotline: '(043) 283-5192 / 0998-598-6086',
+    email: 'pnp.admin@nexus.gov.ph',
+    color: '#2563eb',
+    borderColor: '#1d4ed8',
+    logo: '/logos/pnp.svg',
+    officerInCharge: 'PMAJ. M. Santos',
+    dutyChief: 'Bongabong Chief of Police',
+  },
+  BFP: {
+    agency: 'BFP',
+    name: 'Bongabong Fire Station',
+    shortName: 'BFP Station',
+    fullName: 'Bureau of Fire Protection — Bongabong Municipal Fire Station',
+    lat: 12.735629,
+    lng: 121.473102,
+    address: 'Barangay Batangan, Bongabong, Oriental Mindoro (Near Batingan Elementary & Regional Evacuation Center)',
+    hotline: '(043) 283-5161 / 0915-602-2122',
+    email: 'bfp.admin@nexus.gov.ph',
+    color: '#ea580c',
+    borderColor: '#c2410c',
+    logo: '/logos/bfp.png',
+    officerInCharge: 'Capt. E. Ramos',
+    dutyChief: 'Bongabong Municipal Fire Marshal',
+  },
+  MDRRMO: {
+    agency: 'MDRRMO',
+    name: 'MDRRMO Bongabong Operations Center',
+    shortName: 'MDRRMO EOC',
+    fullName: 'Municipal Disaster Risk Reduction & Management Office — Bongabong',
+    lat: 12.748511,
+    lng: 121.489472,
+    address: 'Municipal Hall Compound / Aplaya, Bongabong, Oriental Mindoro',
+    hotline: '(043) 283-5353 / 0966-476-8806',
+    email: 'mdrrmo.admin@nexus.gov.ph',
+    color: '#059669',
+    borderColor: '#047857',
+    logo: '/logos/mdrrmo.jpg',
+    officerInCharge: 'Dir. A. Reyes',
+    dutyChief: 'MDRRMO Operations Head',
+  },
+  CENTRAL: {
+    agency: 'CENTRAL',
+    name: 'Nexus Unified Joint Operations Command',
+    shortName: 'Central Command',
+    fullName: 'Nexus Joint Emergency Operations Center — Bongabong',
+    lat: 12.748511,
+    lng: 121.489472,
+    address: 'Central Command Center, Municipal Hall Compound, Bongabong, Oriental Mindoro',
+    hotline: '911 Central / (043) 283-5353',
+    email: 'systemadmin@nexus.gov.ph',
+    color: '#7c3aed',
+    borderColor: '#6d28d9',
+    logo: '/logos/central.png',
+    officerInCharge: 'Chief Insp. R. Fernandez',
+    dutyChief: 'Centralized Operations Chief',
+  },
+};
+
+/**
+ * Calculates straight line & road network adjusted distance in kilometers between two coordinates
+ */
+export const calculateDistanceKm = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
+  const R = 6371; // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const straightDistance = R * c;
+  // Road network tortuosity adjustment (~1.25x in Bongabong municipal road network)
+  const roadDistance = straightDistance * 1.25;
+  return Number(roadDistance.toFixed(2));
+};
+
+/**
+ * Calculates estimated response transit time in minutes at average emergency speed
+ */
+export const calculateEtaMinutes = (distanceKm: number, speedKmH: number = 42): number => {
+  const hours = distanceKm / speedKmH;
+  const minutes = Math.max(1, Math.round(hours * 60));
+  return minutes;
 };
 
 // All 32 official barangays of the Municipality of Bongabong, Oriental Mindoro

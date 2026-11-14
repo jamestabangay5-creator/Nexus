@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
+import { BONGABONG_AGENCY_STATIONS, AgencyScope } from '../../constants/orientalMindoroData';
 
 interface IncidentLocationPickerMapProps {
   coords: { lat: number; lng: number };
@@ -145,6 +146,45 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     markerRef.current = marker;
     circleRef.current = circle;
     mapInstanceRef.current = map;
+
+    // Render Bongabong Emergency Agency Headquarters Stations (PNP, BFP, MDRRMO)
+    const activeStations = (['PNP', 'BFP', 'MDRRMO'] as AgencyScope[]).map(
+      (scope) => BONGABONG_AGENCY_STATIONS[scope]
+    );
+
+    activeStations.forEach((station) => {
+      const stationIcon = L.divIcon({
+        className: 'agency-station-marker',
+        html: `
+          <div class="relative flex flex-col items-center group cursor-pointer" style="width: 44px; height: 50px;">
+            <div class="w-10 h-10 rounded-xl bg-white p-1 border-2 shadow-lg flex items-center justify-center relative z-10 transition-transform group-hover:scale-110" style="border-color: ${station.color};">
+              <img src="${station.logo}" class="w-7 h-7 object-contain" alt="${station.name}" />
+            </div>
+            <div class="px-1.5 py-0.2 rounded text-[8px] font-black text-white shadow-xs uppercase tracking-wider whitespace-nowrap -mt-1 z-20" style="background-color: ${station.color};">
+              ${station.shortName}
+            </div>
+          </div>
+        `,
+        iconSize: [44, 50],
+        iconAnchor: [22, 25],
+        popupAnchor: [0, -25],
+      });
+
+      const stationMarker = L.marker([station.lat, station.lng], {
+        icon: stationIcon,
+        zIndexOffset: 300,
+      }).addTo(map);
+
+      stationMarker.bindPopup(`
+        <div style="font-family: inherit; font-size: 11px; line-height: 1.4; padding: 4px; min-width: 190px;">
+          <strong style="color: ${station.color}; font-size: 12px; display: block; font-weight: 800;">${station.name}</strong>
+          <span style="color: #475569; display: block; margin-top: 2px;">${station.address}</span>
+          <div style="margin-top: 6px; padding-top: 4px; border-top: 1px solid #e2e8f0; font-weight: bold; color: #1e293b;">
+            📞 Hotline: <a href="tel:${station.hotline.replace(/[^0-9]/g, '')}" style="color: #2563eb; text-decoration: underline;">${station.hotline}</a>
+          </div>
+        </div>
+      `);
+    });
 
     // Invalidate size to guarantee smooth tile loading
     const timer = setTimeout(() => {

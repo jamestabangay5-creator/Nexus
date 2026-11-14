@@ -33,8 +33,14 @@ import {
   ShieldCheck,
   ShieldAlert,
   UserX,
-  AlertCircle
+  AlertCircle,
+  Navigation
 } from 'lucide-react';
+import {
+  BONGABONG_AGENCY_STATIONS,
+  calculateDistanceKm,
+  calculateEtaMinutes,
+} from '../../constants/orientalMindoroData';
 
 interface Props {
   reportId: string | null;
@@ -588,6 +594,44 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
                     </span>
                   </div>
                 </div>
+
+                {/* Dispatch Distance & Transit Time from Station */}
+                {(() => {
+                  const stationScope: AgencyScope =
+                    activeRole === 'PNP' ? 'PNP' :
+                    activeRole === 'BFP' ? 'BFP' :
+                    activeRole === 'MDRRMO' ? 'MDRRMO' :
+                    (report.selectedAgency as AgencyScope) || 'CENTRAL';
+                  const station = BONGABONG_AGENCY_STATIONS[stationScope] || BONGABONG_AGENCY_STATIONS.CENTRAL;
+                  const distKm = calculateDistanceKm(station.lat, station.lng, report.coordinates.lat, report.coordinates.lng);
+                  const etaMins = calculateEtaMinutes(distKm);
+
+                  return (
+                    <div className="pt-2.5 border-t border-slate-200/80 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                          <Navigation className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Dispatch Distance ({station.shortName})</span>
+                        </span>
+                        <span className="font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                          {distKm} km (~{etaMins} mins)
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500">
+                        <span className="truncate">Station: {station.address}</span>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&origin=${station.lat},${station.lng}&destination=${report.coordinates.lat},${report.coordinates.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 font-bold shrink-0 flex items-center gap-0.5 hover:underline"
+                        >
+                          <span>Google Maps Nav</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3.5">

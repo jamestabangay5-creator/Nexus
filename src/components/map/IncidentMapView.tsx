@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import { useNexus } from '../../context/NexusContext';
-import { IncidentReport, IncidentCategoryColor, IncidentTypeId, Agency } from '../../types';
+import { IncidentReport, IncidentCategoryColor, IncidentTypeId, Agency, AgencyScope } from '../../types';
 import { INCIDENT_TYPES, CATEGORY_INFO } from '../../constants/incidentData';
 import {
   ORIENTAL_MINDORO_MUNICIPALITIES,
@@ -10,6 +10,10 @@ import {
   getAllBarangaysForFilter,
   MUNICIPALITY_COORDINATES,
   OrientalMindoroMunicipality,
+  BONGABONG_AGENCY_STATIONS,
+  calculateDistanceKm,
+  calculateEtaMinutes,
+  AgencyStationLocation,
 } from '../../constants/orientalMindoroData';
 import { TRANSLATIONS } from '../../constants/translations';
 import { AgencyLogo } from '../common/AgencyLogo';
@@ -44,7 +48,8 @@ import {
   Radio,
   Camera,
   ShieldCheck,
-  Lock
+  Lock,
+  Navigation,
 } from 'lucide-react';
 import { startContinuousCriticalAlarm, stopContinuousCriticalAlarm } from '../../services/soundService';
 import { ReportDetailModal } from '../admin/ReportDetailModal';
@@ -100,9 +105,19 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const stationsLayerRef = useRef<L.LayerGroup | null>(null);
+  const routeLayerRef = useRef<L.LayerGroup | null>(null);
   const tileLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const heatCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const markerObjMapRef = useRef<Map<string, L.Marker>>(new Map());
+
+  // Real-time Dispatch Route and Distance Info for selected incident
+  const [routeInfo, setRouteInfo] = useState<{
+    distanceKm: number;
+    etaMinutes: number;
+    station: AgencyStationLocation;
+    isRoadRoute: boolean;
+  } | null>(null);
 
   // Filters state with Oriental Mindoro Municipality & Barangay
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -315,6 +330,13 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
 
       const markersGroup = L.layerGroup().addTo(map);
       markersLayerRef.current = markersGroup;
+
+      const stationsGroup = L.layerGroup().addTo(map);
+      stationsLayerRef.current = stationsGroup;
+
+      const routeGroup = L.layerGroup().addTo(map);
+      routeLayerRef.current = routeGroup;
+
       mapInstanceRef.current = map;
     }
 
@@ -330,6 +352,8 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
         mapInstanceRef.current = null;
         tileLayerGroupRef.current = null;
         markersLayerRef.current = null;
+        stationsLayerRef.current = null;
+        routeLayerRef.current = null;
       }
     };
   }, []);
@@ -393,6 +417,211 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       }, 100);
     }
   }, [mobileMapTab]);
+
+  // Render Official Agency Headquarters Stations on Map
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const stationsGroup = stationsLayerRef.current;
+    if (!map || !stationsGroup) return;
+
+    stationsGroup.clearLayers();
+
+    const activeStations = (['PNP', 'BFP', 'MDRRMO'] as AgencyScope[]).map(
+      (scope) => BONGABONG_AGENCY_STATIONS[scope]
+    );
+
+    activeStations.forEach((station) => {
+      const iconHtml = `
+        <div class="relative flex flex-col items-center group cursor-pointer" style="width: 52px; height: 62px;">
+          <div class="absolute -top-1 w-12 h-12 rounded-2xl animate-ping opacity-25 pointer-events-none" style="background-color: ${station.color};"></div>
+          <div class="w-12 h-12 rounded-2xl bg-white p-1 border-2 shadow-2xl flex items-center justify-center transition-transform hover:scale-115 relative z-10" style="border-color: ${station.color};">
+            <img src="${station.logo}" class="w-9 h-9 object-contain" alt="${station.name}" />
+          </div>
+          <div class="absolute -bottom-1 px-1.5 py-0.5 rounded text-[9px] font-black text-white shadow-md uppercase tracking-wider whitespace-nowrap z-20" style="background-color: ${station.color};">
+            ${station.shortName}
+          </div>
+        </div>
+      `;
+
+      const stationIcon = L.divIcon({
+        className: 'agency-station-marker',
+        html: iconHtml,
+        iconSize: [52, 62],
+        iconAnchor: [26, 52],
+        popupAnchor: [0, -50],
+      });
+
+      const marker = L.marker([station.lat, station.lng], {
+        icon: stationIcon,
+        title: `${station.name} (${station.address})`,
+        zIndexOffset: 1500,
+      }).addTo(stationsGroup);
+
+      marker.bindPopup(`
+        <div style="min-width: 250px; padding: 4px; font-family: system-ui, sans-serif; color: #0f172a;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0;">
+            <img src="${station.logo}" style="width: 36px; height: 36px; object-fit: contain;" />
+            <div>
+              <h4 style="font-size: 13px; font-weight: 800; margin: 0; color: #0f172a;">${station.name}</h4>
+              <span style="font-size: 10px; font-weight: 700; color: #059669;">🟢 Active 24/7 Response Station</span>
+            </div>
+          </div>
+          <p style="font-size: 11px; color: #475569; margin: 0 0 8px 0; line-height: 1.4;">
+            📍 <strong>Address:</strong> ${station.address}
+          </p>
+          <div style="background: #f1f5f9; padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 11px;">
+            <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Official Hotline:</span>
+            <a href="tel:${station.hotline.replace(/[^0-9]/g, '')}" style="font-size: 13px; font-weight: 900; color: #2563eb; text-decoration: none;">
+              ${station.hotline}
+            </a>
+          </div>
+          <div style="font-size: 11px; color: #475569; margin-bottom: 8px;">
+            ✉️ Email: <strong>${station.email}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #64748b; padding-top: 4px; border-top: 1px solid #f1f5f9;">
+            <span>Chief: <strong style="color: #334155;">${station.officerInCharge}</strong></span>
+            <a href="https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; font-weight: 700; text-decoration: underline;">
+              View on Google Maps ↗
+            </a>
+          </div>
+        </div>
+      `);
+    });
+  }, []);
+
+  // Real-Time Dispatch Route & Distance Tracking from Agency Station to Selected Incident
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const routeGroup = routeLayerRef.current;
+    if (!map || !routeGroup) return;
+
+    routeGroup.clearLayers();
+
+    if (!selectedReport) {
+      setRouteInfo(null);
+      return;
+    }
+
+    const repLat = typeof selectedReport.coordinates?.lat === 'number' ? selectedReport.coordinates.lat : 12.7508;
+    const repLng = typeof selectedReport.coordinates?.lng === 'number' ? selectedReport.coordinates.lng : 121.4864;
+
+    // Determine viewing / dispatch agency station
+    const agencyKey: AgencyScope =
+      isAgencyViewer && activeRole !== 'resident'
+        ? (activeRole as AgencyScope)
+        : (selectedReport.selectedAgency as AgencyScope) || 'PNP';
+
+    const station =
+      BONGABONG_AGENCY_STATIONS[agencyKey] ||
+      BONGABONG_AGENCY_STATIONS[selectedReport.selectedAgency] ||
+      BONGABONG_AGENCY_STATIONS['PNP'];
+
+    const geomDist = calculateDistanceKm(station.lat, station.lng, repLat, repLng);
+    const geomEta = calculateEtaMinutes(geomDist);
+
+    setRouteInfo({
+      distanceKm: geomDist,
+      etaMinutes: geomEta,
+      station,
+      isRoadRoute: false,
+    });
+
+    const drawRouteOnMap = (pts: [number, number][], distKm: number, etaMins: number) => {
+      routeGroup.clearLayers();
+
+      // Outer route shadow
+      L.polyline(pts, {
+        color: '#0f172a',
+        weight: 8,
+        opacity: 0.55,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(routeGroup);
+
+      // Core dispatch route polyline
+      L.polyline(pts, {
+        color: station.color,
+        weight: 5,
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round',
+        dashArray: '6, 8',
+      }).addTo(routeGroup);
+
+      // Midpoint badge
+      const midIdx = Math.floor(pts.length / 2);
+      const midCoord = pts[midIdx] || pts[0];
+
+      const badgeHtml = `
+        <div class="px-2.5 py-1 rounded-xl bg-slate-900/95 text-white border border-slate-700 shadow-2xl flex items-center gap-1.5 text-xs font-black whitespace-nowrap cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:scale-105 transition" style="box-shadow: 0 4px 18px rgba(0,0,0,0.45);">
+          <span style="color: ${station.color}; font-size: 13px;">🚗</span>
+          <span class="text-white">${etaMins} min</span>
+          <span class="text-slate-300 font-mono font-bold">(${distKm} km)</span>
+        </div>
+      `;
+
+      const badgeIcon = L.divIcon({
+        className: 'dispatch-route-badge',
+        html: badgeHtml,
+        iconSize: [110, 30],
+        iconAnchor: [55, 15],
+      });
+
+      L.marker(midCoord, { icon: badgeIcon, interactive: false, zIndexOffset: 900 }).addTo(routeGroup);
+    };
+
+    // Draw initial route immediately
+    drawRouteOnMap([[station.lat, station.lng], [repLat, repLng]], geomDist, geomEta);
+
+    // Auto-fit bounds so both station and incident are visible
+    map.fitBounds(
+      [
+        [station.lat, station.lng],
+        [repLat, repLng],
+      ],
+      { padding: [60, 60], maxZoom: 15, animate: true }
+    );
+
+    // Asynchronously fetch real road routing from OSRM
+    let isCancelled = false;
+    const queryOsrm = async () => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2500);
+        const url = `https://router.project-osrm.org/route/v1/driving/${station.lng},${station.lat};${repLng},${repLat}?overview=full&geometries=geojson`;
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
+
+        if (!res.ok) return;
+        const data = await res.json();
+        if (isCancelled) return;
+
+        if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          const coords = route.geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
+          const roadDist = Number((route.distance / 1000).toFixed(2));
+          const roadEta = Math.max(1, Math.round(route.duration / 60));
+
+          setRouteInfo({
+            distanceKm: roadDist,
+            etaMinutes: roadEta,
+            station,
+            isRoadRoute: true,
+          });
+
+          drawRouteOnMap(coords, roadDist, roadEta);
+        }
+      } catch (err) {
+        // Fallback already rendered
+      }
+    };
+
+    queryOsrm();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedReportId, isAgencyViewer, activeRole]);
 
   // Update Markers
   useEffect(() => {
@@ -1229,6 +1458,48 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
           {/* Desktop Floating Category Filter Bar (Only shown on large desktop screens) */}
           {renderCategoryPills(false)}
 
+          {/* On-Map Dispatch Route HUD Banner */}
+          {routeInfo && selectedReport && (
+            <div className="absolute top-3 left-3 right-3 sm:right-auto z-20 max-w-md pointer-events-auto">
+              <div className="p-2.5 sm:p-3 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl border border-slate-700 shadow-2xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs"
+                    style={{ backgroundColor: `${routeInfo.station.color}30`, border: `1px solid ${routeInfo.station.color}60` }}
+                  >
+                    <span className="text-sm">🚗</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-black text-white">
+                        Dispatch: {routeInfo.distanceKm} km (~{routeInfo.etaMinutes} mins)
+                      </span>
+                      {routeInfo.isRoadRoute && (
+                        <span className="px-1.5 py-0.2 bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 rounded text-[9px] font-bold">
+                          Road Route
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-slate-300 block truncate">
+                      {routeInfo.station.shortName} ➔ {selectedReport.locationDetails || selectedReport.barangay}
+                    </span>
+                  </div>
+                </div>
+
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&origin=${routeInfo.station.lat},${routeInfo.station.lng}&destination=${selectedReport.coordinates.lat},${selectedReport.coordinates.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-xs transition shrink-0 cursor-pointer"
+                  title="Open in Google Maps Navigation"
+                >
+                  <Navigation className="w-3 h-3" />
+                  <span>GPS Nav ↗</span>
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Active Category Auto-Frame Badge on Desktop/Tablet Map */}
           {selectedCategory !== 'ALL' && (
             <div className="hidden sm:flex absolute top-14 left-3 z-20 items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200/90 shadow-md text-xs font-bold text-slate-800 animate-fadeIn">
@@ -1593,6 +1864,69 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                       "{selectedReport.description}"
                     </p>
                   </div>
+
+                  {/* Emergency Agency Dispatch Distance & Route Tracker (Side Dossier View) */}
+                  {isAgencyViewer && routeInfo && (
+                    <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 text-white p-3.5 rounded-2xl border border-slate-700 shadow-md space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div
+                            className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 bg-white/10 p-1"
+                            style={{ border: `1.5px solid ${routeInfo.station.color}` }}
+                          >
+                            <img src={routeInfo.station.logo} alt="" className="w-full h-full object-contain" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-300 block">
+                              Emergency Dispatch Distance
+                            </span>
+                            <span className="text-xs font-bold text-white truncate block">
+                              {routeInfo.station.name}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-400/30 shrink-0">
+                          Live Track
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">ROAD DISTANCE</span>
+                          <span className="text-base font-black text-amber-400 tracking-tight">
+                            {routeInfo.distanceKm} <span className="text-xs font-normal text-slate-300">km</span>
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">EST. RESPONSE</span>
+                          <span className="text-base font-black text-emerald-400 tracking-tight">
+                            ~{routeInfo.etaMinutes} <span className="text-xs font-normal text-slate-300">mins</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-[11px] text-slate-300 space-y-1">
+                        <div className="flex items-start gap-1.5">
+                          <span className="text-slate-400 shrink-0">📍 From:</span>
+                          <span className="text-slate-200 line-clamp-1">{routeInfo.station.address}</span>
+                        </div>
+                        <div className="flex items-start gap-1.5">
+                          <span className="text-slate-400 shrink-0">🎯 To:</span>
+                          <span className="text-slate-200 line-clamp-1">{selectedReport.locationDetails || selectedReport.barangay}, Bongabong</span>
+                        </div>
+                      </div>
+
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&origin=${routeInfo.station.lat},${routeInfo.station.lng}&destination=${selectedReport.coordinates.lat},${selectedReport.coordinates.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition cursor-pointer"
+                      >
+                        <Navigation className="w-3.5 h-3.5" />
+                        <span>Open Turn-by-Turn Navigation ↗</span>
+                      </a>
+                    </div>
+                  )}
 
                   {/* Full Dossier Inspector */}
                   <button
