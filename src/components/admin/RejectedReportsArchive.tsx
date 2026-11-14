@@ -177,7 +177,7 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
   return (
     <div className="space-y-6 text-slate-800 font-sans">
       {/* Header */}
-      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-30">
         <div className="flex items-center gap-3.5">
           <div className="p-3 bg-rose-50 text-rose-600 border border-rose-200/60 rounded-2xl shadow-sm">
             <Archive className="w-6 h-6" />
@@ -216,7 +216,7 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/50 space-y-3">
+      <div className="glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/50 space-y-3 relative z-20">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-[240px]">
             <Search className="w-4 h-4 text-slate-400" />

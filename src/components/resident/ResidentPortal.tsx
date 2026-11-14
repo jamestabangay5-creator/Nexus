@@ -1083,7 +1083,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       {activeTab === 'tracking' && (
         <div className="space-y-4">
           {/* Header Banner with Export & View Toggle */}
-          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-30">
             <div>
               <h3 className="text-base sm:text-lg font-black text-slate-900">
                 Live Incident Status Tracker (Requirement 13)
@@ -1146,7 +1146,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
           {/* Quick Filter & Search Bar for My Reports */}
           {myReports.length > 0 && (
-            <div className="glass-card-subtle bg-white/85 border border-white/80 rounded-2xl p-3.5 space-y-3 shadow-xs">
+            <div className="glass-card-subtle bg-white/85 border border-white/80 rounded-2xl p-3.5 space-y-3 shadow-xs relative z-20">
               <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2 flex-1 min-w-[180px]">
                   <Search className="w-4 h-4 text-slate-400" />

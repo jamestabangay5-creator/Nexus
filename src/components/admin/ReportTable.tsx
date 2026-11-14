@@ -326,8 +326,8 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
   return (
     <div className="space-y-4">
       {/* Search and Filters Bar - Frosted Neo-Aero Glass */}
-      <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/50 space-y-3">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/50 space-y-3 relative z-30">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 relative z-30">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[200px]">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -348,7 +348,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative z-40">
             {/* Reset Filters button if any active */}
             {hasActiveFilters && (
               <button
@@ -624,7 +624,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
       )}
 
       {/* 1. MOBILE RESPONSIVE CARDS VIEW (Visible on screens < 768px) */}
-      <div className="block md:hidden space-y-3">
+      <div className="block md:hidden space-y-3 relative z-10">
         {paginatedReports.length === 0 ? (
           <div className="glass-card bg-white/85 backdrop-blur-xl border border-white/80 rounded-3xl p-8 text-center text-slate-500 text-xs shadow-sm">
             No active incident reports match the selected filters.
@@ -809,7 +809,7 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
       </div>
 
       {/* 2. DESKTOP TABLE VIEW (Visible on screens >= 768px) */}
-      <div className="hidden md:block glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50">
+      <div className="hidden md:block glass-card bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 relative z-10">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead className="bg-slate-50/90 text-slate-600 uppercase font-black text-xs tracking-wider border-b border-slate-200/80">

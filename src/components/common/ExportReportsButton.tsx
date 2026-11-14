@@ -48,7 +48,21 @@ export const ExportReportsButton: React.FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [lastExportedFormat, setLastExportedFormat] = useState<string | null>(null);
+  const [openUpward, setOpenUpward] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 320 && rect.top > 320) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -102,8 +116,9 @@ export const ExportReportsButton: React.FC<Props> = ({
   };
 
   return (
-    <div className={`relative inline-block ${className}`} ref={menuRef}>
+    <div className={`relative inline-block ${className} ${isOpen ? 'z-[60]' : 'z-auto'}`} ref={menuRef}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={isExporting}
@@ -133,7 +148,12 @@ export const ExportReportsButton: React.FC<Props> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2 z-50 text-slate-800 animate-in fade-in slide-in-from-top-2 ring-1 ring-slate-900/5">
+        <div
+          className={`absolute right-0 ${
+            openUpward ? 'bottom-full mb-2' : 'top-full mt-2'
+          } w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2.5 z-[100] text-slate-800 animate-in fade-in slide-in-from-top-2 ring-1 ring-slate-900/10 max-h-[85vh] overflow-y-auto`}
+          style={{ minWidth: '280px' }}
+        >
           <div className="px-2.5 py-1.5 border-b border-slate-100 mb-1">
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
               Official Agency Download
