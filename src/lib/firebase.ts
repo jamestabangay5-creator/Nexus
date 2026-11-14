@@ -30,18 +30,37 @@ import {
   Firestore
 } from "firebase/firestore";
 
-// Nexus Firebase Configuration (Supports Vercel environment variables with resilient fallbacks)
+// Nexus Firebase Configuration (Strictly loaded via environment variables — NO hardcoded keys)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCo58-f_aRRP28ai3FPnagRrNysa-yJuOQ",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "nexus-a0b72.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "nexus-a0b72",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "nexus-a0b72.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1098811715365",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1098811715365:web:eaefc6b11e6777104d74cc"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
 };
 
+// Check if valid production Firebase credentials are provided via environment variables
+export const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.apiKey !== "" &&
+  !firebaseConfig.apiKey.includes("your_")
+);
+
+// Resilient fallback configuration for safe offline / demo execution without exposing credentials
+const effectiveConfig = isFirebaseConfigured
+  ? firebaseConfig
+  : {
+      apiKey: "demo-client-key",
+      authDomain: "nexus-demo.firebaseapp.com",
+      projectId: "nexus-demo",
+      storageBucket: "nexus-demo.firebasestorage.app",
+      messagingSenderId: "000000000000",
+      appId: "1:000000000000:web:0000000000000000000000"
+    };
+
 // Initialize Firebase (singleton)
-export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+export const app = getApps().length > 0 ? getApp() : initializeApp(effectiveConfig);
 export const auth = getAuth(app);
 
 // Initialize Firestore with ignoreUndefinedProperties enabled so undefined values never throw
