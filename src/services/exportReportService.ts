@@ -190,7 +190,7 @@ export const exportReportToPdf = async (options: ExportReportOptions): Promise<v
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>${documentTitle || 'NEXUS 911 Incident Report'}</title>
+      <title>${documentTitle || 'NEXUS Incident Report'}</title>
       <style>
         @page {
           size: A4 landscape;

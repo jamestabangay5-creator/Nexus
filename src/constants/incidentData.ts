@@ -675,7 +675,7 @@ export const INITIAL_MEDICAL_UNITS: MedicalUnit[] = [
     id: 'medic-01',
     callSign: 'Bongabong Rescue Medic-1',
     type: 'Type-1 Ambulance',
-    base: 'MDRRMO Bongabong Operations Center (Aplaya)',
+    base: 'Bongabong Operations Center MDRRMO',
     status: 'Available',
     paramedicLead: 'Nurse P. Gutierrez, EMT',
     driverName: 'EMS Driver B. Santos',
