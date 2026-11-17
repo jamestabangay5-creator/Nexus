@@ -1191,7 +1191,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                           Please Double-Check Your Location on the Map:
                         </span>
                         <p className="text-amber-900 text-xs leading-relaxed">
-                          Please verify your actual position on the map below. Your pin currently appears near <strong>Barangay {estimatedFromCoords}</strong> while your selected incident location is <strong>Barangay {barangay}</strong> (likely due to device cellular tower drift). You can drag the marker on the map to place it directly on your exact building or street.
+                          Please double-check and verify your actual location on the map below. Your pinned position may slightly shift due to device cellular tower drift. You can drag the marker on the map to place it directly on your exact building or street.
                         </p>
                       </div>
                     </div>
