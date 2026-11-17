@@ -430,7 +430,7 @@ export const AgencyProfileModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     type="text"
                     value={stationAddress}
                     onChange={(e) => setStationAddress(e.target.value)}
-                    placeholder="e.g. Camp Efigenio C Navarro, Calapan City"
+                    placeholder="e.g. Poblacion, Bongabong, Oriental Mindoro"
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>

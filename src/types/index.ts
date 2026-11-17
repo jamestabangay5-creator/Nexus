@@ -121,6 +121,13 @@ export interface IncidentReport {
   municipality?: string;
   barangay: string;
   locationDetails: string;
+  completeAddress?: string;
+  locationDiscrepancy?: {
+    flagged: boolean;
+    selectedBarangay: string;
+    estimatedBarangay: string;
+    note?: string;
+  };
   coordinates: {
     lat: number;
     lng: number;
@@ -264,6 +271,16 @@ export interface EvacuationCenter {
   currentOccupants: number;
   status: 'Active' | 'Standby' | 'Full';
   reliefStockStatus: 'Adequate' | 'Replenishment Needed' | 'Critical';
+}
+
+export interface MasterBarangay {
+  id: string;
+  name: string;
+  municipality: string;
+  province: string;
+  lat: number;
+  lng: number;
+  isOfficial: boolean;
 }
 
 export interface SuccessModalData {

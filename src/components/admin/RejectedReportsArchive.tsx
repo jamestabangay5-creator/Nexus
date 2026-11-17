@@ -535,7 +535,7 @@ export const RejectedReportsArchive: React.FC<Props> = ({ onSelectReport }) => {
                   <div className="flex items-start gap-2">
                     <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-slate-900 font-bold block">{report.barangay}, {report.municipality || 'Calapan City'}</span>
+                      <span className="text-slate-900 font-bold block">Brgy. {report.barangay}, {report.municipality || 'Bongabong'}</span>
                       <p className="text-[11px] text-slate-500 mt-0.5">{report.locationDetails}</p>
                     </div>
                   </div>

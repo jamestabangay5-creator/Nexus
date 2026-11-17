@@ -257,7 +257,7 @@ export const CentralDashboardView: React.FC<Props> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 leading-snug">
-                  Jurisdiction across all 32 Bongabong Barangays. Law enforcement, crime investigation, mobile patrol & tactical peacekeeping.
+                  Jurisdiction across all 36 Bongabong Barangays. Law enforcement, crime investigation, mobile patrol & tactical peacekeeping.
                 </p>
               </div>
             </div>
@@ -479,7 +479,7 @@ export const CentralDashboardView: React.FC<Props> = ({
                   <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
                     <span className="flex items-center gap-1 text-slate-600 truncate max-w-[260px]">
                       <MapPin className="w-3 h-3 text-red-500 shrink-0" />
-                      {report.barangay}, {report.municipality || 'Calapan City'} (Citizen: {report.residentName})
+                      Brgy. ${report.barangay}, ${report.municipality || 'Bongabong'} (Citizen: {report.residentName})
                     </span>
                     <button
                       type="button"

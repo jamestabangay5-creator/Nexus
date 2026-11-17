@@ -65,7 +65,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   // Collapsible FAQ state
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   // Selected municipality filter for showcase
-  const [selectedMuni, setSelectedMuni] = useState<string>('Calapan City');
+  const [selectedMuni, setSelectedMuni] = useState<string>('Bongabong');
 
   const totalReports = reports.length;
   const activeReportsCount = reports.filter(
@@ -145,9 +145,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       qEn: 'Who can use the Resident Citizen Portal?',
       qFil: 'Sino ang maaaring gumamit ng Resident Citizen Portal?',
       aEn:
-        'Any resident, visitor, or worker within the 32 barangays of Bongabong, Oriental Mindoro can access the portal to report emergencies, view safety bulletins, and track their filed reports. Residents can sign in with Google or Email and complete their verified profile with photo upload to eliminate prank reports and ensure swift responder recognition.',
+        'Any resident, visitor, or worker within the 36 barangays of Bongabong, Oriental Mindoro can access the portal to report emergencies, view safety bulletins, and track their filed reports. Residents can sign in with Google or Email and complete their verified profile with photo upload to eliminate prank reports and ensure swift responder recognition.',
       aFil:
-        'Lahat ng residente sa 32 barangay ng Bongabong ay maaaring mag-ulat ng emergency, mag-upload ng litrato, at subaybayan ang pagtugon ng mga ahensya gamit ang kanilang verified account.',
+        'Lahat ng residente sa 36 barangay ng Bongabong ay maaaring mag-ulat ng emergency, mag-upload ng litrato, at subaybayan ang pagtugon ng mga ahensya gamit ang kanilang verified account.',
     },
     {
       qEn: 'How does Centralized Agency Command work?',
@@ -161,9 +161,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       qEn: 'Is Leaflet GIS Map accurate for Bongabong?',
       qFil: 'Wasto ba ang Leaflet GIS Map para sa Bongabong?',
       aEn:
-        'Yes. NEXUS integrates Leaflet OpenStreetMap with custom coordinates for all 32 barangays in the Municipality of Bongabong, Oriental Mindoro. It supports street and satellite view layers, live density heatmaps, and interactive marker clustering.',
+        'Yes. NEXUS integrates Leaflet OpenStreetMap with custom coordinates for all 36 barangays in the Municipality of Bongabong, Oriental Mindoro. It supports street and satellite view layers, live density heatmaps, and interactive marker clustering.',
       aFil:
-        'Oo. May kumpletong coordinates ang sistema para sa lahat ng 32 barangay ng Bongabong, may street at satellite layer, at live heatmap ng mga insidente.',
+        'Oo. May kumpletong coordinates ang sistema para sa lahat ng 36 barangay ng Bongabong, may street at satellite layer, at live heatmap ng mga insidente.',
     },
     {
       qEn: 'What are the official emergency hotlines in Bongabong?',
@@ -609,7 +609,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span>Pilot Operational Coverage · Municipality of Bongabong:</span>
             </span>
             <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">
-              32 Official Barangays
+              36 Official Barangays
             </span>
           </div>
 
@@ -643,9 +643,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-rose-500" />
                   <span className="font-bold text-slate-900 text-sm">{selectedMuni}, Oriental Mindoro</span>
-                  {selectedMuni === 'Calapan City' && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold shadow-xs">
-                      Provincial Capital
+                  {selectedMuni === 'Bongabong' && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold shadow-xs">
+                      Official Pilot Municipality Scope
                     </span>
                   )}
                 </div>

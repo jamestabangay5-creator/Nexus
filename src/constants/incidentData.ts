@@ -407,14 +407,14 @@ export const CATEGORY_INFO: Record<string, { labelEn: string; labelFil: string; 
 export {
   PROVINCE_NAME,
   ORIENTAL_MINDORO_MUNICIPALITIES,
+  BONGABONG_BARANGAYS,
   ORIENTAL_MINDORO_BARANGAYS,
   getBarangaysForMunicipality,
   MUNICIPALITY_COORDINATES,
 } from './orientalMindoroData';
-import { ORIENTAL_MINDORO_BARANGAYS } from './orientalMindoroData';
 
-// Default barangay list based on Oriental Mindoro capital (Calapan City)
-export const BARANGAYS = ORIENTAL_MINDORO_BARANGAYS['Calapan City'];
+// Default official barangay list for Bongabong, Oriental Mindoro
+export const BARANGAYS = BONGABONG_BARANGAYS;
 
 export const AGENCY_DETAILS: Record<AgencyScope, {
   name: string;
@@ -729,12 +729,12 @@ export const INITIAL_MEDICAL_UNITS: MedicalUnit[] = [
   },
 ];
 
-// Seed Evacuation Centers for Disaster Operations
+// Seed Evacuation Centers for Bongabong Disaster Operations
 export const INITIAL_EVACUATION_CENTERS: EvacuationCenter[] = [
   {
     id: 'evac-01',
-    name: 'Calapan City Youth Center & Coliseum',
-    municipality: 'Calapan City',
+    name: 'Bongabong Municipal Gymnasium & Evacuation Center',
+    municipality: 'Bongabong',
     capacity: 1200,
     currentOccupants: 0,
     status: 'Standby',
@@ -742,27 +742,27 @@ export const INITIAL_EVACUATION_CENTERS: EvacuationCenter[] = [
   },
   {
     id: 'evac-02',
-    name: 'Naujan Central Elementary Gymnasium',
-    municipality: 'Naujan',
-    capacity: 650,
+    name: 'Batangan Regional Evacuation Center',
+    municipality: 'Bongabong',
+    capacity: 850,
     currentOccupants: 0,
     status: 'Standby',
     reliefStockStatus: 'Adequate',
   },
   {
     id: 'evac-03',
-    name: 'Baco Municipal Multi-Purpose Evacuation Complex',
-    municipality: 'Baco',
-    capacity: 900,
-    currentOccupants: 45,
-    status: 'Active',
+    name: 'Labasan Community Disaster Operations Complex',
+    municipality: 'Bongabong',
+    capacity: 600,
+    currentOccupants: 0,
+    status: 'Standby',
     reliefStockStatus: 'Adequate',
   },
   {
     id: 'evac-04',
-    name: 'Victoria Community Evacuation Hall',
-    municipality: 'Victoria',
-    capacity: 400,
+    name: 'Formon Multi-Purpose Evacuation Hall',
+    municipality: 'Bongabong',
+    capacity: 450,
     currentOccupants: 0,
     status: 'Standby',
     reliefStockStatus: 'Adequate',

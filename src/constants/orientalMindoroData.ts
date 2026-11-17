@@ -138,10 +138,14 @@ export const calculateEtaMinutes = (distanceKm: number, speedKmH: number = 42): 
   return minutes;
 };
 
-// All 32 official barangays of the Municipality of Bongabong, Oriental Mindoro
+// All 36 official barangays of the Municipality of Bongabong, Oriental Mindoro
 export const BONGABONG_BARANGAYS = [
   'Anilao',
+  'Aplaya',
+  'Bagumbayan I',
+  'Bagumbayan II',
   'Batangan',
+  'Bukal',
   'Camantigue',
   'Carmundo',
   'Cawayan',
@@ -161,6 +165,7 @@ export const BONGABONG_BARANGAYS = [
   'Masaguisi',
   'Mina de Oro',
   'Morente',
+  'Ogbot',
   'Orconuma',
   'Poblacion',
   'Polusahi',
@@ -171,17 +176,20 @@ export const BONGABONG_BARANGAYS = [
   'Santa Cruz',
   'Sigange',
   'Tawas',
-  'Villapag-asa',
 ] as const;
 
 export const ORIENTAL_MINDORO_BARANGAYS: Record<OrientalMindoroMunicipality, string[]> = {
   'Bongabong': [...BONGABONG_BARANGAYS],
 };
 
-// Official coordinates for each of the 32 official barangays in Bongabong, Oriental Mindoro
+// Official coordinates for each of the 36 official barangays in Bongabong, Oriental Mindoro
 export const BONGABONG_BARANGAY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Anilao': { lat: 12.7750, lng: 121.4720 },
+  'Aplaya': { lat: 12.7520, lng: 121.4925 },
+  'Bagumbayan I': { lat: 12.7540, lng: 121.4820 },
+  'Bagumbayan II': { lat: 12.7570, lng: 121.4800 },
   'Batangan': { lat: 12.7300, lng: 121.4500 },
+  'Bukal': { lat: 12.7480, lng: 121.4200 },
   'Camantigue': { lat: 12.7400, lng: 121.4480 },
   'Carmundo': { lat: 12.7310, lng: 121.4350 },
   'Cawayan': { lat: 12.7210, lng: 121.4750 },
@@ -201,6 +209,7 @@ export const BONGABONG_BARANGAY_COORDINATES: Record<string, { lat: number; lng: 
   'Masaguisi': { lat: 12.7350, lng: 121.4810 },
   'Mina de Oro': { lat: 12.7440, lng: 121.4690 },
   'Morente': { lat: 12.7080, lng: 121.4150 },
+  'Ogbot': { lat: 12.7160, lng: 121.4100 },
   'Orconuma': { lat: 12.7790, lng: 121.4520 },
   'Poblacion': { lat: 12.7508, lng: 121.4864 },
   'Polusahi': { lat: 12.7280, lng: 121.4190 },
@@ -211,7 +220,6 @@ export const BONGABONG_BARANGAY_COORDINATES: Record<string, { lat: number; lng: 
   'Santa Cruz': { lat: 12.7860, lng: 121.4390 },
   'Sigange': { lat: 12.7180, lng: 121.3850 },
   'Tawas': { lat: 12.7890, lng: 121.4820 },
-  'Villapag-asa': { lat: 12.6850, lng: 121.3650 },
 };
 
 /**
@@ -243,7 +251,7 @@ export const getBarangaysForMunicipality = (_municipality?: string): string[] =>
 };
 
 /**
- * Deduplicated, sorted list of all 32 barangays in Bongabong, Oriental Mindoro
+ * Deduplicated, sorted list of all 36 official barangays in Bongabong, Oriental Mindoro
  */
 export const ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS: string[] = [...BONGABONG_BARANGAYS].sort((a, b) =>
   a.localeCompare(b)

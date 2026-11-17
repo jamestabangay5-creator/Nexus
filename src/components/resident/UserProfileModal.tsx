@@ -67,8 +67,8 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
     phone: residentUser.phone,
     email: residentUser.email,
     province: residentUser.province || PROVINCE_NAME,
-    municipality: (residentUser.municipality || 'Calapan City') as OrientalMindoroMunicipality,
-    barangay: residentUser.barangay || 'Ibaba East',
+    municipality: (residentUser.municipality === 'Calapan City' ? 'Bongabong' : residentUser.municipality || 'Bongabong') as OrientalMindoroMunicipality,
+    barangay: (residentUser.barangay === 'Ibaba East' ? 'Poblacion' : residentUser.barangay || 'Poblacion'),
     address: residentUser.address,
     avatarUrl: residentUser.avatarUrl,
   });
@@ -80,8 +80,8 @@ export const UserProfileModal: React.FC<Props> = ({ isOpen, onClose, onOpenAuth 
       phone: residentUser.phone,
       email: residentUser.email,
       province: residentUser.province || PROVINCE_NAME,
-      municipality: (residentUser.municipality || 'Calapan City') as OrientalMindoroMunicipality,
-      barangay: residentUser.barangay || 'Ibaba East',
+      municipality: (residentUser.municipality === 'Calapan City' ? 'Bongabong' : residentUser.municipality || 'Bongabong') as OrientalMindoroMunicipality,
+      barangay: (residentUser.barangay === 'Ibaba East' ? 'Poblacion' : residentUser.barangay || 'Poblacion'),
       address: residentUser.address,
       avatarUrl: residentUser.avatarUrl,
     });

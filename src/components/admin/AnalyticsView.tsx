@@ -58,7 +58,7 @@ export const AnalyticsView: React.FC = () => {
       }
 
       // Municipality filter
-      if (selectedMunicipality !== 'ALL' && (rep.municipality || 'Calapan City') !== selectedMunicipality) {
+      if (selectedMunicipality !== 'ALL' && (rep.municipality || 'Bongabong') !== selectedMunicipality) {
         return false;
       }
 
@@ -415,7 +415,7 @@ export const AnalyticsView: React.FC = () => {
             onChange={(e) => setSelectedBarangay(e.target.value)}
             className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none max-w-[170px] cursor-pointer truncate"
           >
-            <option value="ALL">All 32 Bongabong Barangays</option>
+            <option value="ALL">All 36 Bongabong Barangays</option>
             {ALL_UNIQUE_ORIENTAL_MINDORO_BARANGAYS.map((brgy, idx) => (
               <option key={`an-brgy-${brgy}-${idx}`} value={brgy}>
                 {brgy}

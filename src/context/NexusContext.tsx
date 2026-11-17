@@ -18,6 +18,10 @@ import {
   SuccessModalData,
 } from '../types';
 import {
+  BONGABONG_BARANGAYS,
+  BONGABONG_BARANGAY_COORDINATES,
+} from '../constants/orientalMindoroData';
+import {
   INITIAL_INCIDENT_REPORTS,
   INCIDENT_TYPES,
   INITIAL_PATROL_UNITS,
@@ -68,6 +72,7 @@ interface IncomingAlertData {
 
 interface NexusContextType {
   reports: IncidentReport[];
+  barangays: string[];
   activeRole: 'resident' | AgencyScope;
   setActiveRole: (role: 'resident' | AgencyScope) => void;
   portalMode: PortalMode;
@@ -220,18 +225,72 @@ export const isSimulatedReport = (r: Partial<IncidentReport> | null | undefined)
   return false;
 };
 
+/**
+ * System Location Migration & Sanitization
+ * Enforces official Bongabong boundaries, corrects historical reverse-geocoding errors
+ * (e.g., Labasan incidents mapped to Anilao), and establishes standardized location fields.
+ */
+export const sanitizeAndMigrateReportLocation = (r: IncidentReport): { report: IncidentReport; changed: boolean } => {
+  let changed = false;
+  const clone: IncidentReport = { ...r };
+
+  // Rule 1: Enforce Bongabong municipality in pilot scope
+  if (!clone.municipality || clone.municipality.toLowerCase() === 'calapan city') {
+    clone.municipality = 'Bongabong';
+    changed = true;
+  }
+
+  // Rule 2: Fix historical Labasan reports that were misidentified as Anilao due to reverse-geocoding collision
+  // (e.g. NX-2026-010 where "green village" reported under Anilao was actually Labasan)
+  const locLower = (clone.locationDetails || '').toLowerCase();
+  const descLower = (clone.description || '').toLowerCase();
+  if (
+    clone.barangay === 'Anilao' &&
+    (locLower.includes('green village') || descLower.includes('green village'))
+  ) {
+    clone.barangay = 'Labasan';
+    changed = true;
+    const historyList = clone.history ? [...clone.history] : [];
+    historyList.push({
+      id: `hist-loc-mig-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      adminName: 'System Location Migration',
+      agency: 'System',
+      action: 'Barangay Correction',
+      details: 'Corrected historical barangay assignment from Anilao to citizen-confirmed Labasan (Green Village) based on official Bongabong boundary verification.',
+    });
+    clone.history = historyList;
+  }
+
+  // Rule 3: Populate completeAddress
+  const targetAddress = `${clone.locationDetails ? clone.locationDetails + ', ' : ''}Barangay ${clone.barangay}, ${clone.municipality || 'Bongabong'}, Oriental Mindoro`;
+  if (!clone.completeAddress || clone.completeAddress !== targetAddress) {
+    clone.completeAddress = targetAddress;
+    changed = true;
+  }
+
+  return { report: clone, changed };
+};
+
 export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load reports from LocalStorage - strictly purges simulated reports for real-feature testing
+  // Master barangays centralized state (defaults to official Bongabong master list, synced with Firestore)
+  const [barangays, setBarangays] = useState<string[]>([...BONGABONG_BARANGAYS]);
+
+  // Load reports from LocalStorage - strictly purges simulated reports and sanitizes location data
   const [reports, setReports] = useState<IncidentReport[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('nexus_emergency_reports_v2');
       if (saved) {
         const parsed: IncidentReport[] = JSON.parse(saved);
-        // Cleanly purge all simulated reports
+        // Cleanly purge all simulated reports and sanitize location data
         const realReports = parsed.filter((r) => !isSimulatedReport(r));
-        realReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(realReports)); } catch {}
-        return realReports;
+        const migratedReports = realReports.map((r) => {
+          const { report: cleaned } = sanitizeAndMigrateReportLocation(r);
+          return cleaned;
+        });
+        migratedReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(migratedReports)); } catch {}
+        return migratedReports;
       }
     } catch {
       // Fallback
@@ -1079,7 +1138,11 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               if (isSimulatedReport(data)) {
                 deleteDoc(docSnap.ref).catch(() => null);
               } else {
-                firestoreReports.push(data);
+                const { report: sanitized, changed } = sanitizeAndMigrateReportLocation(data);
+                if (changed && navigator.onLine) {
+                  setDoc(docSnap.ref, sanitizeForFirestore(sanitized)).catch(() => null);
+                }
+                firestoreReports.push(sanitized);
               }
             });
             // Safely merge Firestore reports with offline-first local reports so local state is never wiped
@@ -1121,6 +1184,53 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return () => unsubscribe();
     } catch (e) {
       console.warn('Firestore initialization notice:', e);
+    }
+  }, []);
+
+  // Synchronize and seed Central Master Barangays collection in Firestore
+  useEffect(() => {
+    try {
+      const colRef = collection(db, 'master_barangays');
+      const unsubscribe = onSnapshot(
+        colRef,
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list: string[] = [];
+            snapshot.forEach((docSnap) => {
+              const data = docSnap.data();
+              if (data && data.name) {
+                list.push(data.name);
+              }
+            });
+            if (list.length > 0) {
+              list.sort((a, b) => a.localeCompare(b));
+              setBarangays(list);
+            }
+          } else {
+            // Seed master_barangays collection with official 36 barangays of Bongabong
+            BONGABONG_BARANGAYS.forEach((brgy) => {
+              const coords = BONGABONG_BARANGAY_COORDINATES[brgy] || { lat: 12.7508, lng: 121.4864 };
+              const docId = brgy.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+              setDoc(doc(db, 'master_barangays', docId), {
+                id: docId,
+                name: brgy,
+                municipality: 'Bongabong',
+                province: 'Oriental Mindoro',
+                lat: coords.lat,
+                lng: coords.lng,
+                isOfficial: true,
+                updatedAt: new Date().toISOString(),
+              }).catch(() => null);
+            });
+          }
+        },
+        () => {
+          // Fallback to local official constants
+        }
+      );
+      return () => unsubscribe();
+    } catch {
+      // Offline fallback
     }
   }, []);
 
@@ -1175,10 +1285,15 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const trackingCode = `NX-${new Date().getFullYear()}-${String(reports.length + 1).padStart(3, '0')}`;
     const newId = `rep-${Date.now()}`;
 
+    const cleanMunicipality = newReportData.municipality || 'Bongabong';
+    const cleanAddress = newReportData.completeAddress || `${newReportData.locationDetails ? newReportData.locationDetails + ', ' : ''}Barangay ${newReportData.barangay}, ${cleanMunicipality}, Oriental Mindoro`;
+
     const report: IncidentReport = {
       ...newReportData,
       id: newId,
       trackingCode,
+      municipality: cleanMunicipality,
+      completeAddress: cleanAddress,
       status: 'Pending Verification',
       history: [
         {
@@ -2118,6 +2233,7 @@ export const NexusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <NexusContext.Provider
       value={{
         reports,
+        barangays,
         isOnline,
         queuedSyncCount,
         syncOfflineQueue,

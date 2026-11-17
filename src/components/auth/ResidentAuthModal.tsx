@@ -89,10 +89,10 @@ export const ResidentAuthModal: React.FC<Props> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [municipality, setMunicipality] = useState<OrientalMindoroMunicipality>('Calapan City');
+  const [municipality, setMunicipality] = useState<OrientalMindoroMunicipality>('Bongabong');
   const [barangay, setBarangay] = useState<string>(() => {
-    const list = getBarangaysForMunicipality('Calapan City');
-    return list[0] || 'Ibaba East';
+    const list = getBarangaysForMunicipality('Bongabong');
+    return list[0] || 'Poblacion';
   });
   const [address, setAddress] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string>(
@@ -181,8 +181,8 @@ export const ResidentAuthModal: React.FC<Props> = ({
         email: user.email || existingData?.email || '',
         phone: existingData?.phone || user.phoneNumber || '0917-000-0000',
         province: existingData?.province || PROVINCE_NAME,
-        municipality: existingData?.municipality || 'Calapan City',
-        barangay: existingData?.barangay || 'Ibaba East',
+        municipality: existingData?.municipality || 'Bongabong',
+        barangay: existingData?.barangay || 'Poblacion',
         address: existingData?.address || 'Poblacion',
         avatarUrl: finalAvatar,
         role: 'resident',
@@ -377,8 +377,8 @@ export const ResidentAuthModal: React.FC<Props> = ({
         email: authUser.email || cleanEmail,
         phone: docData?.phone || '0917-555-1204',
         province: docData?.province || PROVINCE_NAME,
-        municipality: docData?.municipality || 'Calapan City',
-        barangay: docData?.barangay || 'Ibaba East',
+        municipality: docData?.municipality || 'Bongabong',
+        barangay: docData?.barangay || 'Poblacion',
         address: docData?.address || 'Poblacion',
         avatarUrl: finalAvatar,
         role: 'resident',

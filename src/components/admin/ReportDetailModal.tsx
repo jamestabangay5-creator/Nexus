@@ -565,20 +565,73 @@ export const ReportDetailModal: React.FC<Props> = ({ reportId, isOpen, onClose }
             {/* Core Details Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
               <div className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3.5">
-                <div className="flex items-start gap-2.5">
-                  <div className="p-2 rounded-xl bg-red-100 text-red-600 shrink-0 mt-0.5">
-                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-bold text-slate-500 block tracking-wider">
-                      Incident Location
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-red-100 text-red-600 shrink-0">
+                        <MapPin className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider">
+                        Incident Location
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200/80 text-slate-700 font-semibold">
+                      Official Record
                     </span>
-                    <strong className="text-slate-900 block text-base font-black mt-0.5">{report.barangay}</strong>
-                    <span className="text-slate-700 leading-normal block mt-0.5 text-sm font-medium">{report.locationDetails}</span>
-                    <span className="block font-mono text-xs text-slate-500 mt-1">
-                      GPS: {report.coordinates.lat.toFixed(5)}, {report.coordinates.lng.toFixed(5)}
-                    </span>
                   </div>
+
+                  <div className="bg-white/95 p-3 rounded-xl border border-slate-200/90 shadow-2xs space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Municipality</span>
+                        <strong className="text-slate-900 text-xs sm:text-sm font-black block mt-0.5">
+                          {report.municipality || 'Bongabong'}, Oriental Mindoro
+                        </strong>
+                      </div>
+                      <div className="p-2 rounded-lg bg-blue-50/70 border border-blue-100">
+                        <span className="text-[10px] uppercase font-bold text-blue-500 block tracking-wider">Barangay</span>
+                        <strong className="text-blue-900 text-xs sm:text-sm font-black block mt-0.5">
+                          Barangay {report.barangay}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Specific Location / Landmark</span>
+                      <span className="text-slate-900 text-xs sm:text-sm font-bold block mt-0.5 leading-snug">
+                        {report.locationDetails || 'N/A'}
+                      </span>
+                    </div>
+
+                    {report.completeAddress && (
+                      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Complete Address</span>
+                        <span className="text-slate-700 text-xs font-medium block mt-0.5 leading-snug">
+                          {report.completeAddress}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">GPS Coordinates</span>
+                      <span className="font-mono text-xs text-slate-800 font-black bg-white px-2 py-0.5 rounded border border-slate-200">
+                        {report.coordinates.lat.toFixed(5)}, {report.coordinates.lng.toFixed(5)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Discrepancy Verification Alert if applicable */}
+                  {report.locationDiscrepancy?.flagged && (
+                    <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-amber-800">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span>Location Verification Advisory</span>
+                      </div>
+                      <p className="text-[11px] text-amber-700 leading-snug">
+                        Reporter confirmed <strong>Barangay {report.barangay}</strong>. GPS coordinates plot near Barangay {report.locationDiscrepancy.estimatedBarangay}. Citizen selection is authoritative.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2.5 pt-2.5 border-t border-slate-200/80">

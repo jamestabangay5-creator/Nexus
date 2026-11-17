@@ -107,7 +107,7 @@ export const ResourceEditModal: React.FC<Props> = ({
       const randomSuffix = Math.floor(100 + Math.random() * 900);
       if (agencyType === 'PNP') {
         setCallSign(`Mobile Unit Alpha-${randomSuffix}`);
-        setDivisionOrStation('Calapan City Police Station');
+        setDivisionOrStation('Bongabong Municipal Police Station');
         setSectorOrBase('Poblacion Commercial Sector');
         setStatus('On Patrol');
         setOfficerInCharge('PO3 Responding Officer');
@@ -120,7 +120,7 @@ export const ResourceEditModal: React.FC<Props> = ({
       } else if (agencyType === 'BFP') {
         setCallSign(`Engine ${randomSuffix}`);
         setSpecificType('Pumper Engine');
-        setDivisionOrStation('Calapan Central Fire Station');
+        setDivisionOrStation('Bongabong Municipal Fire Station');
         setStatus('In Station');
         setWaterLevelPercent(100);
         setOfficerInCharge('SFO1 Fire Ground Commander');
@@ -133,7 +133,7 @@ export const ResourceEditModal: React.FC<Props> = ({
       } else if (agencyType === 'MDRRMO') {
         setCallSign(`Rescue Medic-${randomSuffix}`);
         setSpecificType('Type-1 Ambulance');
-        setSectorOrBase('Calapan City DRRM Operations Base');
+        setSectorOrBase('Bongabong Operations Center MDRRMO');
         setStatus('Available');
         setOfficerInCharge('Nurse Paramedic Lead');
         setDriverName('EMS Ambulance Driver');
@@ -327,7 +327,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                     type="text"
                     value={divisionOrStation}
                     onChange={(e) => setDivisionOrStation(e.target.value)}
-                    placeholder="e.g. Calapan City Police Station"
+                    placeholder="e.g. Bongabong Municipal Police Station"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
                   />
                 </div>
@@ -403,7 +403,7 @@ export const ResourceEditModal: React.FC<Props> = ({
                     type="text"
                     value={sectorOrBase}
                     onChange={(e) => setSectorOrBase(e.target.value)}
-                    placeholder="e.g. Calapan City DRRM Operations Base"
+                    placeholder="e.g. Bongabong Operations Center MDRRMO"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-emerald-500 shadow-2xs"
                   />
                 </div>

@@ -703,7 +703,10 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
                 <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2 text-xs sm:text-sm text-slate-600">
                   <div className="flex items-center gap-1.5 truncate">
                     <MapPin className="w-4 h-4 text-red-500 shrink-0" />
-                    <span className="truncate text-slate-900 font-bold">{report.barangay}</span>
+                    <div className="truncate">
+                      <span className="truncate text-slate-900 font-extrabold block">Brgy. {report.barangay}</span>
+                      <span className="truncate text-slate-600 text-[11px] font-medium block">{report.locationDetails}</span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-1.5 justify-end">
                     <Building2 className="w-4 h-4 text-blue-600 shrink-0" />
@@ -894,12 +897,20 @@ export const ReportTable: React.FC<Props> = ({ onSelectReport }) => {
 
                       {/* Location */}
                       <td className="py-4 px-4">
-                        <span className="font-bold text-slate-900 block text-xs sm:text-sm">
-                          {report.barangay}
+                        <span className="font-extrabold text-blue-900 block text-xs sm:text-sm">
+                          Barangay {report.barangay}
                         </span>
-                        <span className="text-xs text-slate-600 truncate block max-w-[220px] font-medium">
+                        <span className="text-xs text-slate-700 truncate block max-w-[220px] font-medium" title={report.locationDetails}>
                           {report.locationDetails}
                         </span>
+                        <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
+                          {report.municipality || 'Bongabong'}
+                        </span>
+                        {report.locationDiscrepancy?.flagged && (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200 mt-0.5" title="Location Advisory: Reporter confirmed selection preserved">
+                            Advisory: GPS near {report.locationDiscrepancy.estimatedBarangay}
+                          </span>
+                        )}
                       </td>
 
                       {/* Selected Agency */}

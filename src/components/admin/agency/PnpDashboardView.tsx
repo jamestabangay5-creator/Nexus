@@ -253,7 +253,7 @@ export const PnpDashboardView: React.FC<Props> = ({ onSelectReport, onRequestAss
                       <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
                         <span className="flex items-center gap-1 text-slate-600 truncate max-w-[220px]">
                           <MapPin className="w-3 h-3 text-red-500 shrink-0" />
-                          {report.barangay}, {report.municipality || 'Calapan City'}
+                          Brgy. ${report.barangay}, ${report.municipality || 'Bongabong'}
                         </span>
                         <div className="flex items-center gap-2">
                           <button

@@ -247,7 +247,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
       if (selectedCategory !== 'ALL' && r.category !== selectedCategory) return false;
 
       // Oriental Mindoro Municipality filter
-      if (selectedMunicipality !== 'ALL' && (r.municipality || 'Calapan City') !== selectedMunicipality) return false;
+      if (selectedMunicipality !== 'ALL' && (r.municipality || 'Bongabong') !== selectedMunicipality) return false;
 
       // Barangay filter
       if (selectedBarangay !== 'ALL' && r.barangay !== selectedBarangay) return false;
@@ -747,9 +747,11 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                 </div>`
               : ''
           }
-          <p style="font-size: 11px; color: #cbd5e1; margin: 4px 0; display: flex; align-items: center; gap: 4px;">
-            <span>📍</span> <span>${report.barangay}, ${report.municipality || 'Calapan City'}</span>
-          </p>
+          <div style="font-size: 11px; color: #cbd5e1; margin: 4px 0; display: flex; flex-direction: column; gap: 2px;">
+            <span>📍 <strong style="color: #ffffff;">Barangay ${report.barangay}</strong></span>
+            <span style="color: #94a3b8; font-size: 10.5px;">${report.locationDetails || ''}</span>
+            <span style="color: #64748b; font-size: 9.5px;">${report.municipality || 'Bongabong'}, Oriental Mindoro</span>
+          </div>
           <div style="font-size: 10px; color: #94a3b8; margin-bottom: 8px; line-height: 1.4;">
             🕒 ${new Date(report.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Agency: <strong style="color: #e2e8f0;">${report.selectedAgency}</strong>
           </div>
@@ -973,7 +975,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
     const matching = scopedReports.filter((r) => {
       if (!includeRejected && r.status === 'Rejected') return false;
       if (targetCategory !== 'ALL' && r.category !== targetCategory) return false;
-      if (selectedMunicipality !== 'ALL' && (r.municipality || 'Calapan City') !== selectedMunicipality) return false;
+      if (selectedMunicipality !== 'ALL' && (r.municipality || 'Bongabong') !== selectedMunicipality) return false;
       if (selectedBarangay !== 'ALL' && r.barangay !== selectedBarangay) return false;
       if (selectedStatus !== 'ALL' && r.status !== selectedStatus) return false;
       if (dateFilter !== 'ALL') {
@@ -1273,7 +1275,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
               onChange={(e) => setSelectedBarangay(e.target.value)}
               className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:outline-none font-semibold cursor-pointer max-w-[170px] truncate"
             >
-              <option value="ALL">All 32 Bongabong Barangays</option>
+              <option value="ALL">All 36 Bongabong Barangays</option>
               {getAllBarangaysForFilter('Bongabong').map((brgy, idx) => (
                 <option key={`map-brgy-bongabong-${brgy}-${idx}`} value={brgy}>
                   {brgy}
@@ -1858,11 +1860,12 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                   <div className="space-y-2.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
                     <div className="flex items-start gap-2">
                       <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                      <div>
-                        <strong className="text-slate-900 block">{selectedReport.barangay}, {selectedReport.municipality || 'Calapan City'}</strong>
-                        <span className="text-slate-500">{selectedReport.locationDetails}</span>
+                      <div className="space-y-0.5">
+                        <strong className="text-slate-900 block font-black">Barangay {selectedReport.barangay}</strong>
+                        <span className="text-slate-700 block font-medium">{selectedReport.locationDetails}</span>
+                        <span className="text-slate-500 block text-[11px]">{selectedReport.municipality || 'Bongabong'}, Oriental Mindoro</span>
                         <span className="block font-mono text-[10px] text-slate-400 mt-0.5">
-                          GPS: {selectedReport.coordinates.lat.toFixed(4)}, {selectedReport.coordinates.lng.toFixed(4)} · Oriental Mindoro
+                          GPS: {selectedReport.coordinates.lat.toFixed(5)}, {selectedReport.coordinates.lng.toFixed(5)}
                         </span>
                       </div>
                     </div>
@@ -2059,7 +2062,7 @@ export const IncidentMapView: React.FC<Props> = ({ onSelectReport, standalone = 
                         {language === 'fil' ? def?.fil : def?.en}
                       </h4>
                       <p className="text-[10px] text-slate-500 truncate">
-                        {item.barangay}, {item.municipality || 'Calapan City'}
+                        Brgy. {item.barangay}, {item.municipality || 'Bongabong'}
                       </p>
                     </div>
                   </button>

@@ -315,8 +315,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
             lat: detectedLat,
             lng: detectedLng,
           });
-          const autoBrgy = getBarangayFromCoordinates(detectedLat, detectedLng);
-          setBarangay(autoBrgy);
+          // CRITICAL DATA INTEGRITY: Do NOT overwrite citizen's selected barangay with GPS calculation!
+          // Citizen's explicit selection remains authoritative.
           setIsLocating(false);
           setLocationSuccess(true);
           setIsLocationPinned(true);
@@ -328,8 +328,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
           const offsetLat = Number((center.lat + (Math.random() - 0.5) * 0.008).toFixed(5));
           const offsetLng = Number((center.lng + (Math.random() - 0.5) * 0.008).toFixed(5));
           setCoords({ lat: offsetLat, lng: offsetLng });
-          const autoBrgy = getBarangayFromCoordinates(offsetLat, offsetLng);
-          setBarangay(autoBrgy);
+          // Citizen's explicit selection remains authoritative.
           setIsLocating(false);
           setLocationSuccess(true);
           setIsLocationPinned(true);
@@ -377,7 +376,21 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
     }
 
     const typeDef = INCIDENT_TYPES.find((t) => t.id === selectedIncidentType)!;
-    const autoDescription = `${typeDef.en} (${typeDef.fil}) incident reported at ${locationDetails ? locationDetails + ', ' : ''}Barangay ${barangay}, Bongabong, Oriental Mindoro.`;
+    const cleanSpecificLocation = locationDetails.trim() || `Barangay ${barangay}, Bongabong`;
+    const completeAddress = `${cleanSpecificLocation}, Barangay ${barangay}, Bongabong, Oriental Mindoro`;
+    const autoDescription = `${typeDef.en} (${typeDef.fil}) incident reported at ${completeAddress}.`;
+
+    // Flag any GPS/barangay discrepancy for verification without overriding citizen selection
+    const estimatedBrgy = getBarangayFromCoordinates(coords.lat, coords.lng);
+    const hasDiscrepancy = estimatedBrgy !== barangay;
+    const locationDiscrepancy = {
+      flagged: hasDiscrepancy,
+      selectedBarangay: barangay,
+      estimatedBarangay: estimatedBrgy,
+      note: hasDiscrepancy
+        ? `Reporter confirmed Barangay ${barangay}. Recorded GPS coordinates plot nearest to Barangay ${estimatedBrgy}. Reporter selection preserved as authoritative.`
+        : undefined,
+    };
 
     const newReport = submitIncidentReport({
       residentId: residentUser.id,
@@ -390,7 +403,9 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
       province: PROVINCE_NAME,
       municipality: 'Bongabong',
       barangay,
-      locationDetails: locationDetails || `Barangay ${barangay}, Bongabong`,
+      locationDetails: cleanSpecificLocation,
+      completeAddress,
+      locationDiscrepancy,
       coordinates: coords,
       description: autoDescription,
       photoUrl: photoUrl || undefined,
@@ -458,7 +473,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
               {residentUser.name}
             </h1>
             <p className="text-sm text-slate-600 font-medium mt-0.5">
-              📍 {residentUser.barangay}, {residentUser.municipality || 'Calapan City'}, Oriental Mindoro · <span className="font-mono text-slate-700 font-semibold">{residentUser.phone}</span>
+              📍 {residentUser.barangay}, {residentUser.municipality || 'Bongabong'}, Oriental Mindoro · <span className="font-mono text-slate-700 font-semibold">{residentUser.phone}</span>
             </p>
           </div>
         </div>
@@ -967,7 +982,7 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <MapPin className="w-4 h-4 text-red-600" />
-                        <span>Barangay (32 Official Barangays in Bongabong) <span className="text-red-500">*</span></span>
+                        <span>Barangay (36 Official Barangays in Bongabong) <span className="text-red-500">*</span></span>
                       </span>
                     </label>
                     <select
@@ -1386,11 +1401,14 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                               </span>
                             </td>
                             <td className="py-4 px-4">
-                              <span className="font-bold text-slate-900 block">
-                                {report.barangay}, {report.municipality || 'Calapan City'}
+                              <span className="font-extrabold text-blue-900 block">
+                                Barangay {report.barangay}
                               </span>
-                              <span className="text-slate-500 text-xs line-clamp-1">
+                              <span className="text-slate-700 text-xs line-clamp-1 font-medium">
                                 {report.locationDetails}
+                              </span>
+                              <span className="text-slate-400 text-[10px] block">
+                                {report.municipality || 'Bongabong'}, Oriental Mindoro
                               </span>
                             </td>
                             <td className="py-4 px-4 font-mono font-bold text-slate-700">
@@ -1588,8 +1606,9 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                         <div className="flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
                           <div>
-                            <strong className="text-slate-900 block font-bold">{report.barangay}, {report.municipality || 'Calapan City'}</strong>
-                            <span className="text-slate-700">{report.locationDetails}</span>
+                            <strong className="text-slate-900 block font-black">Barangay {report.barangay}</strong>
+                            <span className="text-slate-700 block font-medium">{report.locationDetails}</span>
+                            <span className="text-slate-400 block text-[11px]">{report.municipality || 'Bongabong'}, Oriental Mindoro</span>
                           </div>
                         </div>
 

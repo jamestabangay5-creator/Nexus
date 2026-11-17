@@ -417,7 +417,7 @@ export const PnpUserManagementView: React.FC = () => {
             onChange={(e) => setBarangayFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer max-w-[180px] truncate"
           >
-            <option value="ALL">All 32 Bongabong Barangays</option>
+            <option value="ALL">All 36 Bongabong Barangays</option>
             {BONGABONG_BARANGAYS.map((brgy) => (
               <option key={`pnp-usr-brgy-${brgy}`} value={brgy}>
                 {brgy}

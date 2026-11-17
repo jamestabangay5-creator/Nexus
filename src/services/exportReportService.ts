@@ -503,8 +503,10 @@ export const exportReportToPdf = async (options: ExportReportOptions): Promise<v
                           <strong>${formatDateTime(rep.dateTime)}</strong>
                         </td>
                         <td>
-                          <strong>${rep.barangay}</strong>, ${rep.municipality || 'Bongabong'}
-                          <div style="font-size: 8.5px; color: #64748b;">${rep.locationDetails || ''}</div>
+                          <div style="font-weight: 800; color: #1e3a8a;">Barangay ${rep.barangay}</div>
+                          <div style="font-size: 8.5px; color: #334155; margin-top: 1px;">${rep.locationDetails || ''}</div>
+                          <div style="font-size: 8px; color: #64748b;">${rep.municipality || 'Bongabong'}, Oriental Mindoro</div>
+                          <div style="font-size: 7.5px; font-family: monospace; color: #94a3b8; margin-top: 2px;">GPS: ${rep.coordinates?.lat?.toFixed(5) || ''}, ${rep.coordinates?.lng?.toFixed(5) || ''}</div>
                         </td>
                         <td>
                           <strong>${reporter.name}</strong>
@@ -641,20 +643,23 @@ export const exportReportToExcel = async (options: ExportReportOptions): Promise
           <td colspan="2" class="meta-cell"><b>Total Records:</b> ${reports.length}</td>
         </tr>
         <tr>
-          <td colspan="10" style="background-color: #f1f5f9; font-size: 9pt; padding: 4px;">
+          <td colspan="12" style="background-color: #f1f5f9; font-size: 9pt; padding: 4px;">
             <b>Summary KPIs:</b> Total: ${reports.length} | Pending: ${pendingCount} | Ongoing/Accepted: ${ongoingCount} | Resolved: ${resolvedCount}
           </td>
         </tr>
-        <tr><td colspan="10"></td></tr>
+        <tr><td colspan="12"></td></tr>
         <tr>
           <th class="th-cell">Tracking Code</th>
           <th class="th-cell">Category</th>
           <th class="th-cell">Incident Type</th>
           <th class="th-cell">Date & Time</th>
           <th class="th-cell">Barangay</th>
+          <th class="th-cell">Specific Location</th>
           <th class="th-cell">Municipality</th>
+          <th class="th-cell">GPS Coordinates</th>
           <th class="th-cell">Reporting Citizen</th>
           <th class="th-cell">Citizen Contact</th>
+          <th class="th-cell">Assigned Agency</th>
           <th class="th-cell">Status</th>
           <th class="th-cell">Incident Details</th>
         </tr>
@@ -668,23 +673,26 @@ export const exportReportToExcel = async (options: ExportReportOptions): Promise
                 <td class="td-cell"><b>${rep.category}</b></td>
                 <td class="td-cell">${typeDef?.en || rep.verifiedTypeId || rep.initialTypeId}</td>
                 <td class="td-cell">${formatDateTime(rep.dateTime)}</td>
-                <td class="td-cell">${rep.barangay}</td>
+                <td class="td-cell"><b>Barangay ${rep.barangay}</b></td>
+                <td class="td-cell">${rep.locationDetails || ''}</td>
                 <td class="td-cell">${rep.municipality || 'Bongabong'}</td>
+                <td class="td-cell">${rep.coordinates?.lat?.toFixed(5) || ''}, ${rep.coordinates?.lng?.toFixed(5) || ''}</td>
                 <td class="td-cell">${reporter.name}</td>
                 <td class="td-cell">${reporter.phone}</td>
+                <td class="td-cell"><b>${rep.selectedAgency}</b></td>
                 <td class="td-cell"><b>${rep.status}</b></td>
                 <td class="td-cell">${rep.description}</td>
               </tr>
             `;
           })
           .join('')}
-        <tr><td colspan="10"></td></tr>
+        <tr><td colspan="12"></td></tr>
         <tr>
-          <td colspan="4" style="font-size: 9pt; border-top: 1px solid #000; text-align: center;">
+          <td colspan="5" style="font-size: 9pt; border-top: 1px solid #000; text-align: center;">
             <b>${officerName || 'Duty Dispatch Officer'}</b><br/>Prepared by: ${header.dutyRoleTitle}
           </td>
           <td colspan="2"></td>
-          <td colspan="4" style="font-size: 9pt; border-top: 1px solid #000; text-align: center;">
+          <td colspan="5" style="font-size: 9pt; border-top: 1px solid #000; text-align: center;">
             <b>Commanding Officer</b><br/>Approved by: ${header.certifyingOfficerTitle}
           </td>
         </tr>
@@ -794,7 +802,12 @@ export const exportReportToWord = async (options: ExportReportOptions): Promise<
                     <td class="code">${rep.trackingCode}</td>
                     <td><b>[${rep.category}]</b> ${typeDef?.en || rep.verifiedTypeId || rep.initialTypeId}</td>
                     <td>${formatDateTime(rep.dateTime)}</td>
-                    <td><b>${rep.barangay}</b>, ${rep.municipality || 'Bongabong'}</td>
+                    <td>
+                      <b>Barangay ${rep.barangay}</b><br/>
+                      <span style="font-size: 8pt; color: #334155;">${rep.locationDetails || ''}</span><br/>
+                      <span style="font-size: 7.5pt; color: #64748b;">${rep.municipality || 'Bongabong'}, Oriental Mindoro</span><br/>
+                      <span style="font-size: 7pt; font-family: monospace; color: #94a3b8;">GPS: ${rep.coordinates?.lat?.toFixed(5) || ''}, ${rep.coordinates?.lng?.toFixed(5) || ''}</span>
+                    </td>
                     <td>${reporter.name} (${reporter.phone})</td>
                     <td style="text-align: center;"><b>${rep.selectedAgency}</b></td>
                     <td><b>${rep.status}</b></td>
@@ -867,8 +880,11 @@ export const exportReportToCsv = (options: ExportReportOptions): void => {
     'Incident Type',
     'Date & Time',
     'Barangay',
+    'Specific Location',
     'Municipality',
-    'Location Details',
+    'Complete Address',
+    'GPS Latitude',
+    'GPS Longitude',
     'Citizen Name',
     'Contact Number',
     'Assigned Agency',
@@ -881,14 +897,18 @@ export const exportReportToCsv = (options: ExportReportOptions): void => {
   reports.forEach((r) => {
     const typeDef = INCIDENT_TYPES.find((t) => t.id === (r.verifiedTypeId || r.initialTypeId));
     const reporter = getMaskedReporterData(r, options);
+    const completeAddr = r.completeAddress || `${r.locationDetails ? r.locationDetails + ', ' : ''}Barangay ${r.barangay}, ${r.municipality || 'Bongabong'}, Oriental Mindoro`;
     lines.push([
       r.trackingCode,
       r.category,
       typeDef?.en || r.verifiedTypeId || r.initialTypeId,
       formatDateTime(r.dateTime),
-      r.barangay,
-      r.municipality || 'Bongabong',
+      `Barangay ${r.barangay}`,
       (r.locationDetails || '').replace(/"/g, '""'),
+      r.municipality || 'Bongabong',
+      completeAddr.replace(/"/g, '""'),
+      r.coordinates?.lat?.toFixed(5) || '',
+      r.coordinates?.lng?.toFixed(5) || '',
       reporter.name,
       reporter.phone,
       r.selectedAgency,
