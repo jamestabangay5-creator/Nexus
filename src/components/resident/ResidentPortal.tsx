@@ -1182,26 +1182,18 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     </div>
                   )}
 
-                  {/* Discrepancy warning banner if pinned location is far from selected barangay */}
+                  {/* Reminder banner if pinned location differs from selected barangay */}
                   {isPinInDifferentBarangay && (
-                    <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                        <div>
-                          <span className="font-bold block">Barangay Location Notice:</span>
-                          <span className="text-amber-800 text-[11px] leading-snug">
-                            Current pin is near <strong>Barangay {estimatedFromCoords}</strong> (likely due to device cellular tower drift), but your report is for <strong>Barangay {barangay}</strong>. Click below to snap pin directly into Barangay {barangay}.
-                          </span>
-                        </div>
+                    <div className="p-3.5 bg-amber-50/90 border border-amber-300/90 rounded-xl text-xs text-amber-950 flex items-start gap-2.5 shadow-xs">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <span className="font-bold text-amber-950 text-xs sm:text-sm block">
+                          Please Double-Check Your Location on the Map:
+                        </span>
+                        <p className="text-amber-900 text-xs leading-relaxed">
+                          Please verify your actual position on the map below. Your pin currently appears near <strong>Barangay {estimatedFromCoords}</strong> while your selected incident location is <strong>Barangay {barangay}</strong> (likely due to device cellular tower drift). You can drag the marker on the map to place it directly on your exact building or street.
+                        </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleAlignToBarangay}
-                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shrink-0 shadow-xs transition cursor-pointer flex items-center gap-1.5"
-                      >
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span>Snap to Brgy. {barangay}</span>
-                      </button>
                     </div>
                   )}
 
