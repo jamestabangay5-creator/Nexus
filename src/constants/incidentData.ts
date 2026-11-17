@@ -404,7 +404,7 @@ export const CATEGORY_INFO: Record<string, { labelEn: string; labelFil: string; 
   },
 };
 
-export {
+import {
   PROVINCE_NAME,
   ORIENTAL_MINDORO_MUNICIPALITIES,
   BONGABONG_BARANGAYS,
@@ -412,6 +412,15 @@ export {
   getBarangaysForMunicipality,
   MUNICIPALITY_COORDINATES,
 } from './orientalMindoroData';
+
+export {
+  PROVINCE_NAME,
+  ORIENTAL_MINDORO_MUNICIPALITIES,
+  BONGABONG_BARANGAYS,
+  ORIENTAL_MINDORO_BARANGAYS,
+  getBarangaysForMunicipality,
+  MUNICIPALITY_COORDINATES,
+};
 
 // Default official barangay list for Bongabong, Oriental Mindoro
 export const BARANGAYS = BONGABONG_BARANGAYS;
