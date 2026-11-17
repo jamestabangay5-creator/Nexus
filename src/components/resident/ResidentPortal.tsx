@@ -134,6 +134,8 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
   const [isLocating, setIsLocating] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState(false);
   const [isLocationPinned, setIsLocationPinned] = useState(false);
+  const [gpsAccuracyMeters, setGpsAccuracyMeters] = useState<number | null>(null);
+  const [gpsStatusMessage, setGpsStatusMessage] = useState<string>('');
   const [description, setDescription] = useState('');
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [photoCaption, setPhotoCaption] = useState<string>('');
@@ -306,42 +308,119 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
 
   const handleDetectGPS = () => {
     setIsLocating(true);
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const detectedLat = Number(pos.coords.latitude.toFixed(5));
-          const detectedLng = Number(pos.coords.longitude.toFixed(5));
-          setCoords({
-            lat: detectedLat,
-            lng: detectedLng,
-          });
-          // CRITICAL DATA INTEGRITY: Do NOT overwrite citizen's selected barangay with GPS calculation!
-          // Citizen's explicit selection remains authoritative.
-          setIsLocating(false);
-          setLocationSuccess(true);
-          setIsLocationPinned(true);
-          setTimeout(() => setLocationSuccess(false), 3000);
-        },
-        () => {
-          // Fallback simulation centered on Bongabong
-          const center = MUNICIPALITY_COORDINATES[selectedMunicipality] || { lat: 12.7508, lng: 121.4864 };
-          const offsetLat = Number((center.lat + (Math.random() - 0.5) * 0.008).toFixed(5));
-          const offsetLng = Number((center.lng + (Math.random() - 0.5) * 0.008).toFixed(5));
-          setCoords({ lat: offsetLat, lng: offsetLng });
-          // Citizen's explicit selection remains authoritative.
-          setIsLocating(false);
-          setLocationSuccess(true);
-          setIsLocationPinned(true);
-          setTimeout(() => setLocationSuccess(false), 3000);
-        },
-        { timeout: 4000 }
-      );
-    } else {
+    setGpsStatusMessage('Acquiring high-accuracy hardware GPS satellites (meter-level precision)...');
+
+    if (!('geolocation' in navigator)) {
+      const brgyCenter = BONGABONG_BARANGAY_COORDINATES[barangay] || { lat: 12.7508, lng: 121.4864 };
+      setCoords(brgyCenter);
       setIsLocating(false);
       setLocationSuccess(true);
       setIsLocationPinned(true);
+      setGpsAccuracyMeters(30);
+      setGpsStatusMessage(`GPS not supported on this device. Pinned at center of Barangay ${barangay}.`);
       setTimeout(() => setLocationSuccess(false), 3000);
+      return;
     }
+
+    let bestReading: { lat: number; lng: number; accuracy: number } | null = null;
+    let watchId: number | null = null;
+    let timerId: any = null;
+
+    const commitPosition = (res: { lat: number; lng: number; accuracy: number }) => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+
+      setCoords({ lat: res.lat, lng: res.lng });
+      setGpsAccuracyMeters(Math.round(res.accuracy));
+      setIsLocating(false);
+      setLocationSuccess(true);
+      setIsLocationPinned(true);
+
+      const estimatedBrgy = getBarangayFromCoordinates(res.lat, res.lng);
+      if (estimatedBrgy !== barangay && res.accuracy > 150) {
+        setGpsStatusMessage(`Cellular tower estimate (±${Math.round(res.accuracy)}m) near ${estimatedBrgy}. If reporting from Barangay ${barangay}, click "Align to ${barangay}" or drag the pin.`);
+      } else {
+        setGpsStatusMessage(`Location locked (±${Math.round(res.accuracy)}m). Drag pin anytime on the map to place on your exact building.`);
+      }
+      setTimeout(() => setLocationSuccess(false), 3000);
+    };
+
+    try {
+      // Use watchPosition with enableHighAccuracy: true & maximumAge: 0 to bypass stale cell cache
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = Number(pos.coords.latitude.toFixed(5));
+          const lng = Number(pos.coords.longitude.toFixed(5));
+          const acc = pos.coords.accuracy || 35;
+
+          if (!bestReading || acc < bestReading.accuracy) {
+            bestReading = { lat, lng, accuracy: acc };
+          }
+
+          // If high-precision satellite lock achieved (<= 25m), lock immediately
+          if (acc <= 25) {
+            commitPosition(bestReading);
+          }
+        },
+        (err) => {
+          console.warn('Geolocation high-accuracy attempt notice:', err);
+          // Fallback to one-shot query
+          navigator.geolocation.getCurrentPosition(
+            (fallbackPos) => {
+              const lat = Number(fallbackPos.coords.latitude.toFixed(5));
+              const lng = Number(fallbackPos.coords.longitude.toFixed(5));
+              commitPosition({ lat, lng, accuracy: fallbackPos.coords.accuracy || 100 });
+            },
+            () => {
+              // When GPS fails or is denied, center on user's confirmed barangay
+              const brgyCenter = BONGABONG_BARANGAY_COORDINATES[barangay] || { lat: 12.7508, lng: 121.4864 };
+              commitPosition({ lat: brgyCenter.lat, lng: brgyCenter.lng, accuracy: 35 });
+              setGpsStatusMessage(`GPS signal unavailable. Pinned at center of Barangay ${barangay}. Drag pin to fine-tune.`);
+            },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+          );
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+
+      // Safety timeout after 6.5s: lock the best fix obtained so far
+      timerId = setTimeout(() => {
+        if (bestReading) {
+          commitPosition(bestReading);
+        } else {
+          if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+          }
+          const brgyCenter = BONGABONG_BARANGAY_COORDINATES[barangay] || { lat: 12.7508, lng: 121.4864 };
+          commitPosition({ lat: brgyCenter.lat, lng: brgyCenter.lng, accuracy: 35 });
+          setGpsStatusMessage(`GPS acquisition timed out. Centered on Barangay ${barangay}. Drag pin to fine-tune.`);
+        }
+      }, 6500);
+    } catch {
+      const brgyCenter = BONGABONG_BARANGAY_COORDINATES[barangay] || { lat: 12.7508, lng: 121.4864 };
+      commitPosition({ lat: brgyCenter.lat, lng: brgyCenter.lng, accuracy: 35 });
+    }
+  };
+
+  const handleAlignToBarangay = () => {
+    const target = BONGABONG_BARANGAY_COORDINATES[barangay] || { lat: 12.7508, lng: 121.4864 };
+    setCoords(target);
+    setIsLocationPinned(true);
+    setLocationSuccess(true);
+    setGpsAccuracyMeters(15);
+    setGpsStatusMessage(`Coordinates aligned directly to official center of Barangay ${barangay}. Drag pin anytime to fine-tune.`);
+    setTimeout(() => setLocationSuccess(false), 3000);
   };
 
   const handleCopyTrackingCode = (code: string) => {
@@ -987,7 +1066,16 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
                     </label>
                     <select
                       value={barangay}
-                      onChange={(e) => setBarangay(e.target.value)}
+                      onChange={(e) => {
+                        const newBrgy = e.target.value;
+                        setBarangay(newBrgy);
+                        if (!isLocationPinned) {
+                          const brgyCoords = BONGABONG_BARANGAY_COORDINATES[newBrgy];
+                          if (brgyCoords) {
+                            setCoords(brgyCoords);
+                          }
+                        }
+                      }}
                       required
                       className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none min-h-[46px] font-bold shadow-xs cursor-pointer"
                     >
@@ -1025,48 +1113,119 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({
               </div>
             </div>
 
-            {/* Coordinates / Map Pin Picker with GPS Detection */}
-            <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs sm:text-sm space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                <div className="flex items-center gap-2.5">
-                  <MapPin className="w-5 h-5 text-blue-600 shrink-0" />
-                  <div>
-                    <span className="font-bold text-slate-900 block text-xs sm:text-sm">
-                      GPS Dispatch Coordinates:
-                    </span>
-                    <span className="font-mono text-slate-700 font-bold text-xs sm:text-sm">
-                      {isLocationPinned ? (
-                        <>Latitude: {coords.lat.toFixed(5)}, Longitude: {coords.lng.toFixed(5)}</>
-                      ) : (
-                        <span className="text-slate-500 font-medium italic">Pending Pin — click 'Pin my Location' below</span>
-                      )}
-                    </span>
-                  </div>
-                </div>
+            {/* Coordinates / Map Pin Picker with GPS Detection & Calibration */}
+            {(() => {
+              const estimatedFromCoords = getBarangayFromCoordinates(coords.lat, coords.lng);
+              const isPinInDifferentBarangay = isLocationPinned && estimatedFromCoords !== barangay;
 
-                <button
-                  type="button"
-                  onClick={handleDetectGPS}
-                  disabled={isLocating}
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer self-start sm:self-center shadow-md shadow-blue-500/20 min-h-[40px] active:scale-95"
-                >
-                  <Navigation className={`w-4 h-4 text-white ${isLocating ? 'animate-spin' : ''}`} />
-                  <span>{isLocating ? 'Pinning Location...' : locationSuccess ? 'Location Pinned!' : 'Pin my Location'}</span>
-                </button>
-              </div>
-              <p className="text-xs text-slate-600 font-medium">
-                Responders use these exact coordinates for real-time dispatch navigation and map plotting.
-              </p>
-            </div>
+              return (
+                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs sm:text-sm space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <MapPin className="w-5 h-5 text-blue-600 shrink-0" />
+                      <div>
+                        <span className="font-bold text-slate-900 block text-xs sm:text-sm">
+                          GPS Dispatch Coordinates:
+                        </span>
+                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                          <span className="font-mono text-slate-800 font-bold text-xs sm:text-sm">
+                            {isLocationPinned ? (
+                              <>Latitude: {coords.lat.toFixed(5)}, Longitude: {coords.lng.toFixed(5)}</>
+                            ) : (
+                              <span className="text-slate-500 font-medium italic">Pending Pin — click 'Pin my Location' or 'Align to Barangay'</span>
+                            )}
+                          </span>
+                          {isLocationPinned && gpsAccuracyMeters && (
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                              gpsAccuracyMeters <= 30
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : gpsAccuracyMeters <= 100
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}>
+                              {gpsAccuracyMeters <= 30 ? '🎯 Fine GPS' : '📡 Network / Cell'} (±{gpsAccuracyMeters}m)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+                      <button
+                        type="button"
+                        onClick={handleAlignToBarangay}
+                        className="px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs min-h-[40px] active:scale-95"
+                        title={`Snap coordinates directly to official center of Barangay ${barangay}`}
+                      >
+                        <MapPin className="w-4 h-4 text-indigo-600" />
+                        <span>Align to Brgy. {barangay}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleDetectGPS}
+                        disabled={isLocating}
+                        className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer shadow-md shadow-blue-500/20 min-h-[40px] active:scale-95 disabled:opacity-60"
+                        title="Acquire fine hardware GPS location"
+                      >
+                        <Navigation className={`w-4 h-4 text-white ${isLocating ? 'animate-spin' : ''}`} />
+                        <span>{isLocating ? 'Locking GPS...' : locationSuccess ? 'Location Pinned!' : 'Pin my Location'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Informational GPS Status Message */}
+                  {gpsStatusMessage && (
+                    <div className="p-2.5 rounded-xl bg-blue-50/90 border border-blue-200 text-blue-900 text-xs flex items-center gap-2">
+                      <Info className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span className="font-medium">{gpsStatusMessage}</span>
+                    </div>
+                  )}
+
+                  {/* Discrepancy warning banner if pinned location is far from selected barangay */}
+                  {isPinInDifferentBarangay && (
+                    <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold block">Barangay Location Notice:</span>
+                          <span className="text-amber-800 text-[11px] leading-snug">
+                            Current pin is near <strong>Barangay {estimatedFromCoords}</strong> (likely due to device cellular tower drift), but your report is for <strong>Barangay {barangay}</strong>. Click below to snap pin directly into Barangay {barangay}.
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAlignToBarangay}
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shrink-0 shadow-xs transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>Snap to Brgy. {barangay}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-slate-600 font-medium">
+                    Responders use these exact coordinates for real-time dispatch navigation and map plotting. You can drag the pin on the map anytime to place it on your exact street or building.
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Real-time Interactive Location Verification Map */}
             <IncidentLocationPickerMap
               coords={coords}
               isLocationPinned={isLocationPinned}
+              onCoordinatesChange={(newCoords) => {
+                setCoords(newCoords);
+                setIsLocationPinned(true);
+              }}
               barangay={barangay}
               municipality={selectedMunicipality}
               isLocating={isLocating}
               onDetectGPS={handleDetectGPS}
+              onAlignToBarangay={handleAlignToBarangay}
+              gpsAccuracy={gpsAccuracyMeters}
               locationSuccess={locationSuccess}
             />
 

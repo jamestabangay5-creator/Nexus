@@ -17,6 +17,8 @@ interface IncidentLocationPickerMapProps {
   municipality?: string;
   isLocating?: boolean;
   onDetectGPS?: () => void;
+  onAlignToBarangay?: () => void;
+  gpsAccuracy?: number | null;
   locationSuccess?: boolean;
 }
 
@@ -28,6 +30,8 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
   municipality = 'Bongabong',
   isLocating = false,
   onDetectGPS,
+  onAlignToBarangay,
+  gpsAccuracy = null,
   locationSuccess = false,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -100,13 +104,24 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     // Only add dispatch pin marker if location has been pinned
     if (isLocationPinned) {
       const marker = L.marker([coords.lat, coords.lng], {
-        draggable: false,
+        draggable: true,
         icon: createPickerPinIcon(),
-        title: 'Emergency Dispatch Location (Pinned via Pin my Location)',
+        title: 'Emergency Dispatch Location (Drag pin to fine-tune exact building/street)',
       }).addTo(map);
 
+      marker.on('dragend', (e: any) => {
+        const pos = e.target.getLatLng();
+        const newLat = Number(pos.lat.toFixed(5));
+        const newLng = Number(pos.lng.toFixed(5));
+        onCoordinatesChange?.({ lat: newLat, lng: newLng });
+        if (circleRef.current) {
+          circleRef.current.setLatLng([newLat, newLng]);
+        }
+      });
+
+      const initialRadius = Math.min(Math.max(gpsAccuracy || 25, 15), 350);
       const circle = L.circle([coords.lat, coords.lng], {
-        radius: 30,
+        radius: initialRadius,
         color: '#3b82f6',
         fillColor: '#60a5fa',
         fillOpacity: 0.18,
@@ -117,7 +132,8 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
       marker.bindPopup(`
         <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px;">
           <strong style="color: #1e3a8a; display: block; margin-bottom: 2px;">📍 Verified Dispatch Location</strong>
-          <span style="color: #475569;">Pinned via 'Pin my Location'.</span>
+          <span style="color: #475569; display: block;">Barangay ${barangay}, Bongabong</span>
+          <span style="color: #2563eb; font-weight: 700; font-size: 11px; display: block; margin-top: 3px;">🖐️ Drag pin to place on your exact building/street</span>
         </div>
       `);
 
@@ -214,13 +230,24 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
     if (isLocationPinned) {
       if (!markerRef.current) {
         const marker = L.marker([coords.lat, coords.lng], {
-          draggable: false,
+          draggable: true,
           icon: createPickerPinIcon(),
-          title: 'Emergency Dispatch Location (Pinned via Pin my Location)',
+          title: 'Emergency Dispatch Location (Drag pin to fine-tune exact building/street)',
         }).addTo(map);
 
+        marker.on('dragend', (e: any) => {
+          const pos = e.target.getLatLng();
+          const newLat = Number(pos.lat.toFixed(5));
+          const newLng = Number(pos.lng.toFixed(5));
+          onCoordinatesChange?.({ lat: newLat, lng: newLng });
+          if (circleRef.current) {
+            circleRef.current.setLatLng([newLat, newLng]);
+          }
+        });
+
+        const initialRadius = Math.min(Math.max(gpsAccuracy || 25, 15), 350);
         const circle = L.circle([coords.lat, coords.lng], {
-          radius: 30,
+          radius: initialRadius,
           color: '#3b82f6',
           fillColor: '#60a5fa',
           fillOpacity: 0.18,
@@ -231,7 +258,8 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
         marker.bindPopup(`
           <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px;">
             <strong style="color: #1e3a8a; display: block; margin-bottom: 2px;">📍 Verified Dispatch Location</strong>
-            <span style="color: #475569;">Pinned via 'Pin my Location'.</span>
+            <span style="color: #475569; display: block;">Barangay ${barangay}, Bongabong</span>
+            <span style="color: #2563eb; font-weight: 700; font-size: 11px; display: block; margin-top: 3px;">🖐️ Drag pin to place on your exact building/street</span>
           </div>
         `);
 
@@ -241,6 +269,7 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
         markerRef.current.setLatLng([coords.lat, coords.lng]);
         if (circleRef.current) {
           circleRef.current.setLatLng([coords.lat, coords.lng]);
+          circleRef.current.setRadius(Math.min(Math.max(gpsAccuracy || 25, 15), 350));
         }
       }
 
@@ -356,12 +385,25 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
               onClick={onDetectGPS}
               disabled={isLocating}
               className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold border border-blue-500 shadow-md flex items-center gap-1.5 cursor-pointer transition disabled:opacity-60"
-              title="Pin my Location"
+              title="Pin my Location (High Precision GPS)"
             >
               <Navigation className={`w-3.5 h-3.5 text-white ${isLocating ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">
-                {isLocating ? 'Pinning...' : 'Pin my Location'}
+                {isLocating ? 'Locking GPS...' : 'Pin my Location'}
               </span>
+            </button>
+          )}
+
+          {/* Quick Align to Barangay Center on map */}
+          {onAlignToBarangay && (
+            <button
+              type="button"
+              onClick={onAlignToBarangay}
+              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold border border-indigo-500 shadow-md flex items-center gap-1.5 cursor-pointer transition"
+              title={`Align pin to center of Barangay ${barangay}`}
+            >
+              <MapPin className="w-3.5 h-3.5 text-white" />
+              <span className="hidden sm:inline">Align to Brgy. {barangay}</span>
             </button>
           )}
         </div>
@@ -372,9 +414,9 @@ export const IncidentLocationPickerMap: React.FC<IncidentLocationPickerMapProps>
             <span className={`w-2 h-2 rounded-full ${isLocationPinned ? 'bg-emerald-400' : 'bg-blue-400'} animate-ping shrink-0`} />
             <span className="truncate">
               {isLocationPinned ? (
-                <>📍 Location pinned via <strong>Pin my Location</strong></>
+                <>📍 Pinned · <strong>Drag pin</strong> anytime to place on exact street</>
               ) : (
-                <>Click <strong>Pin my Location</strong> to pin your exact location</>
+                <>Click <strong>Pin my Location</strong> or <strong>Align to Brgy</strong></>
               )}
             </span>
           </div>
